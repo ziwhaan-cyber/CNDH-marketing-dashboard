@@ -239,9 +239,77 @@
   #page-heat.body{ grid-template-columns: minmax(0,1fr); grid-template-rows: auto minmax(0,1fr); gap:0.7vw; min-width:0; }
   .heat-tab{ display:none; min-height:0; }
   .heat-tab.active{ display:grid; }
-  #page-arrears.body{
-    grid-template-columns: 0.95fr 1.45fr;
+  #page-arrears.body{ grid-template-columns: minmax(0,1fr); grid-template-rows: auto minmax(0,1fr); gap:0.7vw; min-width:0; }
+  .arr-tab{ display:none; min-height:0; min-width:0; }
+  .arr-tab.active{ display:grid; }
+
+  /* ============ [신규] 고객관리(연체) > 미납안내 탭 ============ */
+  .nt-steps{ display:flex; flex-direction:column; gap:0.55vw; flex:1; min-height:0; }
+  .nt-step{ background:#F7F5F1; border:1px solid var(--line); border-radius:4px; padding:0.55vw 0.8vw; flex-shrink:0; }
+  .nt-step.grow{ flex:1; min-height:0; display:flex; flex-direction:column; }
+  .nt-step-head{ display:flex; align-items:center; gap:0.5vw; font-size:0.8vw; font-weight:700; color:var(--navy); margin-bottom:0.4vw; }
+  .nt-step-num{ width:1.3vw; height:1.3vw; border-radius:50%; background:var(--navy); color:#fff; font-size:0.66vw; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .nt-row{ display:flex; align-items:center; gap:0.5vw; flex-wrap:wrap; font-size:0.72vw; color:var(--text); }
+  .nt-row label.nt-btn, .nt-gen-btn{
+    font-family:'Pretendard','Noto Sans KR',sans-serif; font-size:0.72vw; font-weight:700; color:#fff; background:var(--navy);
+    padding:0.32vw 0.8vw; border-radius:3px; cursor:pointer; white-space:nowrap; border:none;
   }
+  .nt-row input[type=file]{ font-size:0.62vw; max-width:12vw; }
+  .nt-row input[type=date], .nt-row input[type=number], .nt-row select{
+    font-family:'Pretendard','Noto Sans KR',sans-serif; font-size:0.72vw; padding:0.2vw 0.35vw;
+    border:1px solid var(--line); border-radius:3px; background:#fff; color:var(--text);
+  }
+  .nt-row input[type=number]{ width:4.2vw; }
+  .nt-hint{ font-size:0.62vw; color:var(--text-soft); margin-top:0.3vw; line-height:1.45; }
+  .nt-status{ font-size:0.66vw; font-weight:700; color:var(--text-soft); }
+  .nt-status.ok{ color:var(--good); } .nt-status.err{ color:var(--bad); }
+  .nt-chips{ display:flex; gap:0.4vw; flex-wrap:wrap; margin-bottom:0.4vw; }
+  .nt-chip{ font-size:0.66vw; font-weight:700; padding:0.14vw 0.6vw; border-radius:12px; background:#fff; border:1px solid var(--line); color:var(--text-soft); }
+  .nt-chip.m1{ background:#E9EEF3; color:var(--steel); border-color:#E9EEF3; }
+  .nt-chip.m2{ background:#FBEAE6; color:var(--bad); border-color:#FBEAE6; }
+  .nt-list-wrap{ flex:1; min-height:0; overflow-y:auto; background:#fff; border:1px solid var(--line); border-radius:3px; }
+  .nt-list{ width:100%; border-collapse:collapse; table-layout:fixed; }
+  .nt-list th:nth-child(1){ width:30%; } .nt-list th:nth-child(2){ width:17%; } .nt-list th:nth-child(3){ width:9%; }
+  .nt-list th:nth-child(4){ width:14%; } .nt-list th:nth-child(5){ width:30%; }
+  .nt-list td{ overflow:hidden; text-overflow:ellipsis; }
+  .nt-list th{ position:sticky; top:0; background:var(--navy-2); color:#fff; font-size:0.62vw; font-weight:600; padding:0.3vw 0.4vw; text-align:center; }
+  .nt-list td{ font-size:0.66vw; padding:0.28vw 0.4vw; border-bottom:1px solid var(--line); text-align:center; white-space:nowrap; }
+  .nt-list td.l{ text-align:left; } .nt-list td.r{ text-align:right; }
+  .nt-list tbody tr{ cursor:pointer; }
+  .nt-list tbody tr:hover{ background:#F7F5F1; }
+  .nt-list tbody tr.sel{ background:#FBEDE6; }
+  .nt-list tbody tr.sel td:first-child{ border-left:3px solid var(--rust); }
+  .nt-empty{ font-size:0.7vw; color:var(--text-soft); text-align:center; padding:2vw 0; }
+  .nt-gen-btn{ background:var(--rust); font-size:0.78vw; padding:0.42vw 1.1vw; }
+  .nt-gen-btn:disabled{ background:#C9C4B8; cursor:not-allowed; }
+  .nt-progress{ flex:1; min-width:6vw; height:0.45vw; background:#EAE7DF; border-radius:3px; overflow:hidden; }
+  .nt-progress-fill{ height:100%; width:0%; background:var(--good); transition:width .15s; }
+
+  .nt-preview-wrap{ flex:1; min-height:0; background:#E4E0D7; border-radius:4px; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+  .nt-preview-stage{ position:relative; box-shadow:0 0.3vw 1vw rgba(0,0,0,0.18); background:#fff; }
+  .nt-preview-stage .np-page{ position:absolute; left:0; top:0; transform-origin:0 0; }
+
+  /* ---- 안내문 양식 (PDF로 그대로 찍히는 영역: A4 가로 1123x794px, px 고정 단위) ---- */
+  .np-page{
+    width:1123px; height:794px; background:#fff; box-sizing:border-box; padding:30px 34px;
+    font-family:'Malgun Gothic','맑은 고딕','Pretendard','Noto Sans KR',sans-serif; color:#111; font-size:15px; line-height:1.6;
+    display:flex; flex-direction:column;
+  }
+  .np-head{ display:grid; grid-template-columns:1fr 1fr; background:#215E99; color:#fff; min-height:58px; align-items:center; }
+  .np-head .np-name{ text-align:center; font-size:24px; font-weight:700; padding:6px 12px; word-break:keep-all; }
+  .np-head .np-title{ text-align:center; font-size:21px; font-weight:700; padding:6px 12px; }
+  .np-body{ margin:18px 0 6px 22px; padding:0; }
+  .np-body li{ margin:0 0 2px 0; padding-left:2px; }
+  .np-sec{ margin:8px 0 4px 6px; }
+  .np-table{ width:62%; border-collapse:collapse; margin:0 0 4px 0; font-size:15px; }
+  .np-table th, .np-table td{ border:1px solid #333; padding:2px 8px; text-align:left; font-weight:400; }
+  .np-table th{ background:#D9D9D9; }
+  .np-table td.amt{ text-align:right; }
+  .np-acct{ list-style:none; margin:6px 0 0 30px; padding:0; }
+  .np-acct li{ margin:6px 0; }
+  .np-acct li::before{ content:'■'; font-size:11px; margin-right:12px; vertical-align:2px; }
+  .np-logo{ margin-top:auto; text-align:center; }
+  .np-logo img{ width:300px; height:auto; }
   .region-col{ display:flex; flex-direction:column; gap:0.8vw; min-height:0; }
   .page-top{
     grid-column: 1 / -1;
@@ -634,6 +702,16 @@
     <!-- [신규] 고객관리(연체) 페이지 -->
     <div class="page body" id="page-arrears">
 
+      <div class="page-top">
+        <div class="subnav">
+          <button class="subnav-btn active" data-arr-tab="arr-tab-status" onclick="showArrTab(this)">연체 현황</button>
+          <button class="subnav-btn" data-arr-tab="arr-tab-notice" onclick="showArrTab(this)">미납안내</button>
+        </div>
+      </div>
+
+      <!-- ---------- 연체 현황 (기존 화면 그대로) ---------- -->
+      <div class="arr-tab active" id="arr-tab-status" style="grid-template-columns:0.95fr 1.45fr; gap:1.6vw;">
+
       <!-- 왼쪽: 파일 업로드 + 연체 현황 표 -->
       <div class="col">
         <div class="panel" style="flex:1;">
@@ -736,6 +814,75 @@
           <div class="flow-spacer"></div>
 
         </div>
+      </div>
+
+      </div><!-- /arr-tab-status -->
+
+      <!-- ---------- [신규] 미납안내 (미납안내문 생성) ---------- -->
+      <div class="arr-tab" id="arr-tab-notice" style="grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr); gap:1.1vw;">
+
+        <!-- 왼쪽: 업로드 → 설정 → 대상자 → PDF 생성 -->
+        <div class="col">
+          <div class="panel" style="flex:1;">
+            <div class="panel-title">미납안내문 생성 <span class="tag">PDF</span></div>
+            <div class="nt-steps">
+
+              <div class="nt-step">
+                <div class="nt-step-head"><span class="nt-step-num">1</span>미납내역 엑셀 업로드</div>
+                <div class="nt-row">
+                  <label class="nt-btn" for="nt-file-input">엑셀 업로드</label>
+                  <input type="file" id="nt-file-input" accept=".xlsx,.xls" onchange="ntHandleFile(event)">
+                  <span class="nt-status" id="nt-file-status">미업로드</span>
+                </div>
+                <div class="nt-hint">보안상 업로드한 미납내역(고객명·금액)은 저장하지 않습니다. 새로고침하면 다시 업로드해야 합니다.</div>
+              </div>
+
+              <div class="nt-step">
+                <div class="nt-step-head"><span class="nt-step-num">2</span>안내문 설정</div>
+                <div class="nt-row">
+                  <span>기준일</span><input type="date" id="nt-base-date" onchange="ntOnBaseDateChange()">
+                  <span style="margin-left:0.6vw;">최신 미납월</span>
+                  <input type="number" id="nt-latest-year" min="2000" max="2100" onchange="ntYearTouched=true; ntRefreshAll()"><span>년</span>
+                  <span id="nt-latest-month-label">-월</span>
+                </div>
+                <div class="nt-hint" id="nt-month-hint">엑셀을 올리면 최신 미납월(첫 번째 월 컬럼)을 자동으로 읽습니다. 연도는 기준일로 추정하니 다르면 직접 고쳐주세요.</div>
+              </div>
+
+              <div class="nt-step grow">
+                <div class="nt-step-head"><span class="nt-step-num">3</span>생성 대상 확인 <span style="font-weight:400; color:var(--text-soft); font-size:0.64vw;">(행을 누르면 오른쪽에 미리보기)</span></div>
+                <div class="nt-chips" id="nt-chips"></div>
+                <div class="nt-list-wrap">
+                  <table class="nt-list">
+                    <thead><tr><th>고객명</th><th>고객번호</th><th>연체</th><th>금액(원)</th><th>PDF 파일명</th></tr></thead>
+                    <tbody id="nt-list-body"><tr><td colspan="5" class="nt-empty">엑셀을 업로드하면 대상 고객이 표시됩니다</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="nt-step">
+                <div class="nt-step-head"><span class="nt-step-num">4</span>PDF 생성</div>
+                <div class="nt-row">
+                  <button type="button" class="nt-gen-btn" id="nt-gen-btn" onclick="ntGenerate()" disabled>저장 폴더 선택 후 PDF 생성</button>
+                  <div class="nt-progress"><div class="nt-progress-fill" id="nt-progress-fill"></div></div>
+                  <span class="nt-status" id="nt-gen-status"></span>
+                </div>
+                <div class="nt-hint">Chrome·Edge에서는 폴더 선택 창이 뜨고 그 폴더에 바로 저장됩니다. 그 외 브라우저는 ZIP 파일로 다운로드됩니다. 파일명은 기존 발송 스크립트와 같은 "고객명_고객번호.pdf" 형식입니다.</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- 오른쪽: 안내문 미리보기 -->
+        <div class="col">
+          <div class="panel" style="flex:1;">
+            <div class="panel-title">안내문 미리보기 <span class="tag" id="nt-preview-tag">-</span></div>
+            <div class="nt-preview-wrap" id="nt-preview-wrap">
+              <div class="nt-empty" id="nt-preview-empty">대상 고객을 선택하면 실제 PDF와 같은 모양으로 표시됩니다</div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -3661,5 +3808,343 @@
   }
 
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+  // ===== [신규] 고객관리(연체) 소버튼 전환: 연체 현황 / 미납안내 =====
+  function showArrTab(btn){
+    var target = btn.getAttribute('data-arr-tab');
+    document.querySelectorAll('#page-arrears .subnav-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.querySelectorAll('#page-arrears .arr-tab').forEach(function(t){ t.classList.remove('active'); });
+    document.getElementById(target).classList.add('active');
+    if (target === 'arr-tab-notice') ntFitPreview();
+  }
+
+  // ===== [신규] 미납안내문 생성 =====
+  // 흐름: 미납내역 엑셀 업로드 -> 연체 1·2개월 고객 추출 -> 미리보기 -> 폴더 선택 -> 고객별 PDF 저장
+  // 보안: 미납내역(고객명·금액)은 localStorage에 저장하지 않음. 모든 처리는 브라우저 안에서만 이뤄짐.
+  var NT_LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATsAAABBCAIAAAAhcJSDAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAHsIAAB7CAW7QdT4AAC53SURBVHhe7X0HfFRV9r+CLltcd92+f/39d/9LCYI014brrq5d0bWA6K6/1TUTQuhiAUHpiCgioAKCCiYBAsmU9J4QIL0AKYQkhCQkIb2XSaa8N//vOffNZBImkwL8/PP/zOHMm/febeeee7/nnHvfm3CdxUUuctG1Qy7EushF1xK5EOsiF11L5EKsi1x0LZELsS5y0bVELsS6yEXXErkQ6yIXXUt0pRArK98KybjGR7LIZosFLFm5N9lK9SnuIhe5yDFdAcQKcBJbJJNFrjEaYirrPso+90biqUcjUv4ankwclvRQROJ/H83ceLow5mJdg8koyTJYKeciF7locHQlfKwsSbKlxmD4uujCjKjUX/pGjvAOH+Ebcb0P8XW+EdfhSOeR4BE+kSO9w3/nFzUn8VR6Q7MRoJXNDFoXbl3kooHpchELnJ1r71ickvfbQ1EjvCOv941ioOIYeT0ufaKu840UiL3OJ5wBjDyUhJMfeof9Mz7jfEcnwdaFWBe5aBA0ZMRSHMsAkyVztcHwVmruzeRObbAcGgPD/8svOriiVoKfRpjswq2LXOSUhopYxqosmWRZXXrxfx+OE061Dw4HzxwqR/zYO/Lb4nKzLCHAdoXHLnKRExoiYnn7t8VonJ+Uc6NPGAfA4T0ItC5Zh8CIkNnT3uQbGXGxTnK5WRe5yCkNCrHAkGwx81Gu1Hf/PSyR/aqzSFisYAUakRPHkd6RI33Cf+AT/hPfqJt8Ikb5RIzwjhiBDOSlaUfq//jHVnV1U8Q9XCIJRcROzOeOK+NUShcuXWS/HBLPrbgqZ3UpGZgFITOd266Z+IpShJywYkzitkihI9YRlIpTmFHlnzMS+sA/qvZSops9lVALAzFl4y9RJ6SwNkBnZHyVK85iLdH76PQm/VNOh0G2QqLGPpd9iWRXFMkXQvirRaj5kmedCg3Q6OB8LHcFVNqp/7PuOK1afaP6QLQPX0+L23DgFhHv3UGJS1LzfIvL0xuayzv0VV1dVXp9Waf+ZFOrtuzippxzs+OzANdR3mHvpudL/fZkYDJL5l0hZ7aqsz/VgHN2Bmd3mx3WJuaCGBXlREkZJlE1DC2qkM8dkNIQfdGqnb6tT7j65LchkNSO7x6dUE7OTnBFuplSOQ9XpOTqhygTsQhkBPNt5QtVgKhxysU3eh17X/I3MkMGkJAUH66c/3EWyoQP108sTuyPzm5SUZu0QyRFGHsSd1jUS+hseZMm8bwmqVSTVILjhboWVsTVIRKAhaEW6FywTXtOaJA+lpRfa+i+K4jhyj6zD0TtGakjvCN/5xezKvNsfmubEf4ZwlAtXBHLpNwQ17KlS5LTG5v35J4zKG0Oh7olafrSwHEq7RhV4FiV7p6Fmk6jg96jyYqGtqyiixlFNZlF1bkl1RI9YRomoWR0VmlIemloepk2qbjoYiNPMgfE+JSMktRuMNW1mdsNZhPdMdEMwtS3EsqaJelsZcOZiub8iqbS6pZOgyGrqIqkPVdTWCHWDmYcmzpN9e2Cja1dULJzY4eKqb280lr0OpP6XlNZ30YDQCOAj9kk0Q4FKhocU2aLbG7p0KcXosLqjKKq9KJqgwE9opkHedgykTaGx0IzXAOuhko0/3lkqSxVyIaSz9nI9KadIXljVAFjVZoxHlpwUMp5skdXi1g9JA+aICXiSMKytGRT+qcBEUt1oZIuWXo2KgWxKxar9Gymn5D4em86jvKNWJqWU9VtZE2TaEImUhdpjKpVvpn4NikTk6DFYOyV1j8hW9KZqqCUsqDUUsHa5LK7FujGEly141SaSfN0AUk9qUGpZVWNHaLk58F5yDNGpcXxb++GUNssXUeXsaZZXz0QI09Vi150otNkuWeRZrQHWkTTGt/4Qu6sPbEWLFJxdcs636zHV4ROmHPYzd3vjjl+z66J2haUW9uq5+6LUjS/m/WGafPU49wDxqnUs9aFlda1u3n4i5n02qfRQqto/V8fRY13PzLe3d9Ndfj9/SmYAVxD/wTzIJsfXxFMVXH3EYlQe6jNYjFZ5CeWhz/6Xtij70U8wixO7I/2l4++F/5tZD7EPnGmfKxKPUalY0OpvtioF22B0NzLm6KeWRv57JrIZ8DixP7o/OaaKHBCboVQtR3hUm7rMqQV1KYW1KcW1IHTCqthxgjmCqGMlJhXuXJf0or9CqecrSI8yJbT5+sxH4JTbHOjdNHuZJ4PGEQaxzUHMgN7Zg5xWHqZySwdza603Uk5W6001YdkubqpI4VkI4aQcOC9e0DyQ46vQk7ZZFu570S7wchJzsgZYjEpyBYRkOQNJwtH2G8yOWJyvL6Rtx2Oib5YB+tK8e0ArfcQTUCLVNDa8XbKaTQnbjknjM5rn8SMUWnGuWsFu7mr4WABQhtjxttSAYCorHJR7xfBubgj8jwIxFLrYPPe8LNuKv/x/TNSBU909zMSQsx6o3z3Io11pHUH44suEV1GbL4nMm+iJ4vkDuAhp9K6m7v/3Yt0GH4z+y2B2Ba9ceo8jTAoM9eHl9S1uXkAEmpcvvZpDDLQtLNYXtkca21Xu3J/2oAqEwP6xIog0TR4qyaHLQUxAmyA35Y0IEPVWzW5qDYRiPVQNA+FVwnEKs3Jdy7s6ezwOCytVFTIRKKyxPKXIbluKrUbOUaoEYr1T8y/iPucDv3Q13cxhbZ6YKf8jhbjJrKs+C4dxsUNNtE6PcZa54NQ6Th3jZt7z9RC5jvnadsN0jOrImw352w/Sm30IrrGEK72ofrhNjji0z62PJjcF6cy0Tk+szdiBJV2x6kCWvQIMW15HJNzH0tmEjMpq6HlJl96/8H5c1ek/ikgPre1ncMYIBZkM3gDEIp0S/LzMWkPhJzgWGsAuUHIwYhVOgxmM98zP5DU5zLyZIXQSC/ELiPEwuTBze0JPwv7aoWBA6YmPOgI0JoQXMnwsU4RC0XI0u6QnHEePHhwxe6YDcipiIRBhWu6fY6/37Fz1tkmWxGLahXEjvcAXOny/1HE0uwUN682YrnnstRhMP7tnWCy12SyA3Ey2kO9aFcyh0uYftQjfBwj1iIQO4BgyG87R++mzQskxK6OsN1U7TguautNWOfIM1aF8/DRkCH4un2OtrKhg6USpIh3pRFLNl82mKXHo5KARrGC7YNSe/7lwYiMhlYK74howOxEdEbIhGn93bnyG3wixqqPGSheIIvknDByr30Sy5jUienCJ6QjAVTMHqELMTbIE3XSkY9lxBKyZBk+dqwKExrRnWMeZ+XxKjWUg4ID+FjZklpUezvhDW1hbgHtSrtgFhulSOZJXprcC41kO64ZxOqGjljqwlA5tDdiQdCSNum80A/qHO2BoYEdDJw0V1PBwGBF0LE/H7uSECv0YC+eQ6YMmFdT5+najUBspC3JY8cxVl0fki426ydQTKQUx0wb46EOzyhT0olI4fhcecSCYi/W3eAT1gecvZlgPNInYseZYgR2g0SpIJ4ucG6W/NaO3/pFw43/8Ug8IXbgSmilHp1V6h1b6BNb4BNT8FVk/qS5SufBrK8Azx3Hd4Vm7wrN/QrHkOzz1S2MdPmL4DMC22DFx2J6ybI2uWTWxvhZG2Mv4biZG2MfXg77qpQap/KnJYNF7jRa7l6Im4Sc0R66Q/EFQjxi2QJzO3uTGBU1ZswYd920+bp3v07eHZq76cjJx1eEIZwTdcLK/PuTGKHA/3nEIkmSzZoTJbRfmliqTSwJSCp5enW0nZ/R3OGpPRBXjCRNYok45pY1IDjqF7EcoAWllFrzo9rz2sTS1z87bq2TIg42hSiIS91rWxOQWTAXQf6S8rpWnt42opF6cX2EVTZFA8Tumh1B2RTiKZ3qD7HyWt+0O+f5T50XMNGTgmpYHxodkoSqokiKTkjhE+cGTPNST5uv/ssSTYfR7ACxdrKJygFO2+wiZjO96XCWyMOkiHfFEUuu79nY9N74vIRpLypqoiauHcs1JSAZPKGI3GQ0Tw85zq8lR0wNPMY/D8Bt5/VQJuEY+VTSJZfYwQl2F2rSPLEitLUbFgA2gHJSY3QCH0s7T7xXZEMsbdzR5i15TgJEb6a5rk60b8IhYjWapBK6S/+oucxzdVg/QxIOhjUzPogqqRVhCInRaTS/ty+V6xRzLiCzuA4FvwcfK6Y5lgZUM93qMJjuXYxok7KNZmyMc1enFFQpdYGEKmWzQ8SSBmhDm2q2ZqfpVN/Wfe9ipXUw6h+jgn6oCzgiWqlp7lQKENHA2VfCJKcUVDMkhNLApBnBDy4L7TSaOD99+kOs3iS3G+RGvfTChiixYYbJAOEhA9tQdERExZpXPklo6UIQLoMhyTOro2wVXopY0e31hzLsZKNKUOcLGzFwtpw4oWJXGLEoekHfdXPPq/z9s2/E+lMFNOKi2KAJJfSS/GpCJr1K4U31PBedLtaxYlI6JUIXWsOxyyTNeL/HAUJfYkQxyT4NOA1Fe8cVL9mdsmR32uKvUhd9lQLvAUiL9aQVsVQhS++AWRgZJt9av2PEjvVQByaLEI6RL8sbDmVhNgiRJs9TF1QBrrgt6iQGMJ5aGSZ2lQDR9QczkPS9IJaP+CapIHvi2Yt2joJaGa3SbNMiDOacLDzVKTuOijkHEsXDFcHourTxUKY1XCSe5Kl5emUk41YARvOBTzoZWFGBaAUHuiSiC9ns9eUJ1oZwzmhaUQ7LGRCRUS5qQJn+ECsqR0iFFtE6eoqTWR/GYlHjHVfwwjrAEnWiNlSricq6oBg0CxDr1MdyVPWPNYhNbKoDUyVT5gGQRiWf0rsrjlhM9KIy57tNYGSAe4ysqLUXfSCizoNNkrQ0NXcELZL5Rz/e0WtOncV9JdfgCMMTxKpnBNL0vf+tEOEWcHOCpzq7rOGtr7FuIcVZFSTgSpntEAvCicJCQoXoXFInnhfzEuwQsZg6OkIsZSe3LMnPr6XpKBpa9nUK2xj73gFC0tcRWDxz7OSheW5NFPI06013elEUjfvDRKws17bqT5U0nSpp5KPgxsySpofeUYqA7dexSjk+gD46crKXuihs0b68MRIzF5ns7WlSP1GxjSgzK6S4ugXLdeS02gLN2oOZyQXVYr9X8B1zNLnljcjPoihS2YuHIOX2OSI/hbJYu645mAWTJyIm8Otb4ugddeSV+915gkkyWSz/+ogcptDz0j2J3WYTUtF3OACvL4+jTowIIqP/bDtK40ZscY5YnNe06O/wpKjKpmQwmhjvHpBSWEuapU5wOw4Q202plKdfGmAdOzc5m57ZDMD0k9cTdY1OG+ohlogsVpcsLUnNG8mvRlE9vhE3eEcmVNcr+QZN3UZpxio4WDW5TZXmxXURqcV1EzyhMqibdu1nboxasidtLJm9nsnK40TnvRFrJVKpckpEMwBRMXysMokdIhYDrEs5j5tEFoRS5nsXK81BsJD0UjFavSq2SFkljewlgnC8c77uXE1zXkXTlHkwN1RwuIiVfGMLx7sfISWwF8KEgMxj6DGM0gXwpYgF4QyW9OlVPeEfeyEIEDjZU1PX1iW0YaOBEEudJvuF4d6VOMYjkAWg3d17lmjrWjvhlFTbjrpZ98/BuDTBlLGy7IiExGfjwZMInRDKks111y7efaKyqX2S5xEof/wbgWM8AsbP0ZytbKbSThBrsTR2GKZ4iSTd1PkB9e16enOFFQudXGzquMMLXUaq5q6FmrZugJlaHwixlsjMcihBjJ2VMTFQle6r0FwyXNwRaqQvYv3rOw3oNjliCoa4ukvIGWIh/SNRKc73h4kRNvtG7C8s76vhfohmsyTXGQwvx2cA6ihLNbCvHusf22Hf/8FRaFopzyfAleZWWFopJsda7/TRvF/3JzaTUxYEY5jFxEXghDs2b9kHsRfqWlMLqlMLa1ILxVFwLW5+os5xiljtaJV29obYxXuSFn+VvHp/coPeMMHqPdDu2YpGRlqv6Y5LOMOJc/ytNQfSY0B+wHh5iLX4xhUJS88+jaqicwKG0gWwQ8QCkMU1rROsLYqCfMRlQASFiCjTk985YhmtGHEppajmdrYXQA5tn6rU30ae5ZqkrNJ6tzkaRN3UirsGtjX+dCWtqe2l4onT2Gn48yLRBcrm5hGQVliLWGbujmMYaNaYDjV/eCiDJOwXsXTIL2/kxQjV9sb2BKqd7jPz61yvbI7ngho3lX9JnbIFPaCPXe+XicWRDbFj0B3WHsJ+T3oaJFqhruHLHrFoaPpi9V8Wa1/dFErmQUhyCTlDLMKGhyKTCbHOf5RDb/xHPhKZRjtGNDyiHQft4Rq+1SzLx2obJukSries0htUIvAe4RO+9lQh1TEEkg2S9Ny6SNs7CY+tDDWYacO1rk1//9JgsRrB/IC9TCmqrWhoq2xsq2xo23Q4a6w7vc+IIn0Q+3HAKcY/adDGPM/UwDxfUil7xN7DiKX9RhRkSKDmv7ypadB3WasixFY20rtNfdQCbWF5M20e1QDm1TXl580Y6tTwEItqCbH0mpQiMLOY0z3s2MfSsv8skMNhCDErCl6RFsCrfdK4dRJA0IA+FmSQzP/6KE7ZwSIxAp9aEdoOx0WzRQLkFu08hiTOQAvmZ1dF6o3wN5xslQ2TZ19UPi1/qC3q9awNUZgAWEdEZpaxfigJldy7RAetwk44QezJ83VkuylJ8/beVLYrLCt1DVPIPP/LVLQCGwfE5pWT00axfhCrSIhV+z/WRor4HKq+Y652+lvhnBl3NNOX6Gj3ijLSNMBJb8RSjIZsT34QgZ6St1dq7UXOEIsZ+VBEipN3EgUDb9f7ht/oHbklp8ggem3rBH3T0OIOTrBmq+rqXpia8yNe+vaOtyN/cyiqQt9FFQyOoFnkjaAgRCwb0Gf14eNF3DQlHT5ezIgV+lLP/yIBAZgo6+ANCit9HHByrHWmOmE31RERuOjhY/l5LIYWMCOkEbq0DyzRNui77RFb3tAJhbAqeprDWVNn99R5ZJVRA6TiCY2jGL/hIhZmMbdi0a6kRbuSbbxgd+K83clT5lN+wQ4Ri9nqse0o9wV5dPe9GfjCxljlnVuV9vEVoSJgtRUY0MeihdDMsvFWVTAHhGeUcYhIWZChoLKJV6cEOdKkh/pAfBFB1iYfbfCaH30vhKVidtdqEouRgKmlN0pYgAgZOEnjf/w8Gv4uhvcImHshVracr2qFtGxnNS99SCDBXZKWMwDuM9aEowiGw83jSGUT7WAjg3Mfi3Bp8lwaKZ5dgf/8KO6tr5Nt+d1U6nNVLcjGyqNi9ohlG019f+qDMErjjl9KA/jYhyNSOGR1hlj2wNFYi97oEz4vMadcr+fXmcXmGh0lWTLKlpyWtmXp+b89FMU/62HvarcLDdhvzimCjNyZwRHvyz2/rkeDD70T0m5A45gHpHeD2fTKR5hqBCfShUodlnEBkwRNOEXsKXvEYn7YXI09WxEr2xDLzE6MwrPAB95UN3Ubp5DzpPxo/VQJbTyQ3HbN4ay8qfN21RExTYFS1DzeXdlZwXHYPhaKhxasqOA7tJiUn1ghoEjsELHNnYY759NUFrbj7b2JO4Jyad1Im0+acXMCSmrb7fMPgFggzWB68n3hahT+18dxWDNyL5TWcfbuN0lIYktBPb3/zcDGTlhwqgPp+AhHahuOv74V3G4Qy0vidbQtryRB7BfXR6Gz3o73itGw3GEw37NIMSJuHhoEyWZZeUyBGUuP5cjEBCIWQ0NdJswrksMJYvEVffIC7yAiHMNRuyMw+0A8BFDmAGKHI8eLaBAoLxXrjVi1m3sglnJPvR9tpNfplGr7kDPEQvIX4zKvG+h1YivTfu8In4if+kb+IzZ93emibwpK9xWWbMktViVlT9Im/ED5O09YuJIJEJGw7XhfcEK7aQivIoseR568gGkkpiz426h83tYXOUjvOaUNEzxpVHgeqP/2dkh9excKf0mIVUo5QSxm7T2LdfcuCbyU718SYI9YNpAI57SLdibvCsnfGZq3Pzqvyyw9vCyYkyCkxv9EMeOnpy3qhUVOyKu0Nqf967uhHUZzbXvXlPkQmyQc5jqW1EMZ7W/hEjI/vtLR052esnLMqQrhfJAB6g1MLU0vqoUd4cCYPJtfAmxrT8UDIva72ELc50Uj5RnvEXC6tN4OriKbpbS2dbKXbT1PZmWT/ykaUGqMTP+/NseyURMNabcHnqa7qAEZZDn7QoO9Gx/nEZBVXLcvBk1TR8A9iOV2UXTJV0m4iarQ1pOrwktqW6ghiwxP+MiKUFhP0an39iVTG1SsP8SKCi0f+mXC3GDE2R9oMgqqIRUkQSv8cqtm+f406g3nx6fXzpN7wFZdzs6Qs4cTCmjyKvrpS04Ra5E25xQqG7lDZ3paM4gfD8DT/upQVEZjK1TlWEZHhGxms3nWxugxHgHwaVhh3vemlh9nCYIeSX5UufZQBlTPC11yEWt8UjBUn4fk8lCRwf7bu2E0/a1kh1jN5Lmai81dCMYEw9Dan0CpaKjTZLdXrNIGppSITqB9wMNrxzGMEwYeiyuvz4/TzOJWBJGEsrTuQAYK8rzRzdlxFBn4eSxNI4gxXMQ6ICFSf28pWovLWKmiTuFgJ84JqO/o7jSa71mszGwkLd6V2GMZ+0Us6qW6GzsM05fSu0TUR3dq+p2vAYC+hOok2bzONx0+CsaUPLy7btJcNfy5xD8tzMKyc46aVtfshBF8ljd28MqRmsERcexzayPEUkKo5Z1vkr+LKRA9BfdCLJWR08/VQrEYGnan2qnzdJ7bjr+x/fgkLzGgsFCBEzwDztDbo1ym/3Us6VaCAOJhHlgzbb4GkwSqu2sRCcweQvfkB2FmshWiSG/EXpG3FE83tYxiXPVB2pXjyB/5RBwpvYgJgFUud1xp3DkhV2e3MSTtfGhqeUhaWXBaWUZxrSirjAbO2QI3dRhC0koD0y6EpF5AzoiMC91m05fBYteXVPnQu0FsKxSyIRYDPGmutqHdoIzJpUyzVu5wiFgkkxiSTyxmDOwCTaOJc9W5F5qEZJyHIr3Kxo67F2Jm0IzBpPeNox/rfS9vUNDHIhkl+e/LQsQyDMeXN8dCOejI/C8SrY/HNFgx2v+pgP4RS68rbVWf4u7Dx9LKHKvo8noE1ZcSzWOA8M75imxgWNhFuxMR3AKx7+xJGePhDwjBzcLPv/V1Em5SE9RrMp6ybN4XLUJQZvfAKV7wWnlCb+A+iEV7iMxX+6RDKggv4ljYKTeyFwEojoLozmb/k/SUVpTpB7H44KSuVT/RC0ZNNKdRbT+GSY20f38SO5osIA3TOA//hrYukR+fK4xYSAK79WhE0gB7xZfBP/QJ33W2jH62Rl2wHQZF9LvkniI4EABwHyMBw3biTNVnupwFXyZiKfvypuhXP45/+5uU/dFn8iubMCl3h+Te4Rlwh6cax8ffC+IH7gr1IBZG11Pd2N7Nt0UTzOLESuRjrevY3ogleWpbuybPo3nAoxL49AcRpQ1tnEwzprpF//KHcSIJx2nz/BvaaTi/F8RypVJueRPaIn/IG9e7w3IYeJIvmR4UIcS6uatPlfY8NneIWFSLQW3r6n7tk/iZG2Jf3BA3c33cCxuiv47IpxQHRDIg6euIvFe3xL26JR7831uOvr4l/kJ9W3Nn16ubY2ZuiJm5HlXFz1ofk1OCuFp0WHyjuFTTql93IG2Nb+aaA1mrfTNXHchcujfZEWKRXTQnd3ab5n+RwHmI0XG2L9RNmIalexK7jLTnzM2QpvqPii1RpyqgB2uq5puoM2RpLJZt2tO4wzELcKuOOV2BMizBFUcsz6rYqrpRWILyr+0G2IIaCiPYRrW7CwBX7jPJP0TqKUGSQjUYgLYu4+dBOQ++FTTenVf/FFwpHowCY3eNm4d61vpobXJZTZsBa9r6dkNjhxHoUmrqFRXrEB0BsUK/l7BC/DxWjAfMf09ULI4ou+lwFr/kTKOIau9ZqHlvX+rO0LMf+KTft1h5i1VEetusC7OhIhaVr9yfyXI6I2Qw9beOZf1jgn0VmifiYaS6qQJyy+kZMvJgaTceQSm1BVbTywCi0v4RS1DnbxE74cgn5BipRUfMqfaXojhXw7e4JN/vWwldMrQolbpC3+borAvuW+Pe2BrPHBeXXclVcR4cuDmDWd4bnvfnhVCLml/kIAs4fXHIdzFn6O+DcD7RCq76RawsbzxyEqrjWRfoplLnljVCHsgZlw0ki/sYbt0WTRbVysWuMGIp6qA/IyAtTDk1wjv6OgW0l830F8ajf30oQldeTQ2QHYLpvxzigbLImcV1f18eAr2PZksJnLAibBrBjCdQ8YxUe+441gD/aR0/m57somL1ZIqKu5SEfoj+BoX1DQoMjB1imWS5pcs44/0wIQPGUgCMz8WRdyncNc+vi+g0mCTClO0X7YNELFW1Yn+afWzvmBAHWmivGEUE269j8cFw/JPqVFIffDdI+R22bDGa5YeXh7L2EKzqXt1C621BjhELYVA1w3XYTCLRkf7ZyD5D/0xYRGcRlaIwXfJTK6hXoBr1WN95ps0O0OchZxBs00/z6e2OQF1qEXsBGyEnPYZw+EsAtIGsz6+PAiDpibpKPX0pFg7UND41LV13zKVfO3DN2lc3x0PPKIjPlV7HknIITG0m02MRiSO9r8CCFjWgngdCT+S0tIunD2IBezlEXZSl43kXJ3kRVhmZjFX3AHiJ+5YEPfhO6DTayAnAcmIsjh60owDdPbMqrLZNT4q1Mxn2O0/jPXRL96Qt35f13r5Mh7x8X+Y732Tc7oVVk4LDSxBLI3O+tvXvywBaQh1MCW94QkiSE6M7WhX46MqQ8oYO9guki6FHxYEPLYtctCtx0c6khf2zeB47db4iKri3j5Xq2roxt2w2bpV3upj9PPOklftThUg4TvMKaO0i4wLqB7EoYko8W/PMqqgZq4fNkTjqkrC2V6ZIXll97wz9MtqFP0QNL22Kmb0pGiujj/xP8UMaUvPB+MKFO5Pn70peQE+qExfuSnp6lXCeSnwxc2M8kvoocOHOxKmLgjkbcY+PleW6dsNET3qXjoyae+Cbu5MU00CGQX4KJpuCKXrwM22+pt2I+UYav+KItZIsNxpNz0SljuAnNOKPOVkj5P7i5HB6kEOptq3mqOt9wn9zIPrjnHMdkqI4FlvQAII6IdRT2dx53xIEvfR8RcD178vDvOMKKho6ukySQZLbuk1ZxbUfeKfdMZfmHAYGMwyedt4XCbznq0wI0McBJxlOQr9KZtp0ccBqwRgk62uxl/hYIhq2mha957aEcWQLaFOEM9Nuh5tKO3dHQm1zJ70MpuQfHGLpNTqMN6oKFO9siKlmO/a5xJFZPNxXuM/OU0hqCSuQssHtx56qJNEFyXJwmnivSGTQHc0RqbITHxt9sgIdtBaxZ1KXnVQKoxKbvQDzQkO9LyoHVVGVFjmjqJrf++vJ0y/zAxU0BDMtFh2oKjLzAk08i2Xl/gxcCjHAHPvgiFlBd9joK63YFMj5g+zFs/OxctzpcjFezJrD4i+KMCGIXL4vFYDkxRE8rfrU+Xrez7PM/vAqIZbEsnRIplWnCm4+wP9xjrKBHO1kZYuVKuVh3I7wjrjlQOSilNySTj3F9leU0PkN9BsumrXgMR4Bc7cnNHV0KybOSlArgp+0orp7l2AUabQwDONU/ikFNfbZPg44TcqlN/IwADTkyrgqjtd6YnfEMIgkVOgIsQoZzdKJM1XLvkl5elXY9MXw8BHL9yWfyK8y0nt2PSYDNBjEwnLP//KYFScDM0so5LRNrN5RsSy/uzeFJyg0o566QN1ME0gQzcuqFv1EeqFHKfvR4Swu289eMelUjjlZiTu0uuvNwsSw7eiZ5eC+2UjgQEIsm1RUmHimmnHVq2sOGWaU5aHMogncOUQ7T2RKVu5P5zyof1C1CUlQm6hWsJ2PtXx0+CSPF7Kpx88JKK5pJSUwQUuHEs4hVegWleyLOgMxANnZG8W+I/GVRCwLRS4RlNvc+u+ErJ8yCHll6xixdJ9TR3mH366J33i64IJeTwsGqq/X7Lx8MpilB9+Fg6X3hKGUvywNBFxJVtKVkoeIwhRamgfSb9/pTxOyg9KsPZBmW9uAdMnF4zz8hWYHxwqWBDtBLIuEhijAMNEmkJAQRKsDJRPTYBCL4/Hcqsn05NCfUTEg0293xtKvXhRRwTbEQgCDZL5viWJ90LT7Zwn22oPcsBEvrI+2lX12bZQJtoZ87AWHPhY1J+bXjKd27cUgxmoFAST3iJpjJk32YWSD/d0XlU16YrUm5FTyy8AO6ryU2SuKVqgJjLhfAhBLWl/5XaqQVozggDzWAysssYWu1Aa2IRYG9/kN/GoA7rtrH1keKh7WW0k+W9lEyqdS1N9Fu5Jp1C3S7I3ixwbEV9jHklw0sciV43O+Q78t79yT0Wm/PRhxozf9dx7sbImv9w4f5R32u4MRj0amrT9VkFTf2CW2sIioqoFEGjLVt+kne9JUw5DAbC/bl4JphIbIltpPOhDdkNq6gAfoCJAIhH7f2HaMemUl6DrrfH3M6Yqok+VRJ3EcgIMzKoAuHgkaSyeIpWlPKT0Gi3WhaMWeBolY6PViU2dSfg2AcenR0WX1sTM1D76tzBuwfVScWVw31uOI6MhoD613zFkhrpXIJ2zxJ08CPYPHeypv2zr2sWyd2/Td2SWNp0uaLuHGI8kXxikvYxIv2JV0qm+eppOl9Jve2pZ2ko/qlJvau0WPBFv75fBYDYe86kCWzULZI7awqhnaoDyOil96k07OgKsfWu5gr7i50zBhDvsAGiYdzIH9jEIOvdE0fQmK0MYnjg+9G9xtNiHPSx9eLcQ6IJr7FqlDlovaOo7XNIRcqA65UBVWXp1U23i+o7ODBqz3iF81auzonuplcx26JV+dINGgMjvPyUS3wPUd3ZM8Me0AAPKxcz+nX1oNqKn+yPHz2MujQe48DZ36fR4LtcSeLF+4K8Vj2zGPbSfmbI8vr22j2zYigy0XVTXvCMzZHpi7XZcDLq5uRkJ/f+fJOWWXNY+jn+8qkqzxzVASrhiR9E5+HztU4snj+HnsmfJ61fajqm3HVNsTPLcdO5ZXwTu2CmGwoLr9MQUf+p388HDWh35ZHx3OaO8ywOC+dNXWsZb8/Py9e/f6+fm1tbWJO6IDfKBTfAt8KCd8h29cdTLJ8nNrojhiQc810+briuvaoCM2GT0CsF+ClqTdYdn8U0wFZl8EZaMDSqah0zWEWHSzP8SCoTDSDl3TgU/sOkKDzAq06RQZ2Cb242MHoP+fEEvzjJ6c0ZfyeyN7zSkZ7ByYUDHWsVcJsTqdbtSoUdczTZ8+vbtbeQ2I+6AwHagxpT3l5jBdwdAIPfeOLeSfgymweWplcF5FM8+wHoJARsnsHV84EQ7W+tfAJnupy+oB7+HLec0htr83KPCBjeOaaTJxL5SOKMl8ID0qtxQAuxCLDx1tJzjaDZD1Jn/ZNMznV2XnyWw2T5ky5Qc/+AFwu2DBgl/96lfHjx+vr6+HNW5vb29ubm5oaKgD1de3traaTKacnJzTp08bjUakNjXSa7QtLS3wzLiDpLS0tI6ODuQEIamxsbGzsxNNoELcV5ocIqGLeqP55U2x/MgLjLkeOMVL/fbXaZFZZUXVbaV1Hdml9d6xBbPWi8ff9I6rcMi7wvJg7S7HsgCxd9Fvd6i2cSqNLqWEh+SyqLnTOGW+iNuB2IiSuvbxHsLE6Bix9uZ6CIQyJme/BBgmAbHCuEClbqqACuWH+wPQ94BYlXUdO0ztUYW9EXtcJAxEl+YgGfDp/TxW3dIJxA5AAyMWYPvRj34E14rzrq4uAAyx8U033YSTJUuW3H///b/+9a+B55/85CcvvfTS7Nmzf/jDHyL/M88888477/z0pz8tKCh49tlnvby8Zs2adfPNN//iF7+46667kHrrrbcC6uPHj1+3bl1iYuKIESNmzpwpWhwGIRipau58bm24gCIY052f99AGqRtt0/FCl/8gyxj3INiz0R4BGw5lGOgvtpL6lIqGTnr6f3cUDwMOTL5cxGJmNMPH0q/tqBcvbqD/d2c8/787MAqvb4lhicFDbgVFzLL85FVALPTM0hJi4WOpyoHofxyxZAGvNGLhY4dbGdfm6A2KAWhQiAUg//rXv+IcjvH8+fOHDh1CkAykAa4CscDqd999d+DAAYTNoaGhcXFxOHn88cfFccaMGQ8++CDOo6OjIyMjd+7c+cQTT+DS09MTiF2/fv2iRYtwAisADItGh0Y8CPCTLZ3GFftTb1f5jaZN4EB+WMpvQZCzAtO5mPd3Lwo8knCO1m3QG83Z4WMMiOWomKzDWNURXTL9ZbZhjaKV+O8V3znvMD1RcA+YvS6spK51whw/N3rAcOSNLVH0u4VhhfEQCmv+J1YEsqhw2gFbNdm8IqAJpGQaOiXmEWLp/7Ch2PjIkHwszKjg1VcZsWPoRRc1R8Wiv0MmBbFrxN9qJVZZo2IlxxAIRUjvWMfaaoNruTJRMQJdNze3W265BVjdtGnTyJEjX3vttRtuuAFQ/OMf/ygQO3nyZHjXt956C64Soe/Zs2dxgiQU/M1vfgPXOnXqVEA0Nzd30qRJSAI+4bThin/84x+///77t912G0ALh7x//36l1aGRsl4V4Mu+0LhiX+q9iwlFUAQvL+nZN4YNM37GyvCdwbn1/H6/Aiz6GobSFQLm88trc0prcktrcspqmtqxiht+bSAUliSptKblfHXz+Zqm8sY2syTVNHeK/1avsaMbWYYrMErJBZV1QlpwdZPDH74NjTq6urO576gWR6NJeXvROTW2dR8+WnAooUhwRlGNknBFqaCiye9okd/RwkMJxOcu0ua2kjYsCs8oVWQ+WpSQU6HcHRZBjpisC6I2P/DRAoOpZ4e5PxoYsQDBnj17gDdgFWD7wx/+sHv37j5R8SOPPLJq1aqtW7ci1oU7feyxxwBURMI4//bbb1H2P//5z+9//3vcnzt3LtAO3KpUqg8++ABJDzzwAO6MHTsWATOsgNLqsImAaJJkM1a22aWN2qTiPeG5XwTn7o/OC88sL6trNZBXpY06Jb+LXHRN0cCIBcHka7Va4HPFihXFxcUZGRlwp93d3QEBAUDp8uXLFy5cuGDBgi1btuTn5y9btgwr2Ozs7KCgoG3btsFFr1279vDhw2fOnEHS0qVLY2Nj9+7de/DgQWAel4sXL0aADQjFx8fj0mAYOJTvnwiH5EeUU9rJJOJ74kh7Ni64uuiapUEhFsQTXyGsVMdZCeHu22+//eKLLwLAcKRA8p+tBHcqTh5++OHk5OSQkJBHH30UHnX79u1Y2W7cuLGsrOzuu+8ODg5W6mVS2hs+CUDaIMp3+MT+4yIXXaM0WMTak5+f33XXXefh4QEX+sUXX8ycOROXcLb33Xffc889h0B38+bNcL9IvfHGGwHvP/3pTy+88AKWrFisrlmz5pVXXkFcjUsAGHi2Pt11kYtcNDANH7FYu77++uvvv//+yy+/fNttt/385z//r//6L4FYrHJ/9rOfrVy5Eue//OUvb775ZsS9OC8qKnr++eexmkVojSOWr2lp4k/LuchFLhoUDR+xgJy7u/vq1auBWED3pZdeAiYFYr/55pvExEREv6NGjdq3b9/IkSM//fTTESNG7N+//+OPP8Zlbm7uZ599duutt7rg6iIXDYmGj9hNmzYdZZo/f/6yZcvKy8snT57s5eU11kpY3E6YMKGmpgZ+FXhesWLFLbfcAleMy+bmZqAXa1oXYl3koiHR8BErCB61rq4ONwX2LkUg7tios7Ozo6NDnIskkcdFLnLRIGk4iG1tbS0oKCgsLMQRZBrcE3MXuchFl0/DQayLXOSi74tciHWRi64lciHWRS66lsiFWBe56FoiF2Jd5KJriVyIdZGLriVyIdZFLrqWyIVYF7no2iGL5f8CjcOxwfDePB8AAAAASUVORK5CYII=';
+  var NT_RAW = [];          // 헤더 아래 원본 행
+  var NT_COL = {};          // {name, custNo, overdue} 컬럼 위치
+  var NT_MONTH_COLS = [];   // [{idx, month}] 시트 순서 그대로 (첫 번째 = 최신 미납월)
+  var NT_ROWS = [];         // 생성 대상 [{name, custNo, n, items:[{label, amount}], fileName}]
+  var NT_SEL = -1;
+  var ntYearTouched = false;
+
+  function ntNum(v){
+    if (v === null || v === undefined || v === '') return null;
+    var n = Number(String(v).replace(/,/g,''));
+    return isNaN(n) ? null : n;
+  }
+  function ntFmtAmt(v){ var n = ntNum(v); return n === null ? '-' : Math.round(n).toLocaleString('ko-KR'); }
+  function ntFmtDate(iso){
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+    return m ? (Number(m[1])+'. '+Number(m[2])+'. '+Number(m[3])+'.') : '';
+  }
+  function ntTodayIso(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  // 기존 Python(extract_customer_number)과 동일: 12자리 숫자 우선, 없으면 숫자만
+  function ntCustNo(raw){
+    if (raw === null || raw === undefined) return '';
+    var s = (typeof raw === 'number' && Number.isInteger(raw)) ? String(raw) : String(raw).trim();
+    var m = s.match(/\d{12}/);
+    return m ? m[0] : s.replace(/\D/g,'');
+  }
+  // 기존 Python(sanitize_filename)과 동일: 특수문자 -> '_', 공백 제거
+  function ntSanitize(name){ return String(name).trim().replace(/[\/\\:*?"<>|,]/g,'_').replace(/\s+/g,''); }
+  function ntCleanName(v){
+    if (v === null || v === undefined) return '';
+    var s = String(v).replace(/\u00A0/g,' ').trim();
+    return s.toLowerCase() === 'nan' ? '' : s;
+  }
+
+  function ntHandleFile(evt){
+    var file = evt.target.files[0];
+    if (!file) return;
+    var st = document.getElementById('nt-file-status');
+    st.textContent = '처리 중...'; st.className = 'nt-status';
+    var reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        var wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+        var ws = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true});
+
+        var h = -1;
+        for (var i=0; i<Math.min(rows.length, 10); i++){
+          if (rows[i] && rows[i].some(function(c){ return String(c||'').trim() === '연체개월'; })){ h = i; break; }
+        }
+        if (h === -1) throw new Error("'연체개월' 헤더를 찾을 수 없습니다");
+        var header = rows[h].map(function(c){ return String(c===null?'':c).trim(); });
+        NT_COL = { name:header.indexOf('고객명'), custNo:header.indexOf('고객번호'), overdue:header.indexOf('연체개월') };
+        if (NT_COL.name === -1) throw new Error("'고객명' 컬럼이 없습니다");
+        if (NT_COL.custNo === -1) throw new Error("'고객번호' 컬럼이 없습니다");
+
+        NT_MONTH_COLS = [];
+        header.forEach(function(c, idx){
+          var m = /^(\d{1,2})\s*월$/.exec(c);
+          if (m) NT_MONTH_COLS.push({idx:idx, month:Number(m[1])});
+        });
+        if (NT_MONTH_COLS.length < 2) throw new Error("'11월' 같은 월 컬럼을 2개 이상 찾을 수 없습니다");
+
+        NT_RAW = rows.slice(h+1);
+        ntYearTouched = false;
+        ntSetDefaultYear();
+        ntRefreshAll();
+        st.textContent = '반영완료'; st.className = 'nt-status ok';
+      }catch(err){
+        NT_RAW = []; NT_ROWS = []; ntRefreshAll();
+        st.textContent = '오류: '+err.message; st.className = 'nt-status err';
+      }
+      evt.target.value = ''; // 같은 파일 재업로드 허용
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  // 최신 미납월이 기준일의 월 이상이면 전년도로 추정 (예: 기준일 2026-01-09, 11월 -> 2025년)
+  function ntSetDefaultYear(){
+    if (!NT_MONTH_COLS.length) return;
+    var base = document.getElementById('nt-base-date').value || ntTodayIso();
+    var by = Number(base.slice(0,4)), bm = Number(base.slice(5,7));
+    var lm = NT_MONTH_COLS[0].month;
+    document.getElementById('nt-latest-year').value = (lm >= bm) ? by-1 : by;
+  }
+  function ntOnBaseDateChange(){
+    if (!ntYearTouched) ntSetDefaultYear();
+    ntRefreshAll();
+  }
+
+  // 월 컬럼 k번째(0=최신)의 "YYYY년 M월분" 라벨. 월이 거꾸로 넘어가면(1월 -> 12월) 연도를 하나 뺌
+  function ntMonthLabels(count){
+    var y = Number(document.getElementById('nt-latest-year').value) || new Date().getFullYear();
+    var out = [];
+    for (var k=0; k<count && k<NT_MONTH_COLS.length; k++){
+      if (k > 0 && NT_MONTH_COLS[k].month > NT_MONTH_COLS[k-1].month) y--;
+      out.push(y+'년 '+NT_MONTH_COLS[k].month+'월분');
+    }
+    return out;
+  }
+
+  function ntBuildTargets(){
+    NT_ROWS = [];
+    var excl = {over:0, noname:0};
+    var used = {};
+    var labels = ntMonthLabels(2);
+    NT_RAW.forEach(function(row){
+      if (!row) return;
+      var ov = String(row[NT_COL.overdue]===null||row[NT_COL.overdue]===undefined ? '' : row[NT_COL.overdue]).trim();
+      var ovNum = Number(ov);
+      if (ov === '' || isNaN(ovNum) || ovNum < 1) return;          // 0개월·빈칸·헤더 반복행
+      if (ovNum >= 3){ excl.over++; return; }                        // 3개월 이상은 별도 절차
+      var n = ovNum; // 1 또는 2
+      var name = ntCleanName(row[NT_COL.name]);
+      if (!name){ excl.noname++; return; }
+      var custNo = ntCustNo(row[NT_COL.custNo]);
+      var items = [], total = 0;
+      for (var k=0; k<n; k++){
+        var amt = ntNum(row[NT_MONTH_COLS[k].idx]);
+        items.push({label:labels[k], amount:amt});
+        total += amt || 0;
+      }
+      var base = ntSanitize(custNo ? name+'_'+custNo : name);
+      var fileName = base+'.pdf';
+      if (used[fileName]){ used[fileName]++; fileName = base+'('+used[fileName]+').pdf'; } else used[fileName] = 1;
+      NT_ROWS.push({name:name, custNo:custNo, n:n, items:items, total:total, fileName:fileName});
+    });
+    NT_ROWS.sort(function(a,b){ return a.n - b.n || a.name.localeCompare(b.name,'ko'); });
+    return excl;
+  }
+
+  function ntRefreshAll(){
+    var hint = document.getElementById('nt-month-hint');
+    var ml = document.getElementById('nt-latest-month-label');
+    if (NT_MONTH_COLS.length){
+      ml.textContent = NT_MONTH_COLS[0].month+'월';
+      hint.textContent = '엑셀의 첫 번째 월 컬럼('+NT_MONTH_COLS[0].month+'월)을 최신 미납월로 사용합니다. 2개월 안내문에는 '+ntMonthLabels(2).join(', ')+'이 표시됩니다. 연도가 다르면 직접 고쳐주세요.';
+    } else {
+      ml.textContent = '-월';
+    }
+    var excl = NT_RAW.length ? ntBuildTargets() : {over:0, noname:0};
+    if (!NT_RAW.length) NT_ROWS = [];
+
+    // 요약 칩
+    var chips = document.getElementById('nt-chips');
+    chips.innerHTML = '';
+    if (NT_RAW.length){
+      var c1 = NT_ROWS.filter(function(r){ return r.n===1; }).length, c2 = NT_ROWS.length - c1;
+      [['nt-chip m1','1개월 '+c1+'건'], ['nt-chip m2','2개월 '+c2+'건'], ['nt-chip','생성 합계 '+NT_ROWS.length+'건'],
+       ['nt-chip','제외: 3개월 이상 '+excl.over+'건 · 고객명 없음 '+excl.noname+'건']].forEach(function(p){
+        var s = document.createElement('span'); s.className = p[0]; s.textContent = p[1]; chips.appendChild(s);
+      });
+    }
+
+    // 대상 목록 (고객 데이터는 textContent로만 넣음)
+    var body = document.getElementById('nt-list-body');
+    body.innerHTML = '';
+    if (!NT_ROWS.length){
+      var tr0 = document.createElement('tr'); var td0 = document.createElement('td');
+      td0.colSpan = 5; td0.className = 'nt-empty';
+      td0.textContent = NT_RAW.length ? '연체 1·2개월 대상 고객이 없습니다' : '엑셀을 업로드하면 대상 고객이 표시됩니다';
+      tr0.appendChild(td0); body.appendChild(tr0);
+    }
+    NT_ROWS.forEach(function(r, i){
+      var tr = document.createElement('tr');
+      [[r.name,'l'], [r.custNo,''], [r.n+'개월',''], [Math.round(r.total).toLocaleString('ko-KR'),'r'], [r.fileName,'l']].forEach(function(c){
+        var td = document.createElement('td'); td.textContent = c[0]; if (c[1]) td.className = c[1]; tr.appendChild(td);
+      });
+      tr.onclick = function(){ ntSelect(i); };
+      body.appendChild(tr);
+    });
+
+    document.getElementById('nt-gen-btn').disabled = !NT_ROWS.length;
+    ntSelect(NT_ROWS.length ? Math.min(Math.max(NT_SEL,0), NT_ROWS.length-1) : -1);
+  }
+
+  // ---- 안내문 양식 (Word 양식 1개월/2개월을 HTML로 옮긴 것) ----
+  function ntBuildNotice(rec){
+    var page = document.createElement('div');
+    page.className = 'np-page';
+    var paras = (rec.n === 1)
+      ? '<li>귀 사용자의 무궁한 발전을 기원합니다.</li>'+
+        '<li>열요금 미납 현황을 아래와 같이 안내하오니 조속히 납부하시기 바랍니다. 아울러, 열공급규정 제63조(요금의 연체료)에 의거하여 열요금 연체료를 청구할 예정이오니 업무에 참고하시기 바랍니다.</li>'
+      : '<li>귀 사용자의 무궁한 발전을 기원합니다.</li>'+
+        '<li>열요금 미납 현황을 아래와 같이 안내하오니, 조속히 납부하시기 바랍니다. 현재 열요금 장기 체납 중으로 열공급규정 제24조(고객의 책임으로 인한 공급 정지) 및 제62조(요금의 납부)에 의거 <b>"열공급 정지"</b>사유에 해당합니다.</li>'+
+        '<li>아울러, 열공급 정지가 유예된 사용자는 열공급 정지 유예 확정 월부터 연 6%에 해당하는 연체료를 매월 추가로 납부하여야 하며, 열공급규정 제63조(요금의 연체료)에 의거하여 열요금 연체료를 청구할 예정이오니 업무에 참고하시기 바랍니다.</li>';
+    page.innerHTML =
+      '<div class="np-head"><div class="np-name"></div><div class="np-title">고객님의 열요금 미납 안내</div></div>'+
+      '<ol class="np-body">'+paras+'</ol>'+
+      '<div class="np-sec">□ 미납 현황 (<span class="np-date"></span> 기준)</div>'+
+      '<table class="np-table"><thead><tr><th style="width:34%;">구분</th><th style="width:33%;">미납금액(원)</th><th>비고</th></tr></thead><tbody></tbody></table>'+
+      '<div class="np-sec">□ 납부계좌 안내</div>'+
+      '<ul class="np-acct"><li>은 행 명 : 우리은행</li><li>계좌번호 : <b>1005-603-148101</b></li><li>예 금 주 : 청라에너지 ㈜.&nbsp;&nbsp;끝.</li></ul>'+
+      '<div class="np-logo"><img alt="청라에너지주식회사" src="'+NT_LOGO+'"></div>';
+    page.querySelector('.np-name').textContent = rec.name;
+    page.querySelector('.np-date').textContent = ntFmtDate(document.getElementById('nt-base-date').value);
+    var tb = page.querySelector('.np-table tbody');
+    rec.items.forEach(function(it){
+      var tr = document.createElement('tr');
+      [[it.label,''], [ntFmtAmt(it.amount),'amt'], ['연체료 일할계산','']].forEach(function(c){
+        var td = document.createElement('td'); td.textContent = c[0]; if (c[1]) td.className = c[1]; tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+    return page;
+  }
+
+  function ntSelect(i){
+    NT_SEL = i;
+    var trs = document.querySelectorAll('#nt-list-body tr');
+    trs.forEach(function(tr, k){ tr.classList.toggle('sel', k === i && NT_ROWS.length > 0); });
+    var wrap = document.getElementById('nt-preview-wrap');
+    var tag = document.getElementById('nt-preview-tag');
+    wrap.querySelectorAll('.nt-preview-stage').forEach(function(s){ s.remove(); });
+    document.getElementById('nt-preview-empty').style.display = (i < 0) ? '' : 'none';
+    if (i < 0){ tag.textContent = '-'; return; }
+    var rec = NT_ROWS[i];
+    tag.textContent = rec.n+'개월 양식 · '+rec.fileName;
+    var stage = document.createElement('div');
+    stage.className = 'nt-preview-stage';
+    stage.appendChild(ntBuildNotice(rec));
+    wrap.appendChild(stage);
+    ntFitPreview();
+  }
+
+  // 미리보기는 A4(1123x794px) 원본을 패널 크기에 맞춰 축소해서 보여줌
+  function ntFitPreview(){
+    var wrap = document.getElementById('nt-preview-wrap');
+    var stage = wrap.querySelector('.nt-preview-stage');
+    if (!stage || !wrap.clientWidth) return;
+    var s = Math.min((wrap.clientWidth-24)/1123, (wrap.clientHeight-24)/794);
+    if (s <= 0) return;
+    stage.style.width = (1123*s)+'px';
+    stage.style.height = (794*s)+'px';
+    stage.querySelector('.np-page').style.transform = 'scale('+s+')';
+  }
+  window.addEventListener('resize', ntFitPreview);
+
+  function ntSetProgress(done, total, text, cls){
+    document.getElementById('nt-progress-fill').style.width = (total ? done/total*100 : 0)+'%';
+    var st = document.getElementById('nt-gen-status');
+    st.textContent = text; st.className = 'nt-status' + (cls ? ' '+cls : '');
+  }
+
+  async function ntGenerate(){
+    if (!NT_ROWS.length) return;
+    var dir = null;
+    // 폴더 선택 창은 반드시 클릭 직후에 열어야 함 (브라우저 보안 규칙)
+    if (window.showDirectoryPicker){
+      try{ dir = await window.showDirectoryPicker({mode:'readwrite'}); }
+      catch(e){
+        if (e && e.name === 'AbortError'){ ntSetProgress(0,0,'폴더 선택이 취소되었습니다'); return; }
+        ntSetProgress(0,0,'폴더를 열 수 없습니다: '+e.message,'err'); return;
+      }
+    }
+    if (!window.html2canvas || !window.jspdf || (!dir && !window.JSZip)){
+      ntSetProgress(0,0,'PDF 라이브러리를 불러오지 못했습니다 (인터넷 연결 확인)','err'); return;
+    }
+
+    var btn = document.getElementById('nt-gen-btn');
+    btn.disabled = true;
+    var host = document.createElement('div');
+    host.style.cssText = 'position:fixed; left:-20000px; top:0; width:1123px; height:794px; pointer-events:none;';
+    document.body.appendChild(host);
+    var zip = dir ? null : new window.JSZip();
+    var total = NT_ROWS.length, ok = 0, fails = [];
+
+    try{
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      for (var i=0; i<total; i++){
+        var rec = NT_ROWS[i];
+        ntSetProgress(i, total, (i+1)+' / '+total+' 생성 중...');
+        try{
+          host.innerHTML = '';
+          var page = ntBuildNotice(rec);
+          host.appendChild(page);
+          var img = page.querySelector('img');
+          if (img && img.decode){ try{ await img.decode(); }catch(e){} }
+          var canvas = await window.html2canvas(page, {scale:2, backgroundColor:'#ffffff', logging:false});
+          var pdf = new window.jspdf.jsPDF({orientation:'landscape', unit:'mm', format:'a4', compress:true});
+          pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 297, 210);
+          var blob = pdf.output('blob');
+          if (dir){
+            var fh = await dir.getFileHandle(rec.fileName, {create:true});
+            var w = await fh.createWritable();
+            await w.write(blob);
+            await w.close();
+          } else {
+            zip.file(rec.fileName, blob);
+          }
+          ok++;
+        }catch(err){
+          fails.push(rec.fileName);
+          console.error('[미납안내문] '+rec.fileName, err);
+        }
+      }
+      if (zip && ok){
+        var zblob = await zip.generateAsync({type:'blob'});
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(zblob);
+        a.download = '미납안내문_'+(document.getElementById('nt-base-date').value || ntTodayIso()).replace(/-/g,'')+'.zip';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+      }
+      var where = dir ? '"'+dir.name+'" 폴더에' : 'ZIP으로';
+      var msg = '완료: '+ok+'건 '+where+' 저장' + (fails.length ? ' · 실패 '+fails.length+'건 ('+fails.slice(0,3).join(', ')+(fails.length>3?' 외':'')+')' : '');
+      ntSetProgress(total, total, msg, fails.length ? 'err' : 'ok');
+    }finally{
+      host.remove();
+      btn.disabled = !NT_ROWS.length;
+    }
+  }
+
+  (function ntInit(){
+    document.getElementById('nt-base-date').value = ntTodayIso();
+  })();
+</script>
+
 </body>
 </html>
