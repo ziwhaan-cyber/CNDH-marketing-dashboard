@@ -883,6 +883,16 @@
                 <div class="nt-hint">Chrome·Edge에서는 폴더 선택 창이 뜨고 그 폴더에 바로 저장됩니다. 그 외 브라우저는 ZIP 파일로 다운로드됩니다. 파일명은 기존 발송 스크립트와 같은 "고객명_고객번호.pdf" 형식입니다.</div>
               </div>
 
+              <div class="nt-step">
+                <div class="nt-step-head"><span class="nt-step-num">5</span>메일 발송 <span id="nt-srv-badge" class="nt-chip" style="font-weight:700;">발송도우미 확인 중...</span></div>
+                <div class="nt-row">
+                  <button type="button" class="nt-gen-btn" id="nt-send-btn" onclick="ntSendMail()" disabled style="background:var(--navy);">Outlook으로 발송</button>
+                  <div class="nt-progress"><div class="nt-progress-fill" id="nt-send-fill"></div></div>
+                  <span class="nt-status" id="nt-send-status"></span>
+                </div>
+                <div class="nt-hint">먼저 4단계에서 PDF를 생성해야 발송할 수 있습니다. PC에서 "발송도우미"(파이썬)를 실행해 둔 상태여야 하며, 발송 직전에 대상 건수를 한 번 더 확인합니다.</div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -3833,7 +3843,7 @@
     btn.classList.add('active');
     document.querySelectorAll('#page-arrears .arr-tab').forEach(function(t){ t.classList.remove('active'); });
     document.getElementById(target).classList.add('active');
-    if (target === 'arr-tab-notice') ntFitPreview();
+    if (target === 'arr-tab-notice'){ ntFitPreview(); ntPingServer(); }
   }
 
   // ===== [신규] 미납안내문 생성 =====
@@ -3848,6 +3858,8 @@
   var NT_ROWS = [];         // 생성 대상 [{name, custNo, email, n, items:[{label, amount}], fileName}]
   var NT_SEL = -1;
   var ntYearTouched = false;
+  var NT_PDFS = [];                                   // 이번에 생성한 PDF (발송용, 메모리에만 보관)
+  var NT_SEND_URL = 'http://127.0.0.1:8765';          // PC에서 실행하는 "발송도우미"(파이썬) 주소
 
   function ntNum(v){
     if (v === null || v === undefined || v === '') return null;
@@ -4176,6 +4188,8 @@
     document.body.appendChild(host);
     var zip = dir ? null : new window.JSZip();
     var total = NT_ROWS.length, ok = 0, fails = [];
+    NT_PDFS = [];
+    ntUpdateSendBtn();
 
     try{
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
@@ -4200,6 +4214,7 @@
           } else {
             zip.file(rec.fileName, blob);
           }
+          NT_PDFS.push({fileName:rec.fileName, name:rec.name, email:rec.email, months:rec.n, pdf:await ntBlobToBase64(blob)});
           ok++;
         }catch(err){
           fails.push(rec.fileName);
@@ -4220,11 +4235,99 @@
     }finally{
       host.remove();
       btn.disabled = !NT_ROWS.length;
+      ntUpdateSendBtn();
+    }
+  }
+
+  // ===== [신규] 메일 발송: PC에서 실행 중인 "발송도우미"(파이썬 + Outlook)에 넘겨서 보냄 =====
+  // 브라우저는 Outlook을 직접 조종할 수 없어서, 내 PC에서 도는 작은 프로그램에 발송을 맡기는 구조.
+  // 고객 정보와 PDF는 내 PC 안에서만 오가고 외부로 나가지 않음.
+  function ntBlobToBase64(blob){
+    return new Promise(function(resolve, reject){
+      var r = new FileReader();
+      r.onload = function(){ resolve(String(r.result).split(',')[1]); };
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+  }
+
+  function ntSendable(){ return NT_PDFS.filter(function(p){ return p.email; }); }
+
+  function ntUpdateSendBtn(){
+    var btn = document.getElementById('nt-send-btn');
+    if (!btn) return;
+    var n = ntSendable().length;
+    btn.disabled = !(n && window.NT_SRV_OK);
+    btn.textContent = n ? ('Outlook으로 발송 ('+n+'건)') : 'Outlook으로 발송';
+  }
+
+  // 발송도우미가 켜져 있는지 확인
+  function ntPingServer(){
+    var badge = document.getElementById('nt-srv-badge');
+    if (!badge) return;
+    fetch(NT_SEND_URL+'/ping', {method:'GET'})
+      .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('bad')); })
+      .then(function(){
+        window.NT_SRV_OK = true;
+        badge.textContent = '발송도우미 연결됨';
+        badge.style.background = '#E3F2EA'; badge.style.color = 'var(--good)'; badge.style.borderColor = '#E3F2EA';
+        ntUpdateSendBtn();
+      })
+      .catch(function(){
+        window.NT_SRV_OK = false;
+        badge.textContent = '발송도우미 미실행 (발송도우미.bat 실행 후 다시 확인)';
+        badge.style.background = '#FBEAE6'; badge.style.color = 'var(--bad)'; badge.style.borderColor = '#FBEAE6';
+        ntUpdateSendBtn();
+      });
+  }
+
+  async function ntSendMail(){
+    var items = ntSendable();
+    if (!items.length) return;
+    var noMail = NT_PDFS.length - items.length;
+    var msg = '아래 내용으로 메일을 발송합니다.\n\n'
+            + '· 발송 대상: '+items.length+'건\n'
+            + (noMail ? '· 이메일 없어 제외: '+noMail+'건\n' : '')
+            + '\n발송은 취소할 수 없습니다. 진행할까요?';
+    if (!confirm(msg)) return;
+
+    var btn = document.getElementById('nt-send-btn');
+    var fill = document.getElementById('nt-send-fill');
+    var st = document.getElementById('nt-send-status');
+    btn.disabled = true;
+    fill.style.width = '30%';
+    st.textContent = '발송도우미에 전달 중... (PC 화면의 확인창을 확인하세요)'; st.className = 'nt-status';
+
+    try{
+      var res = await fetch(NT_SEND_URL+'/send', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({items:items, noMail:noMail})
+      });
+      var data = await res.json();
+      fill.style.width = '100%';
+      if (data.cancelled){
+        st.textContent = 'PC에서 발송이 취소되었습니다'; st.className = 'nt-status';
+      } else if (data.error){
+        st.textContent = '오류: '+data.error; st.className = 'nt-status err';
+      } else {
+        var failTxt = (data.failed && data.failed.length) ? (' · 실패 '+data.failed.length+'건') : '';
+        st.textContent = '발송 완료: '+data.sent+'건'+failTxt;
+        st.className = 'nt-status ' + ((data.failed && data.failed.length) ? 'err' : 'ok');
+      }
+    }catch(e){
+      fill.style.width = '0%';
+      st.textContent = '발송도우미에 연결할 수 없습니다. 발송도우미.bat이 실행 중인지 확인하세요.';
+      st.className = 'nt-status err';
+      window.NT_SRV_OK = false;
+    }finally{
+      ntUpdateSendBtn();
     }
   }
 
   (function ntInit(){
     document.getElementById('nt-base-date').value = ntTodayIso();
+    ntPingServer();
   })();
 </script>
 
