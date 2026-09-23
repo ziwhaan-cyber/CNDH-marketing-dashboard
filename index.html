@@ -282,7 +282,8 @@
   .nt-list tbody tr.sel td:first-child{ border-left:3px solid var(--rust); }
   .nt-empty{ font-size:0.7vw; color:var(--text-soft); text-align:center; padding:2vw 0; }
   .nt-gen-btn{ background:var(--rust); font-size:0.78vw; padding:0.42vw 1.1vw; }
-  .nt-gen-btn:disabled{ background:#C9C4B8; cursor:not-allowed; }
+  .nt-gen-btn.nt-send{ background:var(--navy); }
+  .nt-gen-btn:disabled, .nt-gen-btn.nt-send:disabled{ background:#C9C4B8; cursor:not-allowed; }
   .nt-progress{ flex:1; min-width:6vw; height:0.45vw; background:#EAE7DF; border-radius:3px; overflow:hidden; }
   .nt-progress-fill{ height:100%; width:0%; background:var(--good); transition:width .15s; }
 
@@ -884,9 +885,9 @@
               </div>
 
               <div class="nt-step">
-                <div class="nt-step-head"><span class="nt-step-num">5</span>메일 발송 <span id="nt-srv-badge" class="nt-chip" style="font-weight:700;">발송도우미 확인 중...</span></div>
+                <div class="nt-step-head"><span class="nt-step-num">5</span>메일 발송 <span id="nt-srv-badge" class="nt-chip" style="font-weight:700; cursor:pointer;" onclick="ntPingServer()" title="클릭하면 다시 확인합니다">발송도우미 확인 중...</span></div>
                 <div class="nt-row">
-                  <button type="button" class="nt-gen-btn" id="nt-send-btn" onclick="ntSendMail()" disabled style="background:var(--navy);">Outlook으로 발송</button>
+                  <button type="button" class="nt-gen-btn nt-send" id="nt-send-btn" onclick="ntSendMail()" disabled>Outlook으로 발송</button>
                   <div class="nt-progress"><div class="nt-progress-fill" id="nt-send-fill"></div></div>
                   <span class="nt-status" id="nt-send-status"></span>
                 </div>
@@ -4160,6 +4161,13 @@
   }
   window.addEventListener('resize', ntFitPreview);
 
+  // 미납안내 탭이 열려 있는 동안에는 발송도우미 상태를 주기적으로 다시 확인 (나중에 켜도 반영되도록)
+  setInterval(function(){
+    var tab = document.getElementById('arr-tab-notice');
+    var page = document.getElementById('page-arrears');
+    if (tab && page && tab.classList.contains('active') && page.classList.contains('active')) ntPingServer();
+  }, 5000);
+
   function ntSetProgress(done, total, text, cls){
     document.getElementById('nt-progress-fill').style.width = (total ? done/total*100 : 0)+'%';
     var st = document.getElementById('nt-gen-status');
@@ -4257,7 +4265,7 @@
     var btn = document.getElementById('nt-send-btn');
     if (!btn) return;
     var n = ntSendable().length;
-    btn.disabled = !(n && window.NT_SRV_OK);
+    btn.disabled = !n;
     btn.textContent = n ? ('Outlook으로 발송 ('+n+'건)') : 'Outlook으로 발송';
   }
 
@@ -4275,7 +4283,7 @@
       })
       .catch(function(){
         window.NT_SRV_OK = false;
-        badge.textContent = '발송도우미 미실행 (발송도우미.bat 실행 후 다시 확인)';
+        badge.textContent = '발송도우미 미실행 (클릭하면 다시 확인)';
         badge.style.background = '#FBEAE6'; badge.style.color = 'var(--bad)'; badge.style.borderColor = '#FBEAE6';
         ntUpdateSendBtn();
       });
@@ -4284,6 +4292,19 @@
   async function ntSendMail(){
     var items = ntSendable();
     if (!items.length) return;
+    var st0 = document.getElementById('nt-send-status');
+    // 눌린 시점에 발송도우미가 살아있는지 한 번 더 확인 (창을 나중에 켰을 수도 있어서)
+    try{
+      var ping = await fetch(NT_SEND_URL+'/ping');
+      if (!ping.ok) throw new Error('bad');
+      await ping.json();
+      ntPingServer();
+    }catch(e){
+      ntPingServer();
+      st0.textContent = '발송도우미에 연결할 수 없습니다. 발송도우미.bat 창이 켜져 있는지 확인하세요.';
+      st0.className = 'nt-status err';
+      return;
+    }
     var noMail = NT_PDFS.length - items.length;
     var msg = '아래 내용으로 메일을 발송합니다.\n\n'
             + '· 발송 대상: '+items.length+'건\n'
