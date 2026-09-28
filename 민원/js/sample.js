@@ -171,22 +171,6 @@ function buildSampleData(){
 }
 
 // ----- 샘플 모드 -----
-// 샘플을 불러온 상태인지 기억해 둔다. 엑셀을 올리면 샘플은 통째로 버리고 올린 데이터만 남긴다.
-const SAMPLE_LS='voc_im_sample';
-function isSampleMode(){try{return localStorage.getItem(SAMPLE_LS)==='1';}catch(e){return false;}}
-function setSampleMode(on){
-  try{on?localStorage.setItem(SAMPLE_LS,'1'):localStorage.removeItem(SAMPLE_LS);}catch(e){}
-  // 샘플로 돌린 AI 결과가 실제 데이터 화면에 남지 않게, 모드가 바뀔 때 비운다
-  try{localStorage.removeItem('voc_im_aiResult');}catch(e){}
-}
-function loadSample(){
-  if(DATA.length&&!isSampleMode()&&!confirm(`현재 저장된 ${DATA.length}건을 지우고 샘플 데이터를 불러옵니다.`))return;
-  DATA=buildSampleData();saveData();setSampleMode(true);
-  DASH_MONTH=null;DASH_MODE_OVERRIDE=null;IMPORT_NOTE='';
-  renderAll();toast('샘플 데이터를 불러왔습니다');
-}
-function clearSample(){
-  DATA=[];saveData();setSampleMode(false);
-  DASH_MONTH=null;DASH_MODE_OVERRIDE=null;IMPORT_NOTE='';
-  renderAll();toast('샘플 데이터를 지웠습니다');
-}
+// 샘플은 저장하지 않는다(직접 올린 엑셀을 덮어쓰지 않기 위해). 출처가 sample이면 열 때마다 새로 만든다.
+function isSampleMode(){return getSource()==='sample';}
+function loadSample(){setSource('sample');toast('샘플 데이터를 불러왔습니다');}

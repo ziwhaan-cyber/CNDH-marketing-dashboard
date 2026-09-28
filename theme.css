@@ -1,0 +1,182 @@
+/* ===== 공통 UI 테마 =====
+   세 화면(연체·미납·민원)의 색과 모양을 맞추는 파일.
+   기준은 미납관리 대시보드의 팔레트(남색 헤더 + 파랑 강조 + 밝은 회색 배경).
+   색을 바꾸고 싶으면 아래 :root 값만 고치면 세 화면이 함께 바뀐다.
+   각 화면은 이 파일을 <link>로 한 줄 불러오기만 한다. */
+
+:root{
+  --ui-bg:#F4F6F8;          /* 배경 */
+  --ui-card:#FFFFFF;        /* 카드·패널 */
+  --ui-header:#132743;      /* 상단 헤더 */
+  --ui-accent:#236B7A;      /* 강조(선택된 탭, 주요 버튼) — 채도를 낮춘 딥 티얼 */
+  --ui-accent-soft:#E4EFF1; /* 강조의 옅은 톤 */
+  --ui-line:#DDE2E8;        /* 테두리 */
+  --ui-ink:#1B2430;         /* 본문 글자 */
+  --ui-muted:#6B7787;       /* 보조 글자 */
+  --ui-up:#C4564A;          /* 증가·경고 — 파랑과 부딪히지 않게 톤 낮춤 */
+  --ui-down:#3AA5C3;        /* 감소 */
+  --ui-radius:10px;
+}
+
+/* ---------- 대시보드 뼈대(연체 화면) ---------- */
+:root{
+  --navy:var(--ui-accent); --navy-2:var(--ui-accent);
+  --bg:var(--ui-bg); --panel:var(--ui-card); --line:var(--ui-line);
+  --text:var(--ui-ink); --text-soft:var(--ui-muted);
+  --steel:#4A7A96; --steel-soft:#CFE0EA;
+}
+body{ background:var(--ui-bg) !important; }
+.header{ background:var(--ui-header) !important; }
+.panel{ border-radius:var(--ui-radius) !important; }
+.page-btn{ border-radius:var(--ui-radius) var(--ui-radius) 0 0 !important; }
+.subnav-btn{ border-radius:20px !important; }
+/* 패널 제목은 글자를 검게 두고 밑줄만 강조색 — 파랑이 과하게 번지는 것을 막는다 */
+.panel-title{ color:var(--ui-ink) !important; border-bottom-color:var(--ui-accent) !important; }
+.chip{ background:var(--ui-accent) !important; }
+
+/* ---------- 민원 이슈 모니터링 ---------- */
+:root{
+  --ink:var(--ui-ink); --paper:var(--ui-bg); --card:var(--ui-card);
+  --line-soft:#EAEDF1; --muted:var(--ui-muted);
+  --teal:var(--ui-accent); --teal-soft:var(--ui-accent-soft);
+  --chip:#EEF1F4; --chip-ink:#4A5560;
+  --amber:var(--ui-up); --amber-soft:#FBEBE9;
+  --rose:var(--ui-up); --rose-soft:#FBEBE9;
+  --up:var(--ui-up); --down:var(--ui-down);
+}
+.card,.empty-card,.ai-card,.setup-card{ border:1px solid var(--ui-line); border-radius:var(--ui-radius); }
+.modal{ border-radius:var(--ui-radius); }
+.dash-sec-l{
+  font-size:13px; font-weight:700; color:var(--ui-ink); letter-spacing:0;
+  border-bottom:2px solid var(--ui-accent); padding-bottom:5px; margin:22px 0 9px;
+}
+.dash-sec-l .dash-sec-s,.dash-sec-l .ai-acts{ font-weight:500; }
+.btn{
+  border-radius:20px; border:1px solid var(--ui-line); background:#F7F8FA; color:var(--chip-ink);
+  font-size:12px; padding:4px 13px;          /* 대시보드 탭 버튼과 같은 높이(약 26px) */
+}
+.top-acts .btn{ font-size:12px; padding:4px 13px; }
+.source-bar .btn,.modal-foot .btn,.mode-sw .btn,.ai-acts .btn{ font-size:11.5px; padding:3px 11px; }
+.btn.ghost{ background:#fff; }
+.btn.primary{ background:var(--ui-accent); color:#fff; border-color:var(--ui-accent); }
+.btn.primary:hover{ background:#1B5460; }
+.chip{ border-radius:12px; }
+.brand h1{ font-weight:700; }
+
+/* ---------- 미납관리 대시보드 ---------- */
+/* 상단을 민원 화면과 같은 형태로 맞춘다: 짙은 박스 대신 흰 바탕 + 아래 구분선 */
+.dashboard-container{ max-width:none; padding:18px 22px 28px; }
+.dashboard-header{
+  background:none !important; color:var(--ui-ink) !important;
+  border-radius:0; border-bottom:1px solid var(--ui-line);
+  padding:0 0 16px; margin-bottom:18px; align-items:flex-end;
+}
+.dashboard-header h1{ font-size:17px; font-weight:700; color:var(--ui-ink); }
+.dashboard-header p{ color:var(--ui-muted); font-size:13px; margin-top:4px; }
+.header-meta{
+  color:var(--ui-muted) !important; font-size:12px;
+  display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:10px;
+}
+.header-meta #asof-date{ font-size:15px; font-weight:700; color:var(--ui-ink); margin-left:4px; }
+/* 기준일과 버튼을 같은 줄에, 안내 문구는 그 아래 한 줄로 */
+.upload-row{ display:contents; }   /* 버튼과 안내문구를 상위 줄에 직접 배치 */
+.signed-in-row{ display:flex; gap:8px; align-items:center; }
+.upload-btn{
+  background:var(--ui-accent) !important; border:1px solid var(--ui-accent) !important; color:#fff !important;
+  border-radius:20px !important; padding:4px 13px !important; font-size:12px !important; line-height:1.4;
+}
+.refresh-btn,.export-btn{
+  background:#fff !important; border:1px solid var(--ui-line) !important; color:#4A5560 !important;
+  border-radius:20px !important; padding:3px 11px !important; font-size:12px !important; line-height:1.4;
+}
+#gsheet-status{
+  order:99; width:100%; max-width:none !important; text-align:right !important;
+  color:var(--ui-muted) !important; font-size:11.5px !important; line-height:1.6; margin-top:2px;
+}
+#report-export-status,#overdue-export-status{ color:var(--ui-muted) !important; font-size:11.5px !important; }
+
+/* 섹션 제목과 카드도 민원 화면과 같은 규칙으로 */
+.section-title{
+  font-size:13px; font-weight:700; color:var(--ui-ink);
+  border-bottom:2px solid var(--ui-accent); padding-bottom:5px; margin:22px 0 9px 0;
+}
+.chart-container,.kpi-row > *,.table-container{
+  border:1px solid var(--ui-line); box-shadow:none !important; border-radius:var(--ui-radius);
+}
+
+/* ---------- AI 결과 표시 (민원·미납 공통) ----------
+   두 화면의 AI 결과가 같은 모양으로 보이게 하는 규칙.
+   미납 화면에서 AI를 붙일 때 아래 구조를 그대로 쓰면 된다:
+
+   <div class="ai-block">
+     <div class="ai-block-h">원인</div>
+     <div class="ai-item">
+       <div class="ai-item-t">무엇이 문제인지 한 줄</div>
+       <div class="ai-item-e"><b>근거</b>숫자나 실제 내용</div>
+     </div>
+   </div>
+   <div class="ai-foot">신뢰도 <b>보통</b> · 표본과 한계 설명</div>
+
+   원칙도 같이 맞춘다: 판정은 규칙이 하고 AI는 해석만, 근거를 못 대는 항목은 표시하지 않음. */
+.ai-block{ background:var(--ui-accent-soft); border-radius:var(--ui-radius); padding:12px 14px; margin-bottom:10px; }
+.ai-block.warn{ background:#F6EDE6; }
+.ai-block.risk{ background:#F7EAE8; }
+.ai-block-h{ font-size:12px; font-weight:700; color:var(--ui-accent); margin-bottom:6px; }
+.ai-block.warn .ai-block-h{ color:#A8653A; }
+.ai-block.risk .ai-block-h{ color:var(--ui-up); }
+.ai-item{ padding:6px 0; }
+.ai-item + .ai-item{ border-top:1px solid rgba(0,0,0,.06); }
+.ai-item-t{ font-size:13.5px; color:var(--ui-ink); line-height:1.6; }
+.ai-item-e{ font-size:12px; color:var(--ui-muted); line-height:1.6; margin-top:3px; }
+.ai-item-e b{ font-size:11px; color:var(--ui-accent); margin-right:6px; }
+.ai-tag{ font-size:11px; font-weight:600; padding:2px 7px; border-radius:4px; background:var(--ui-accent-soft); color:var(--ui-accent); }
+.ai-foot{ font-size:12px; color:var(--ui-muted); border-top:1px solid var(--ui-line); padding-top:10px; margin-top:12px; }
+.ai-foot b{ color:var(--ui-ink); }
+.ai-note{ font-size:11.5px; color:#8A5A2B; background:#FBF1E6; border-radius:6px; padding:3px 8px; display:inline-block; }
+
+/* 데이터 출처 줄 — 붉은 기 대신 차분한 톤으로 */
+.source-bar.src-sample{ background:#F6EEE6 !important; color:#8A5A2B !important; }
+.source-bar.src-link{ background:var(--ui-accent-soft) !important; color:#1D5763 !important; }
+
+/* 끼워 넣었을 때 제목 크기를 서로 맞춘다 */
+body.embed .brand h1{ font-size:17px; }
+
+/* 검색·필터 입력과 버튼 — 민원 화면의 입력 상자와 같은 모양으로 */
+.search-section{ box-shadow:none !important; border:1px solid var(--ui-line); padding:16px 18px !important; }
+.search-bar{ gap:8px !important; margin-bottom:12px !important; }
+#search-input,#table-filter{
+  border:1px solid var(--ui-line) !important; border-radius:6px !important;
+  padding:6px 11px !important; font-size:12.5px !important; background:#fff !important;
+  color:var(--ui-ink) !important; min-width:320px;
+}
+#search-input:focus,#table-filter:focus{ outline:none; border-color:var(--ui-accent) !important; }
+select{ border:1px solid var(--ui-line) !important; border-radius:6px !important;
+  padding:5px 9px !important; font-size:12.5px !important; background:#fff !important; }
+button#search-btn{
+  background:var(--ui-accent) !important; color:#fff !important; border:1px solid var(--ui-accent) !important;
+  border-radius:20px !important; padding:5px 16px !important; font-size:12px !important; font-weight:600;
+}
+button#search-btn:hover{ background:#1B5460 !important; }
+.pill-btn{ background:var(--ui-accent) !important; border-radius:12px !important; font-size:11px !important; padding:3px 9px !important; }
+.search-hint{ font-size:11.5px !important; color:var(--ui-muted) !important; }
+
+/* 민원 화면을 대시보드 안에서 한 단계 작게 — 대시보드 글자 크기에 맞춘다 */
+body.embed .wrap{ padding:8px 12px 20px; }
+body.embed .stat-cell .v{ font-size:22px; }
+body.embed .stat-cell{ padding:10px 12px; }
+body.embed .dash-sec-l{ margin:14px 0 6px; }
+body.embed .stat-line{ padding:5px 0; }
+body.embed .card{ padding:11px 13px; margin-bottom:9px; }
+
+/* 민원 화면 안의 색 정리 — 강조는 딥 티얼, 경고성만 따뜻한 색으로 */
+:root{ --amber:#B4593F; --amber-soft:#F4EAE5; --rose:#A8463A; --rose-soft:#F4E7E4; }
+.scope-t.mid{ color:var(--ui-accent) !important; background:var(--ui-accent-soft) !important; }  /* '진행 중' 표시 */
+.streak{ color:var(--ui-accent) !important; }                                                    /* 'N개월 연속' */
+.chg-tag.dn{ color:var(--ui-down) !important; background:#EFF1F3 !important; }
+.ai-sample,.source-bar.src-sample{ background:#F1EFEA !important; color:#6E6355 !important; }
+.ai-verdict.on{ color:var(--ui-accent) !important; background:var(--ui-accent-soft) !important; }
+.ai-conf .lv-높음{ color:var(--ui-accent) !important; }
+.pa-box-c{ background:var(--ui-accent-soft) !important; }
+.pa-box-c .pa-box-h{ color:var(--ui-accent) !important; }
+.pa-point-e b,.ai-action b,.ai-line b{ color:var(--ui-accent) !important; }
+.setup-card{ background:#FAF8F4 !important; }
