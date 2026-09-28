@@ -92,10 +92,18 @@ function readExcelFile(file){
 // 한 달치를 몰아서 올리는 운영 방식이라, 같은 달을 다시 올려도 중복이 쌓이지 않게 하기 위함.
 async function importExcel(file){
   let res;
+  // 1만 건이 넘으면 읽는 데 몇 초 걸린다. 아무 반응이 없으면 멈춘 줄 알기 때문에 표시해 준다.
+  toast('엑셀을 읽는 중…');
+  await new Promise(r=>setTimeout(r,30));
   try{res=await readExcelFile(file);}
   catch(e){alert('업로드 실패 — '+(e.message||e));return;}
   if(res.error){alert(`업로드 실패 — ${res.error}\n\n제목행에 '접수일'과 '키워드' 열이 있어야 합니다. template 폴더의 양식을 참고하세요.`);return;}
-  if(!res.rows.length){alert('읽을 수 있는 행이 없습니다. 접수일 형식을 확인하세요.');return;}
+  if(!res.rows.length){
+    alert(res.byHeader?'읽을 수 있는 행이 없습니다. 접수일 형식을 확인하세요.'
+      :'읽을 수 있는 행이 없습니다.\n제목행을 찾지 못했습니다 — 엑셀 파일이 맞는지, 접수일·키워드 열 이름이 있는지 확인하세요.');return;}
+  // 연도 오타(2062-08-15 같은 값)가 섞이면 기준 월이 엉뚱한 해로 튄다. 지우지는 않고 알려만 준다.
+  const todayY=new Date();const limit=new Date(todayY.getFullYear(),todayY.getMonth()+2,0);
+  const future=res.rows.filter(r=>new Date(r.date+'T00:00:00')>limit);
   const ym=r=>r.date.slice(0,7);
   const months=[...new Set(res.rows.map(ym))].sort();
   const sample=isSampleMode();
@@ -111,9 +119,10 @@ async function importExcel(file){
   DATA=DATA.filter(r=>!months.includes(ym(r))).concat(res.rows);
   DATA.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
   saveData();
-  IMPORT_NOTE=res.skipped.length
-    ?`최근 업로드에서 접수일 인식 실패 <b>${res.skipped.length}건</b> 제외 — 엑셀 행 ${res.skipped.slice(0,10).join(', ')}${res.skipped.length>10?' 외':''}`
-    :'';
+  IMPORT_NOTE=[
+    res.skipped.length?`최근 업로드에서 접수일 인식 실패 <b>${res.skipped.length}건</b> 제외 — 엑셀 행 ${res.skipped.slice(0,10).join(', ')}${res.skipped.length>10?' 외':''}`:'',
+    future.length?`접수일이 미래인 건 <b>${future.length}건</b> (${[...new Set(future.map(r=>r.date))].slice(0,3).join(', ')}${future.length>3?' 외':''}) — 연도 오타일 수 있습니다. 기준 월이 그 달로 잡힙니다.`:''
+  ].filter(Boolean).join('<br>');
   DASH_MONTH=null;DASH_MODE_OVERRIDE=null;   // 방금 올린 데이터의 마지막 달로 이동
   renderAll();
   toast(`${months.length}개월 · ${res.rows.length}건 반영했습니다`);
