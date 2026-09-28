@@ -520,6 +520,11 @@
   }
   .subnav-btn:hover{ background:#EFEDE7; }
   .subnav-btn.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+  /* [추가] 이슈 모니터링 탭 — 민원/ 폴더 화면을 그대로 표시 */
+  .voc-monitor-frame{
+    width:100%; height:100%; min-height:0; border:0; border-radius:0.6vw;
+    background:#fff; box-shadow:0 0 0 1px var(--line);
+  }
 
   .voc-tab{ display:none; min-height:0; }
   .voc-tab.active{ display:grid; }
@@ -914,6 +919,9 @@
           <button class="subnav-btn" data-voc-tab="voc-stats" onclick="showVocTab(this)">민원분석</button>
           <button class="subnav-btn" data-voc-tab="voc-voucher" onclick="showVocTab(this)">추가사항</button>
           <button class="subnav-btn" data-voc-tab="voc-list" onclick="showVocTab(this)">접수내용</button>
+          <!-- [추가] 이슈 모니터링 탭 — 민원/ 폴더의 화면을 불러온다.
+               다음 버전에도 이 버튼과 voc-monitor 패널, .voc-monitor-frame CSS, loadMonitorFrame 함수를 유지할 것 -->
+          <button class="subnav-btn" data-voc-tab="voc-monitor" onclick="showVocTab(this);loadMonitorFrame()">이슈 모니터링</button>
           <button class="subnav-btn" data-voc-tab="voc-data" onclick="showVocTab(this)">데이터</button>
         </div>
       </div>
@@ -1138,6 +1146,12 @@
       </div>
 
       <!-- ---------- 데이터 ---------- -->
+      <!-- ---------- [추가] 이슈 모니터링 ---------- -->
+      <div class="voc-tab" id="voc-monitor" style="grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); min-width:0;">
+        <iframe class="voc-monitor-frame" id="voc-monitor-frame" title="민원 이슈 모니터링"
+                data-src="민원/index.html?embed=1" src="about:blank" loading="lazy"></iframe>
+      </div>
+
       <div class="voc-tab" id="voc-data" style="grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(0,1fr); min-width:0;">
         <div class="voc-upload">
           <label for="voc-file-input">엑셀 업로드</label>
@@ -2298,6 +2312,12 @@
   // ===== [신규] 고객관리(민원) 페이지: VOC_최종본의 실제 접수 데이터 전체를 기반으로 모든 통계를 실시간 계산 =====
   // 필드 순서: [접수일, 고객명, 접수내용, 처리내용, 구분, 유형, 접수경로, 키워드, 대표지역, 상세지역, 접수주체, 계약종별, 에너지바우처구분, 해당월(접수일의 연-월만 추출)]
   var VOC_FULL = []; // 내장 스냅샷 제거 — 데이터는 엑셀 업로드로만 채워짐
+
+  // [추가] 이슈 모니터링 탭을 처음 열 때만 불러온다(첫 로딩을 늦추지 않기 위함)
+  function loadMonitorFrame(){
+    var f=document.getElementById('voc-monitor-frame');
+    if(f&&f.getAttribute('src')==='about:blank')f.setAttribute('src',f.getAttribute('data-src'));
+  }
 
   function showVocTab(btn){
     var target = btn.getAttribute('data-voc-tab');
