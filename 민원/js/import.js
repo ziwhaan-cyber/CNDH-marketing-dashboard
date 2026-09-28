@@ -106,16 +106,16 @@ async function importExcel(file){
   const future=res.rows.filter(r=>new Date(r.date+'T00:00:00')>limit);
   const ym=r=>r.date.slice(0,7);
   const months=[...new Set(res.rows.map(ym))].sort();
-  const sample=isSampleMode()||getSource()==='link';
+  const sample=isSampleMode();
   const oldCnt=sample?0:DATA.filter(r=>months.includes(ym(r))).length;
   const msg=[`시트: ${res.sheet}${res.byHeader?'':' (제목행 없음 → 14열 순서로 읽음)'}`,
     `읽은 행: ${res.rows.length}건`+(res.skipped.length?` · 접수일 인식 실패 ${res.skipped.length}건 제외`:''),
     `대상 월: ${months.join(', ')}`,
     '',
-    ...(sample?[`지금 화면은 ${sourceLabel().name}를 보고 있습니다. 올리면 '직접 올린 엑셀'로 바뀝니다(대시보드 데이터는 그대로 남습니다). 진행할까요?`]
+    ...(sample?['지금 보고 있는 샘플 데이터는 모두 지워지고, 올린 데이터로 바뀝니다. 진행할까요?']
       :[`위 월의 기존 데이터 ${oldCnt}건을 새 데이터 ${res.rows.length}건으로 교체합니다.`,'다른 월은 그대로 유지됩니다. 진행할까요?'])].join('\n');
   if(!confirm(msg))return;
-  if(sample){DATA=load(LS.data,[]);}   // 직접 올린 엑셀에 이어 붙인다
+  if(sample){DATA=[];setSampleMode(false);}
   DATA=DATA.filter(r=>!months.includes(ym(r))).concat(res.rows);
   DATA.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
   saveData();
@@ -123,8 +123,7 @@ async function importExcel(file){
     res.skipped.length?`최근 업로드에서 접수일 인식 실패 <b>${res.skipped.length}건</b> 제외 — 엑셀 행 ${res.skipped.slice(0,10).join(', ')}${res.skipped.length>10?' 외':''}`:'',
     future.length?`접수일이 미래인 건 <b>${future.length}건</b> (${[...new Set(future.map(r=>r.date))].slice(0,3).join(', ')}${future.length>3?' 외':''}) — 연도 오타일 수 있습니다. 기준 월이 그 달로 잡힙니다.`:''
   ].filter(Boolean).join('<br>');
-  try{localStorage.setItem(SRC_LS,'own');}catch(e){}
   DASH_MONTH=null;DASH_MODE_OVERRIDE=null;   // 방금 올린 데이터의 마지막 달로 이동
-  renderSourceBar();renderAll();
+  renderAll();
   toast(`${months.length}개월 · ${res.rows.length}건 반영했습니다`);
 }

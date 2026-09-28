@@ -14,9 +14,9 @@ function renderAsOfDate(){
 
 function renderAll(){
   const has=DATA.length>0;
-  renderSourceBar();
   document.getElementById('emptyState').hidden=has;
   document.getElementById('dashBody').hidden=!has;
+  document.getElementById('sampleBar').hidden=!(has&&isSampleMode());
   renderAsOfDate();
   if(!has)return;
   buildDashMonthPicker();
@@ -46,33 +46,12 @@ document.addEventListener('drop',e=>{
   if(f&&/\.(xlsx|xls|xlsm|csv)$/i.test(f.name))importExcel(f);
 });
 
-// ----- 데이터 출처 -----
-// 대시보드 데이터가 있으면 그걸 기본으로 쓰고, 직접 올린 엑셀·샘플로 바꿀 수 있게 한다
-function renderSourceBar(){
-  const bar=document.getElementById('sourceBar');if(!bar)return;
-  const s=getSource(),info=sourceLabel();
-  const opts=[['link','대시보드 데이터',linkAvailable()],['own','직접 올린 엑셀',true],['sample','샘플 데이터',true]];
-  bar.className='source-bar src-'+s;
-  bar.innerHTML=`<span class="src-now"><b>${esc(info.name)}</b>${esc(info.desc)}</span>`
-    +`<span class="src-sw">${opts.filter(o=>o[2]).map(([v,label])=>
-      `<button class="btn ghost${v===s?' on':''}" data-src="${v}">${label}</button>`).join('')}</span>`;
-  bar.querySelectorAll('[data-src]').forEach(b=>b.onclick=()=>{
-    if(b.dataset.src===getSource())return;
-    setSource(b.dataset.src);
-    toast(sourceLabel().name+'로 바꿨습니다');
-  });
-  bar.hidden=false;
-}
+// ----- 샘플 데이터 -----
 document.querySelectorAll('[data-sample]').forEach(b=>b.onclick=loadSample);
+document.getElementById('sampleClearBtn').onclick=clearSample;
 
 // ----- 데이터 삭제 -----
 document.getElementById('clearBtn').onclick=()=>{
-  if(getSource()!=='own'){
-    alert(getSource()==='link'
-      ? '대시보드 데이터는 여기서 지울 수 없습니다. 고객관리(민원) → 데이터 탭에서 관리하세요.'
-      : '샘플 데이터는 위 출처 전환으로 끄면 됩니다.');
-    return;
-  }
   if(!DATA.length){toast('삭제할 데이터가 없습니다');return;}
   const months=[...new Set(DATA.map(r=>r.date.slice(0,7)))].sort();
   const pick=prompt(`삭제할 월을 입력하세요 (예: ${months[months.length-1]})\n전체 삭제는 '전체'\n\n보관 중인 월: ${months.join(', ')}`);
@@ -80,7 +59,7 @@ document.getElementById('clearBtn').onclick=()=>{
   const v=pick.trim();
   if(v==='전체'){
     if(!confirm(`저장된 ${DATA.length}건을 전부 삭제합니다.`))return;
-    DATA=[];
+    DATA=[];setSampleMode(false);
   }else{
     if(!months.includes(v)){alert('해당 월 데이터가 없습니다.');return;}
     const n=DATA.filter(r=>r.date.slice(0,7)===v).length;
@@ -149,4 +128,4 @@ document.addEventListener('keydown',e=>{
   });
 }
 
-applySource();   // 저장된 출처에 맞는 데이터를 싣고 화면을 그린다
+renderAll();
