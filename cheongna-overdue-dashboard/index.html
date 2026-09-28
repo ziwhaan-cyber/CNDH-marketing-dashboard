@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미납관리 대시보드</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+:root{
+  --bg-primary:#f4f6f8;
+  --bg-card:#ffffff;
+  --bg-header:#132743;
+  --text-primary:#1b2430;
+  --text-secondary:#6b7787;
+  --text-on-dark:#ffffff;
+  --accent:#2f6fed;
+  --c1:#2f6fed;
+  --c2:#f4a340;
+  --c3:#31b28c;
+  --c4:#e5534b;
+  --c5:#8a63d2;
+  --c6:#3aa5c3;
+  --positive:#1f9d55;
+  --negative:#e5534b;
+  --warn:#f4a340;
+  --gap:16px;
+  --radius:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",Roboto,sans-serif;
+  background:var(--bg-primary);
+  color:var(--text-primary);
+  line-height:1.5;
+}
+.dashboard-container{max-width:1440px;margin:0 auto;padding:20px;}
+.dashboard-header{
+  background:linear-gradient(135deg,#132743,#1c3a63);
+  color:var(--text-on-dark);
+  padding:24px 28px;
+  border-radius:var(--radius);
+  margin-bottom:var(--gap);
+  display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;
+}
+.dashboard-header h1{font-size:22px;font-weight:700;margin-bottom:4px;}
+.dashboard-header p{font-size:13px;color:rgba(255,255,255,0.7);}
+.header-meta{text-align:right;font-size:12px;color:rgba(255,255,255,0.65);}
+.upload-row{margin-top:10px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.upload-btn{
+  display:inline-block;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
+  background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);color:#fff;
+}
+.upload-btn:hover{background:rgba(255,255,255,0.22);}
+#upload-status{font-size:11.5px;color:rgba(255,255,255,0.75);max-width:320px;text-align:right;}
+.export-btn{
+  display:inline-block;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
+  background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);color:#fff;
+}
+.export-btn:hover{background:rgba(255,255,255,0.22);}
+.google-signin-btn{
+  display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
+  background:#fff;border:1px solid rgba(255,255,255,0.3);color:#3c4043;
+}
+.google-signin-btn:hover{background:#f1f3f4;}
+.google-signin-btn img{width:16px;height:16px;}
+.refresh-btn{
+  display:inline-block;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
+  background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.3);color:#fff;
+}
+.refresh-btn:hover{background:rgba(255,255,255,0.22);}
+.refresh-btn:disabled{opacity:0.5;cursor:default;}
+.signed-in-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+#signed-in-email{font-size:11.5px;color:rgba(255,255,255,0.8);}
+.signout-link{font-size:11px;color:rgba(255,255,255,0.65);text-decoration:underline;cursor:pointer;}
+.signout-link:hover{color:#fff;}
+#gsheet-status{font-size:11.5px;color:rgba(255,255,255,0.75);max-width:320px;text-align:right;}
+#export-status{font-size:11.5px;color:rgba(255,255,255,0.75);max-width:320px;text-align:right;}
+
+.upload-btn-inline{
+  display:inline-block;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
+  background:var(--accent);color:#fff;border:none;
+}
+.upload-btn-inline:hover{background:#1f57c9;}
+.compare-summary{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:16px;}
+.compare-stat{background:#f8f9fb;border-radius:8px;padding:12px 16px;min-width:180px;}
+.compare-stat .lbl{font-size:11px;color:var(--text-secondary);text-transform:uppercase;font-weight:700;margin-bottom:4px;}
+.compare-stat .val{font-size:16px;font-weight:700;}
+.compare-stat .delta{font-size:12px;font-weight:600;margin-top:2px;}
+.compare-stat .delta.up{color:var(--negative);}
+.compare-stat .delta.down{color:var(--positive);}
+.compare-stat .delta.flat{color:var(--text-secondary);}
+.delta-cell.up{color:var(--negative);}
+.delta-cell.down{color:var(--positive);}
+.delta-cell.flat{color:var(--text-secondary);}
+.bucket-row{cursor:pointer;}
+.bucket-row:hover{background:#f8f9fb;}
+.bucket-row.selected{background:#eaf1ff;}
+.bucket-clear-link{font-weight:400;font-size:11px;color:var(--text-secondary);text-decoration:underline;cursor:pointer;margin-left:6px;}
+.bucket-clear-link:hover{color:var(--text-primary);}
+
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--gap);margin-bottom:var(--gap);}
+.kpi-card{background:var(--bg-card);border-radius:var(--radius);padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-left:4px solid var(--accent);}
+.kpi-card.warn{border-left-color:var(--warn);}
+.kpi-card.neg{border-left-color:var(--negative);}
+.kpi-card.pos{border-left-color:var(--positive);}
+.kpi-label{font-size:12px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;font-weight:600;}
+.kpi-value{font-size:26px;font-weight:700;margin-bottom:4px;}
+.kpi-sub{font-size:12px;color:var(--text-secondary);}
+
+.section-title{font-size:15px;font-weight:700;margin:26px 0 12px 2px;color:var(--text-primary);}
+
+.chart-row{display:grid;grid-template-columns:1.3fr 1fr;gap:var(--gap);margin-bottom:var(--gap);}
+.chart-row.three{grid-template-columns:1fr 1fr 1fr;}
+.chart-container{background:var(--bg-card);border-radius:var(--radius);padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+.chart-container h3{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:14px;}
+.chart-container canvas{max-height:280px;}
+.chart-wrap{position:relative;height:280px;}
+
+.table-section{background:var(--bg-card);border-radius:var(--radius);padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow-x:auto;margin-bottom:var(--gap);}
+.table-section-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.table-section-header h3{font-size:14px;font-weight:700;}
+.table-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.table-controls input,.table-controls select{
+  padding:7px 10px;border:1px solid #dde2e8;border-radius:6px;font-size:13px;background:#fafbfc;color:var(--text-primary);
+}
+.table-controls input:focus,.table-controls select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+
+.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+.data-table thead th{
+  text-align:right;padding:9px 10px;border-bottom:2px solid #e3e7ec;color:var(--text-secondary);
+  font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;user-select:none;cursor:pointer;
+}
+.data-table thead th:first-child,.data-table thead th:nth-child(2){text-align:left;}
+.data-table thead th:hover{color:var(--text-primary);background:#f8f9fb;}
+.data-table tbody td{padding:9px 10px;border-bottom:1px solid #f0f2f5;text-align:right;white-space:nowrap;}
+.data-table tbody td:first-child,.data-table tbody td:nth-child(2){text-align:left;}
+.data-table tbody tr:hover{background:#f4f8ff;cursor:pointer;}
+.data-table tbody tr:last-child td{border-bottom:none;}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge.b0{background:#e5f6ee;color:#1f9d55;}
+.badge.b1{background:#fff4e0;color:#c07d05;}
+.badge.b2{background:#fdeceb;color:#c73a32;}
+.badge.b3{background:#fbe4e2;color:#a3231d;}
+.pill-btn{background:var(--accent);color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11.5px;cursor:pointer;}
+.pill-btn:hover{background:#1f57c9;}
+
+.search-section{background:var(--bg-card);border-radius:var(--radius);padding:22px 24px;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:var(--gap);}
+.search-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
+.search-bar input{flex:1;min-width:240px;padding:10px 14px;border:1px solid #dde2e8;border-radius:8px;font-size:14px;}
+.search-bar input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.search-bar button{padding:10px 18px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:14px;font-weight:600;cursor:pointer;}
+.search-bar button:hover{background:#1f57c9;}
+.search-hint{font-size:12px;color:var(--text-secondary);margin-top:-10px;margin-bottom:14px;}
+.datalist-note{font-size:12px;color:var(--text-secondary);}
+
+.customer-detail{display:none;}
+.customer-detail.show{display:block;}
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #eef1f4;}
+.detail-head h2{font-size:18px;font-weight:700;margin-bottom:4px;}
+.detail-head .custno{font-size:13px;color:var(--text-secondary);}
+.detail-kpis{display:flex;gap:22px;flex-wrap:wrap;}
+.detail-kpi{text-align:right;}
+.detail-kpi .lbl{font-size:11px;color:var(--text-secondary);text-transform:uppercase;font-weight:700;}
+.detail-kpi .val{font-size:19px;font-weight:700;}
+
+.timeline-wrap{position:relative;height:260px;margin-bottom:20px;}
+
+.timeline-list{display:flex;flex-direction:column;gap:8px;}
+.timeline-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#f8f9fb;border-radius:8px;border-left:3px solid var(--positive);}
+.timeline-item .t-date{font-size:12px;color:var(--text-secondary);min-width:90px;}
+.timeline-item .t-amt{font-weight:700;color:var(--positive);}
+.timeline-item .t-label{font-size:12px;color:var(--text-secondary);}
+.no-payments{color:var(--text-secondary);font-size:13px;padding:12px;text-align:center;background:#f8f9fb;border-radius:8px;}
+.not-found{color:var(--negative);font-size:13px;padding:12px;}
+
+.dashboard-footer{text-align:center;font-size:12px;color:var(--text-secondary);padding:18px 0 6px;}
+
+@media (max-width:900px){
+  .chart-row,.chart-row.three{grid-template-columns:1fr;}
+  .kpi-row{grid-template-columns:repeat(2,1fr);}
+  .detail-kpis{width:100%;justify-content:space-between;}
+  .data-table{font-size:12px;}
+}
+@media print{
+  body{background:#fff;}
+  .search-bar button, .table-controls{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="dashboard-container">
+
+  <header class="dashboard-header">
+    <div>
+      <h1>청라에너지 미납관리 대시보드</h1>
+      <p>미납내역 · 납부이력 통합 현황 (연체개월 수는 최근 납부 반영 기준으로 재계산됨)</p>
+    </div>
+    <div class="header-meta">
+      기준일: <span id="asof-date"></span>
+      <span id="header-cust-count" style="display:none;"></span>
+      <div class="upload-row">
+        <div class="signed-in-row">
+          <label class="upload-btn" for="data-file-input">엑셀 업로드</label>
+          <input type="file" id="data-file-input" accept=".xlsx,.xls" style="display:none;">
+          <div class="refresh-btn" id="refresh-btn" style="display:none;">다시 업로드</div>
+        </div>
+        <div id="gsheet-status">엑셀 파일을 업로드해 주세요 (전월_미납내역 · 전월_납부이력 · 현재_미납내역 · 현재_납부이력 시트 포함)</div>
+        <div class="export-btn" id="report-export-btn" style="display:none;">연체수용가현황</div>
+        <div id="report-export-status"></div>
+        <div class="export-btn" id="overdue-export-btn" style="display:none;">월말기준미납(수납처리)</div>
+        <div id="overdue-export-status"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- KPI ROW -->
+  <section class="kpi-row" id="kpi-row"></section>
+
+  <!-- CHARTS -->
+  <div class="section-title" id="months-section-title">연체 현황</div>
+  <section class="chart-row">
+    <div class="chart-container">
+      <h3>고객 수</h3>
+      <div class="chart-wrap"><canvas id="chart-cust-by-month"></canvas></div>
+    </div>
+    <div class="chart-container">
+      <h3>연체 규모</h3>
+      <div class="chart-wrap"><canvas id="chart-amt-by-month"></canvas></div>
+    </div>
+  </section>
+
+  <section class="chart-row" style="grid-template-columns:1fr;">
+    <div class="chart-container">
+      <h3>연체 규모 비교 (기존 연체 vs 현재 잔여 연체)</h3>
+      <div class="chart-wrap"><canvas id="chart-compare"></canvas></div>
+    </div>
+  </section>
+
+  <section class="chart-row" style="grid-template-columns:1fr;">
+    <div class="chart-container">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:6px;">
+        <h3 style="margin-bottom:0;">전월 대비 연체 현황 비교</h3>
+      </div>
+      <div id="prev-compare-status" style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">Google 계정으로 로그인하면 전월_미납내역/전월_납부이력 시트를 불러와 자동으로 비교합니다.</div>
+      <div id="prev-compare-summary" class="compare-summary" style="display:none;"></div>
+      <div id="prev-compare-bucket-wrap" style="display:none;">
+        <h3 style="font-size:12.5px;font-weight:600;color:var(--text-secondary);margin-bottom:10px;">연체개월 구간별 고객 수 변화</h3>
+        <div id="prev-compare-bucket-table"></div>
+
+        <h3 id="prev-compare-worsened-title" style="font-size:12.5px;font-weight:600;color:var(--text-secondary);margin:18px 0 10px;">관리 필요 고객</h3>
+        <div id="prev-compare-worsened"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUSTOMER SEARCH / TIMELINE -->
+  <div class="section-title">고객번호 검색 · 납부 이력 타임라인</div>
+  <section class="search-section">
+    <div class="search-bar">
+      <input type="text" id="search-input" list="cust-list" placeholder="고객번호 또는 고객명을 입력하세요 (예: 270200100264)">
+      <datalist id="cust-list"></datalist>
+      <button id="search-btn">검색</button>
+    </div>
+    <div class="search-hint">표에서 고객 행을 클릭해도 아래 타임라인이 즉시 표시됩니다.</div>
+
+    <div id="search-result"></div>
+
+    <div class="customer-detail" id="customer-detail">
+      <div class="detail-head">
+        <div>
+          <h2 id="d-name"></h2>
+          <div class="custno">고객번호: <span id="d-custno"></span></div>
+        </div>
+        <div class="detail-kpis">
+          <div class="detail-kpi"><div class="lbl">연체금액</div><div class="val" id="d-total"></div></div>
+          <div class="detail-kpi"><div class="lbl">총 납부액</div><div class="val" id="d-paid" style="color:var(--positive);"></div></div>
+          <div class="detail-kpi"><div class="lbl">잔여 연체금액</div><div class="val" id="d-remaining" style="color:var(--negative);"></div></div>
+          <div class="detail-kpi"><div class="lbl">잔여 연체개월</div><div class="val" id="d-remaining-months"></div></div>
+        </div>
+      </div>
+
+      <h3 style="font-size:13px;margin-bottom:10px;">월별 청구금액</h3>
+      <div id="monthly-billing-table"></div>
+
+      <h3 style="font-size:13px;margin:18px 0 10px;">납부 이력</h3>
+      <div class="timeline-list" id="payment-list"></div>
+    </div>
+  </section>
+
+  <!-- TABLE -->
+  <div class="section-title">전체 미납 고객 목록</div>
+  <section class="table-section">
+    <div class="table-section-header">
+      <h3>고객 목록 (총 <span id="table-count"></span>명)</h3>
+      <div class="table-controls">
+        <input type="text" id="table-filter" placeholder="고객명/고객번호 검색">
+        <select id="filter-status">
+          <option value="all">전체 상태</option>
+          <option value="unpaid">미납 잔액 있음</option>
+          <option value="paid">완납</option>
+        </select>
+        <select id="filter-months">
+          <option value="all">전체 연체개월</option>
+          <option value="1">1개월</option>
+          <option value="2-3">2~3개월</option>
+          <option value="4-6">4~6개월</option>
+          <option value="7+">7개월 이상</option>
+        </select>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="data-table" id="main-table">
+        <thead>
+          <tr>
+            <th data-field="name">고객명</th>
+            <th data-field="custNo">고객번호</th>
+            <th data-field="overdueMonths">연체개월</th>
+            <th data-field="remainingOverdueMonths">잔여 연체개월</th>
+            <th>전월 연체개월</th>
+            <th data-field="status">상태</th>
+            <th data-field="total">연체금액</th>
+            <th data-field="totalPaid">납부액</th>
+            <th data-field="remainingTotal">잔여 연체금액</th>
+            <th>상세</th>
+          </tr>
+        </thead>
+        <tbody id="main-table-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="dashboard-footer">
+    청라에너지 미납관리 대시보드 · 엑셀 파일 업로드로 동작 · 인터넷 연결 없이도(라이브러리 캐시 시) 오프라인에서 열람 가능합니다.
+  </footer>
+</div>
+
+<script>
+/* ============ 업로드된 엑셀에서 읽어온 데이터 ============ */
+/* 예전에는 Google Apps Script(Code.gs)가 서버에서 구글시트를 읽어 여기에 주입했지만,
+   지금은 사용자가 업로드한 엑셀 파일(xlsx)을 브라우저에서 직접 읽어 채웁니다. */
+let SERVER_DATA = null;
+
+const COLORS = ['#2f6fed','#f4a340','#31b28c','#e5534b','#8a63d2','#3aa5c3','#c2854e','#5b7ee0'];
+
+function fmtWon(v){
+  if(v===undefined||v===null) return '-';
+  const sign = v<0?'-':'';
+  const av = Math.abs(v);
+  if(av>=100000000) return sign+(av/100000000).toFixed(2)+'억원';
+  if(av>=10000) return sign+Math.round(av/10000).toLocaleString()+'만원';
+  return sign+av.toLocaleString()+'원';
+}
+function fmtWonFull(v){
+  if(v===undefined||v===null) return '-';
+  return v.toLocaleString()+'원';
+}
+function fmtWonAxis(v){
+  // compact axis label: 0.5억, 1억, 1.5억 (no decimals beyond 1 place, no trailing .0)
+  if(v===undefined||v===null) return '-';
+  const sign = v<0?'-':'';
+  const av = Math.abs(v);
+  if(av>=10000000){ // 0.1억 이상은 억 단위로 통일
+    const eok = Math.round(av/10000000)/10; // round to nearest 0.1억
+    const label = Number.isInteger(eok) ? eok.toString() : eok.toFixed(1);
+    return sign+label+'억';
+  }
+  if(av>=10000) return sign+Math.round(av/10000).toLocaleString()+'만';
+  return sign+av.toLocaleString();
+}
+function monthSortKey(m){
+  // '26.5월' -> 2026*100+5
+  const mm = String(m).match(/(\d+)\.(\d+)월/);
+  if(!mm) return 0;
+  return (2000+parseInt(mm[1]))*100+parseInt(mm[2]);
+}
+function dateToStr(d){
+  if(d instanceof Date && !isNaN(d)){
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+  if(typeof d === 'number' && window.XLSX && XLSX.SSF){
+    const parsed = XLSX.SSF.parse_date_code(d);
+    return `${parsed.y}-${String(parsed.m).padStart(2,'0')}-${String(parsed.d).padStart(2,'0')}`;
+  }
+  return String(d);
+}
+
+/* ============ BUILD DATA FROM UPLOADED EXCEL ============ */
+function buildDashboardFromSheets(overdueRows, paymentRows){
+  const header = overdueRows[0] || [];
+  const monthCols = [];
+  for(let i=4;i<header.length;i++){
+    const h = header[i];
+    if(h!==undefined && h!==null && String(h).trim()!==''){
+      monthCols.push({idx:i, label:String(h).trim()});
+    }
+  }
+
+  const paymentsByCust = {};
+  for(let r=1;r<paymentRows.length;r++){
+    const row = paymentRows[r];
+    if(!row || row[0]==null || row[1]==null || row[3]==null) continue;
+    const name = row[0], custNo = row[1];
+    const dateStr = dateToStr(row[2]);
+    const amount = Number(row[3]);
+    const rec = {name, custNo, date:dateStr, amount};
+    if(!paymentsByCust[custNo]) paymentsByCust[custNo] = [];
+    paymentsByCust[custNo].push(rec);
+  }
+
+  const customers = [];
+  for(let r=1;r<overdueRows.length;r++){
+    const row = overdueRows[r];
+    if(!row || row[0]==null || row[1]==null) continue;
+    const name = row[0], custNo = row[1];
+    const overdueMonths = Number(row[2])||0;
+    const total = Number(row[3])||0;
+
+    let monthlyRaw = [];
+    monthCols.forEach(mc=>{
+      const v = row[mc.idx];
+      if(v!==undefined && v!==null && v!==0 && v!==''){
+        monthlyRaw.push({month:mc.label, amount:Number(v)});
+      }
+    });
+    monthlyRaw.sort((a,b)=>monthSortKey(a.month)-monthSortKey(b.month));
+
+    const payList = (paymentsByCust[custNo]||[]).slice().sort((a,b)=> a.date<b.date?-1:(a.date>b.date?1:0));
+    const totalPaid = payList.reduce((s,p)=>s+p.amount,0);
+
+    let running = totalPaid;
+    const remainingMonthly = [];
+    monthlyRaw.forEach(m=>{
+      const paid = Math.min(running, m.amount);
+      running -= paid;
+      const rem = m.amount - paid;
+      if(rem>0) remainingMonthly.push({month:m.month, amount:rem});
+    });
+    const remainingTotal = remainingMonthly.reduce((s,m)=>s+m.amount,0);
+    const remainingOverdueMonths = remainingMonthly.length;
+
+    customers.push({
+      name, custNo, overdueMonths, total,
+      monthly: monthlyRaw,
+      totalPaid, remainingTotal, remainingOverdueMonths, remainingMonthly,
+      payments: payList
+    });
+  }
+
+  return {customers};
+}
+
+/* ============ STATE ============ */
+let customers = [];
+let custByNo = {};
+let sortField = 'remainingTotal', sortDir = 'desc';
+let currentFilterText = '';
+let currentStatus = 'all';
+let currentMonthsBucket = 'all';
+let custByMonthChart = null;
+let amtByMonthChart = null;
+let compareChart = null;
+let previousSnapshot = null; // {amt, total, count, custMap} from an uploaded prior-month file
+let currentSnapshot = null;  // {amt, total, count, custMap} for the currently loaded data
+let currentAsofDate = null;  // Date currently shown as 기준일 (used when exporting a share snapshot)
+let worsenedBucketFilter = null; // selected 연체개월 구간 (bucket label) filtering 관리 필요 고객 list, or null for all
+
+function bucketLabel(m){
+  if(m<=0) return '완납';
+  if(m===1) return '1개월';
+  if(m<=3) return '2-3개월';
+  if(m<=6) return '4-6개월';
+  if(m<=12) return '7-12개월';
+  return '13개월+';
+}
+const bucketOrder = ['완납','1개월','2-3개월','4-6개월','7-12개월','13개월+'];
+const chartBuckets = bucketOrder.filter(b=>b!=='완납');
+
+function bucketAmounts(customersArr){
+  const amt = {}, custCount = {};
+  bucketOrder.forEach(b=>{amt[b]=0; custCount[b]=0;});
+  let total = 0;
+  const custMap = {};
+  customersArr.forEach(c=>{
+    const b = bucketLabel(c.remainingOverdueMonths);
+    amt[b] += c.remainingTotal;
+    custCount[b] += 1;
+    total += c.remainingTotal;
+    custMap[String(c.custNo)] = {
+      remainingOverdueMonths: c.remainingOverdueMonths,
+      remainingTotal: c.remainingTotal
+    };
+  });
+  return {amt, custCount, total, count: customersArr.length, custMap};
+}
+
+function monthsMatch(m, bucket){
+  if(bucket==='all') return true;
+  if(bucket==='1') return m===1;
+  if(bucket==='2-3') return m>=2 && m<=3;
+  if(bucket==='4-6') return m>=4 && m<=6;
+  if(bucket==='7+') return m>=7;
+  return true;
+}
+
+function statusRank(c){ return c.remainingTotal<=0 ? 0 : (c.totalPaid>0 ? 1 : 2); }
+
+function getFilteredSortedCustomers(){
+  let list = customers.filter(c=>{
+    if(currentFilterText){
+      const q = currentFilterText.toLowerCase();
+      if(!c.name.toLowerCase().includes(q) && !String(c.custNo).includes(q)) return false;
+    }
+    if(currentStatus==='paid' && c.remainingTotal>0) return false;
+    if(currentStatus==='unpaid' && c.remainingTotal<=0) return false;
+    if(!monthsMatch(c.remainingOverdueMonths, currentMonthsBucket)) return false;
+    return true;
+  });
+  list = [...list].sort((a,b)=>{
+    let av = sortField==='status' ? statusRank(a) : a[sortField];
+    let bv = sortField==='status' ? statusRank(b) : b[sortField];
+    if(typeof av === 'string'){
+      const cmp = av.localeCompare(bv,'ko');
+      return sortDir==='asc'?cmp:-cmp;
+    }
+    const cmp = av<bv?-1:av>bv?1:0;
+    return sortDir==='asc'?cmp:-cmp;
+  });
+  return list;
+}
+
+function badgeForCustomer(c){
+  if(c.remainingTotal<=0) return '<span class="badge b0">완납</span>';
+  if(c.totalPaid>0) return '<span class="badge b1">부분납</span>';
+  return '<span class="badge b3">미납</span>';
+}
+
+function prevMonthsCell(c){
+  if(!previousSnapshot) return `<span style="color:var(--text-secondary);">-</span>`;
+  const prev = previousSnapshot.custMap[String(c.custNo)];
+  if(!prev) return `<span style="color:var(--text-secondary);">신규</span>`;
+  const diff = c.remainingOverdueMonths - prev.remainingOverdueMonths;
+  let arrow = '';
+  if(diff>0) arrow = ` <span style="color:var(--negative);font-weight:700;">▲${diff}</span>`;
+  else if(diff<0) arrow = ` <span style="color:var(--positive);font-weight:700;">▼${Math.abs(diff)}</span>`;
+  return `${prev.remainingOverdueMonths}개월${arrow}`;
+}
+
+function renderTable(){
+  const list = getFilteredSortedCustomers();
+  const tbody = document.getElementById('main-table-body');
+  tbody.innerHTML = list.map(c=>`
+    <tr data-custno="${c.custNo}">
+      <td>${c.name}</td>
+      <td>${c.custNo}</td>
+      <td>${c.overdueMonths}개월</td>
+      <td>${c.remainingOverdueMonths}개월</td>
+      <td>${prevMonthsCell(c)}</td>
+      <td>${badgeForCustomer(c)}</td>
+      <td>${fmtWonFull(c.total)}</td>
+      <td style="color:${c.totalPaid>0?'var(--positive)':'var(--text-secondary)'}">${fmtWonFull(c.totalPaid)}</td>
+      <td style="font-weight:700;color:${c.remainingTotal>0?'var(--negative)':'var(--positive)'}">${fmtWonFull(c.remainingTotal)}</td>
+      <td><button class="pill-btn" data-custno="${c.custNo}">타임라인</button></td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('tr').forEach(tr=>{
+    tr.addEventListener('click', (e)=>{
+      showCustomerDetail(tr.getAttribute('data-custno'));
+    });
+  });
+}
+
+/* ============ LOAD / RENDER DASHBOARD ============ */
+function loadData(rawData, asofDateObj){
+  customers = rawData.customers;
+  custByNo = {};
+  customers.forEach(c=>{ custByNo[String(c.custNo)] = c; });
+
+  const totalOriginal = customers.reduce((s,c)=>s+c.total,0);
+  const totalRemaining = customers.reduce((s,c)=>s+c.remainingTotal,0);
+  const custCount = customers.length;
+  const paidOffCount = customers.filter(c=>c.remainingTotal<=0).length;
+
+  const asofDate = asofDateObj || new Date();
+  currentAsofDate = asofDate;
+  const asofDateStr = `${asofDate.getFullYear()}. ${asofDate.getMonth()+1}. ${asofDate.getDate()}`;
+  document.getElementById('asof-date').textContent = asofDateStr;
+  document.getElementById('header-cust-count').textContent = custCount;
+  document.getElementById('table-count').textContent = custCount;
+  document.getElementById('months-section-title').textContent = `연체 현황 (${asofDateStr} 기준)`;
+
+  /* KPI cards */
+  const kpiRow = document.getElementById('kpi-row');
+  const kpis = [
+    {label:'총 연체 고객 수', value: custCount+'개소', sub: `현재 연체 고객 ${custCount-paidOffCount}개소 / 총 연체 고객 ${custCount}개소<br>(완납 ${paidOffCount}개소, 미납 ${custCount-paidOffCount}개소)`, cls:''},
+    {label:'총 연체 규모 (원)', value: fmtWon(totalOriginal), sub: `현재 연체금액 ${fmtWon(totalRemaining)} / 총 연체금액 ${fmtWon(totalOriginal)}`, cls:''},
+  ];
+  kpiRow.innerHTML = kpis.map(k=>`
+    <div class="kpi-card ${k.cls}">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`).join('');
+
+  /* buckets (완납 제외) */
+  const custByBucket = {}, amtByBucket = {}, origAmtByBucket = {};
+  bucketOrder.forEach(b=>{custByBucket[b]=0; amtByBucket[b]=0; origAmtByBucket[b]=0;});
+  customers.forEach(c=>{
+    const b = bucketLabel(c.remainingOverdueMonths);
+    custByBucket[b]++;
+    amtByBucket[b]+=c.remainingTotal;
+    origAmtByBucket[b]+=c.total;
+  });
+
+  if(custByMonthChart) custByMonthChart.destroy();
+  custByMonthChart = new Chart(document.getElementById('chart-cust-by-month'), {
+    type:'bar',
+    data:{
+      labels: chartBuckets,
+      datasets:[{
+        label:'고객 수',
+        data: chartBuckets.map(b=>custByBucket[b]),
+        backgroundColor: '#2f6fedCC',
+        borderRadius:4,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>`${ctx.parsed.y}개소`}}},
+      scales:{
+        x:{grid:{display:false}},
+        y:{beginAtZero:true, ticks:{precision:0}}
+      }
+    }
+  });
+
+  if(amtByMonthChart) amtByMonthChart.destroy();
+  amtByMonthChart = new Chart(document.getElementById('chart-amt-by-month'), {
+    type:'bar',
+    data:{
+      labels: chartBuckets,
+      datasets:[{
+        label:'연체 규모',
+        data: chartBuckets.map(b=>amtByBucket[b]),
+        backgroundColor: '#2f6fedCC',
+        borderRadius:4,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>fmtWonFull(ctx.parsed.y)}}},
+      scales:{
+        x:{grid:{display:false}},
+        y:{beginAtZero:true, ticks:{callback:(v)=>fmtWonAxis(v)}}
+      }
+    }
+  });
+
+  if(compareChart) compareChart.destroy();
+  compareChart = new Chart(document.getElementById('chart-compare'), {
+    type:'line',
+    data:{
+      labels: chartBuckets,
+      datasets:[
+        {
+          label:'기존 연체 규모',
+          data: chartBuckets.map(b=>origAmtByBucket[b]),
+          borderColor:'#8a63d2',
+          backgroundColor:'#8a63d233',
+          borderWidth:2,
+          fill:true,
+          tension:0.3,
+          pointRadius:4,
+          pointHoverRadius:6,
+        },
+        {
+          label:'현재 잔여 연체 규모',
+          data: chartBuckets.map(b=>amtByBucket[b]),
+          borderColor:'#2f6fed',
+          backgroundColor:'#2f6fed33',
+          borderWidth:2,
+          fill:true,
+          tension:0.3,
+          pointRadius:4,
+          pointHoverRadius:6,
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{position:'top', labels:{usePointStyle:true, padding:16, font:{size:11}}},
+        tooltip:{callbacks:{label:(ctx)=>`${ctx.dataset.label}: ${fmtWonFull(ctx.parsed.y)}`}}
+      },
+      scales:{
+        x:{grid:{display:false}},
+        y:{beginAtZero:true, ticks:{count:10, callback:(v)=>fmtWonAxis(v)}}
+      }
+    }
+  });
+
+  /* keep current snapshot for month-over-month comparison, then re-render that section */
+  currentSnapshot = bucketAmounts(customers);
+  renderMonthCompare();
+
+  /* datalist for search */
+  const custList = document.getElementById('cust-list');
+  custList.innerHTML = customers.map(c=>`<option value="${c.custNo}">${c.name}</option>`).join('');
+
+  /* reset search UI */
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-result').innerHTML = '';
+  document.getElementById('customer-detail').classList.remove('show');
+
+  renderTable();
+}
+
+/* ============ MONTH-OVER-MONTH COMPARISON ============ */
+function renderMonthCompare(){
+  const statusEl = document.getElementById('prev-compare-status');
+  const summaryEl = document.getElementById('prev-compare-summary');
+  const bucketWrap = document.getElementById('prev-compare-bucket-wrap');
+
+  if(!previousSnapshot || !currentSnapshot){
+    statusEl.style.display = '';
+    statusEl.style.color = 'var(--text-secondary)';
+    statusEl.textContent = '전월 데이터를 업로드하면 이번 달과 비교할 수 있습니다.';
+    summaryEl.style.display = 'none';
+    bucketWrap.style.display = 'none';
+    return;
+  }
+
+  statusEl.style.display = 'none';
+  summaryEl.style.display = 'flex';
+  bucketWrap.style.display = 'block';
+
+  function deltaInfo(curr, prev){
+    const diff = curr - prev;
+    const pct = prev!==0 ? (diff/prev*100) : (curr>0?100:0);
+    const cls = diff>0 ? 'up' : (diff<0 ? 'down' : 'flat');
+    const sign = diff>0?'+':'';
+    return {diff, pct, cls, sign};
+  }
+
+  const amtDelta = deltaInfo(currentSnapshot.total, previousSnapshot.total);
+  const custDelta = deltaInfo(currentSnapshot.count, previousSnapshot.count);
+
+  summaryEl.innerHTML = `
+    <div class="compare-stat">
+      <div class="lbl">총 잔여 연체 규모</div>
+      <div class="val">전월 ${fmtWon(previousSnapshot.total)} → 이번달 ${fmtWon(currentSnapshot.total)}</div>
+      <div class="delta ${amtDelta.cls}">${amtDelta.sign}${fmtWon(amtDelta.diff)} (${amtDelta.sign}${amtDelta.pct.toFixed(1)}%)</div>
+    </div>
+    <div class="compare-stat">
+      <div class="lbl">연체 고객 수</div>
+      <div class="val">전월 ${previousSnapshot.count}개소 → 이번달 ${currentSnapshot.count}개소</div>
+      <div class="delta ${custDelta.cls}">${custDelta.sign}${custDelta.diff}개소</div>
+    </div>
+  `;
+
+  const bucketTableDiv = document.getElementById('prev-compare-bucket-table');
+  bucketTableDiv.innerHTML = `
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="text-align:left;">연체개월 구간</th>
+          <th>전월 고객 수</th>
+          <th>이번달 고객 수</th>
+          <th>증감</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${chartBuckets.map(b=>{
+          const prevC = previousSnapshot.custCount[b] || 0;
+          const currC = currentSnapshot.custCount[b] || 0;
+          const d = deltaInfo(currC, prevC);
+          const arrow = d.diff>0 ? '▲' : (d.diff<0 ? '▼' : '-');
+          const selected = worsenedBucketFilter === b;
+          return `
+            <tr class="bucket-row${selected ? ' selected' : ''}" data-bucket="${b}">
+              <td style="text-align:left;">${b}${selected ? ' <span style="font-size:11px;color:var(--accent);">● 선택됨</span>' : ''}</td>
+              <td>${prevC}개소</td>
+              <td>${currC}개소</td>
+              <td style="font-weight:700;" class="delta-cell ${d.cls}">${d.diff===0 ? '변동없음' : `${arrow} ${Math.abs(d.diff)}개소`}</td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <div style="font-size:11.5px;color:var(--text-secondary);margin-top:6px;">구간을 클릭하면 아래 관리 필요 고객 목록이 해당 구간으로 필터링됩니다.</div>`;
+
+  bucketTableDiv.querySelectorAll('tr[data-bucket]').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      const b = tr.getAttribute('data-bucket');
+      worsenedBucketFilter = (worsenedBucketFilter === b) ? null : b;
+      renderMonthCompare();
+    });
+  });
+
+  const allWorsened = customers
+    .map(c=>{
+      const prev = previousSnapshot.custMap[String(c.custNo)];
+      if(!prev) return null;
+      if(c.remainingOverdueMonths <= prev.remainingOverdueMonths) return null;
+      return {
+        name: c.name,
+        custNo: c.custNo,
+        prevMonths: prev.remainingOverdueMonths,
+        currMonths: c.remainingOverdueMonths,
+        bucket: bucketLabel(c.remainingOverdueMonths)
+      };
+    })
+    .filter(Boolean)
+    .sort((a,b)=> (b.currMonths-b.prevMonths) - (a.currMonths-a.prevMonths));
+
+  const titleEl = document.getElementById('prev-compare-worsened-title');
+  const worsenedDiv = document.getElementById('prev-compare-worsened');
+
+  if(!worsenedBucketFilter){
+    // 구간을 선택하기 전에는 관리 필요 고객 목록 자체를 숨긴다.
+    titleEl.style.display = 'none';
+    worsenedDiv.style.display = 'none';
+    return;
+  }
+  titleEl.style.display = '';
+  worsenedDiv.style.display = '';
+
+  const worsened = allWorsened.filter(w=>w.bucket===worsenedBucketFilter);
+
+  titleEl.innerHTML = `관리 필요 고객 <span style="font-weight:400;color:var(--accent);">— ${worsenedBucketFilter} 구간 (${worsened.length}명)</span><span class="bucket-clear-link" id="worsened-clear-filter">전체보기</span>`;
+  const clearLink = document.getElementById('worsened-clear-filter');
+  if(clearLink) clearLink.addEventListener('click', ()=>{ worsenedBucketFilter = null; renderMonthCompare(); });
+
+  if(worsened.length===0){
+    worsenedDiv.innerHTML = `<div class="no-payments">${worsenedBucketFilter} 구간에는 관리 필요 고객이 없습니다.</div>`;
+  } else {
+    worsenedDiv.innerHTML = `
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;">고객명</th>
+            <th style="text-align:left;">고객번호</th>
+            <th>연체개월 변화</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${worsened.map(w=>{
+            const isSevere = w.currMonths >= 3;
+            const color = isSevere ? 'var(--negative)' : 'var(--text-primary)';
+            return `
+            <tr>
+              <td style="text-align:left;">${w.name}</td>
+              <td style="text-align:left;">${w.custNo}</td>
+              <td style="font-weight:700;color:${color};">${w.prevMonths}개월 → ${w.currMonths}개월</td>
+            </tr>
+          `;
+          }).join('')}
+        </tbody>
+      </table>`;
+  }
+}
+
+/* ============ TABLE CONTROLS (attached once) ============ */
+document.querySelectorAll('#main-table thead th[data-field]').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const f = th.getAttribute('data-field');
+    if(sortField===f){ sortDir = sortDir==='asc'?'desc':'asc'; }
+    else { sortField=f; sortDir='desc'; }
+    renderTable();
+  });
+});
+
+document.getElementById('table-filter').addEventListener('input',(e)=>{
+  currentFilterText = e.target.value.trim();
+  renderTable();
+});
+document.getElementById('filter-status').addEventListener('change',(e)=>{
+  currentStatus = e.target.value;
+  renderTable();
+});
+document.getElementById('filter-months').addEventListener('change',(e)=>{
+  currentMonthsBucket = e.target.value;
+  renderTable();
+});
+
+/* ============ CUSTOMER SEARCH / DETAIL ============ */
+function showCustomerDetail(custNoStr){
+  const c = custByNo[String(custNoStr).trim()] || customers.find(cc=>cc.name.includes(custNoStr));
+  const resultDiv = document.getElementById('search-result');
+  const detailDiv = document.getElementById('customer-detail');
+
+  if(!c){
+    resultDiv.innerHTML = `<div class="not-found">"${custNoStr}"에 해당하는 고객을 찾을 수 없습니다. 고객번호 또는 고객명을 확인해 주세요.</div>`;
+    detailDiv.classList.remove('show');
+    return;
+  }
+  resultDiv.innerHTML = '';
+  detailDiv.classList.add('show');
+
+  document.getElementById('d-name').textContent = c.name;
+  document.getElementById('d-custno').textContent = c.custNo;
+  document.getElementById('d-total').textContent = fmtWonFull(c.total);
+  document.getElementById('d-paid').textContent = fmtWonFull(c.totalPaid);
+  document.getElementById('d-remaining').textContent = fmtWonFull(c.remainingTotal);
+  document.getElementById('d-remaining-months').textContent = c.remainingOverdueMonths+'개월';
+
+  // monthly billed amount + payment applied to that month (oldest-first allocation) + remaining balance
+  const billingTableDiv = document.getElementById('monthly-billing-table');
+  if(c.monthly.length===0){
+    billingTableDiv.innerHTML = '<div class="no-payments">청구 내역이 없습니다.</div>';
+  } else {
+    let runningPaid = c.totalPaid;
+    const allocated = c.monthly.map(m=>{
+      const paid = Math.min(runningPaid, m.amount);
+      runningPaid -= paid;
+      return {month:m.month, billed:m.amount, paid, remaining:m.amount-paid};
+    });
+    billingTableDiv.innerHTML = `
+      <table class="data-table">
+        <thead><tr><th style="text-align:left;">월</th><th>청구금액</th><th>납부금액</th><th>잔액</th></tr></thead>
+        <tbody>
+          ${allocated.map(a=>`
+            <tr>
+              <td style="text-align:left;">${a.month}</td>
+              <td>${fmtWonFull(a.billed)}</td>
+              <td style="color:${a.paid>0?'var(--positive)':'var(--text-secondary)'}">${fmtWonFull(a.paid)}</td>
+              <td style="font-weight:700;color:${a.remaining>0?'var(--negative)':'var(--positive)'}">${fmtWonFull(a.remaining)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  // payment list
+  const paymentListDiv = document.getElementById('payment-list');
+  if(c.payments.length===0){
+    paymentListDiv.innerHTML = '<div class="no-payments">납부 이력이 없습니다.</div>';
+  } else {
+    paymentListDiv.innerHTML = c.payments.map(p=>`
+      <div class="timeline-item">
+        <div class="t-date">${p.date}</div>
+        <div class="t-amt">+ ${fmtWonFull(p.amount)}</div>
+      </div>
+    `).join('');
+  }
+
+  detailDiv.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+document.getElementById('search-btn').addEventListener('click', ()=>{
+  const v = document.getElementById('search-input').value.trim();
+  if(v) showCustomerDetail(v);
+});
+document.getElementById('search-input').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){
+    const v = e.target.value.trim();
+    if(v) showCustomerDetail(v);
+  }
+});
+
+/* ============ 엑셀 업로드 처리 ============ */
+/*
+ * 업로드하는 엑셀 파일(워크북) 안에 아래 4개 시트가 모두 있어야 합니다:
+ *   전월_미납내역 / 전월_납부이력 / 현재_미납내역 / 현재_납부이력
+ * (예전 Google Apps Script 버전의 SHEET_NAMES와 동일한 이름·구조)
+ * 시트 하나당 구조는 기존과 동일합니다:
+ *   - _미납내역 : 고객명, 고객번호, 연체개월, 합계, (월별 청구금액 컬럼들...)
+ *   - _납부이력 : 고객명, 고객번호, 납부일시, 납부금액
+ */
+const SHEET_NAMES = {
+  prevOverdue: '전월_미납내역',
+  prevPayment: '전월_납부이력',
+  currOverdue: '현재_미납내역',
+  currPayment: '현재_납부이력'
+};
+
+function setGsheetStatus(text, color){
+  const el = document.getElementById('gsheet-status');
+  el.textContent = text;
+  el.style.color = color || 'rgba(255,255,255,0.75)';
+}
+
+/* 시트 하나를 헤더 포함 2차원 배열로 읽어옵니다. (cellDates:true로 읽었으므로
+   날짜 셀은 이미 JS Date 객체 — buildDashboardFromSheets의 dateToStr가 그대로 처리) */
+function readSheetArray(wb, name){
+  const ws = wb.Sheets[name];
+  if(!ws) return [];
+  return XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true});
+}
+
+function initFromServerData(){
+  const PREV_RAW = buildDashboardFromSheets(SERVER_DATA.prevOverdue, SERVER_DATA.prevPayment);
+  previousSnapshot = PREV_RAW.customers.length>0 ? bucketAmounts(PREV_RAW.customers) : null;
+  const RAW = buildDashboardFromSheets(SERVER_DATA.currOverdue, SERVER_DATA.currPayment);
+  loadData(RAW, new Date());
+  document.getElementById('report-export-btn').style.display = '';
+  document.getElementById('overdue-export-btn').style.display = '';
+  document.getElementById('refresh-btn').style.display = '';
+}
+
+function handleDataFile(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  setGsheetStatus('업로드된 파일을 읽는 중...', 'rgba(255,255,255,0.75)');
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates:true});
+      const missing = Object.values(SHEET_NAMES).filter(n=>wb.SheetNames.indexOf(n)===-1);
+      if(missing.length){
+        throw new Error('다음 시트를 찾을 수 없습니다: '+missing.join(', '));
+      }
+      SERVER_DATA = {
+        currOverdue: readSheetArray(wb, SHEET_NAMES.currOverdue),
+        currPayment: readSheetArray(wb, SHEET_NAMES.currPayment),
+        prevOverdue: readSheetArray(wb, SHEET_NAMES.prevOverdue),
+        prevPayment: readSheetArray(wb, SHEET_NAMES.prevPayment),
+        fetchedAt: new Date().toISOString()
+      };
+      initFromServerData();
+      setGsheetStatus('업로드 완료 · 마지막 갱신: '+new Date(SERVER_DATA.fetchedAt).toLocaleString('ko-KR'), '#8fe3c0');
+    }catch(err){
+      console.error(err);
+      setGsheetStatus('업로드 오류: '+err.message, '#ffb4ae');
+    }
+    evt.target.value = ''; // 같은 파일 재업로드 허용
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+document.getElementById('data-file-input').addEventListener('change', handleDataFile);
+document.getElementById('refresh-btn').addEventListener('click', function(){
+  location.reload();
+});
+
+/* ============ 공용: ExcelJS 워크북을 파일로 다운로드 ============ */
+async function downloadWorkbook(wb, filename, statusEl){
+  try{
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    statusEl.textContent = `"${filename}" 생성 완료`;
+    statusEl.style.color = '#8fe3c0';
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = '다운로드 실패: '+err.message;
+    statusEl.style.color = '#ffb4ae';
+  }
+}
+const HEADER_GRAY_ARGB = 'FFD9D9D9';
+const THIN = {style:'thin'};
+const FULL_BORDER = {top:THIN,left:THIN,bottom:THIN,right:THIN};
+
+/* ============ 연체 수용가 현황 보고 (엑셀 출력, 클라이언트에서 직접 생성) ============
+   예전에는 Apps Script 서버(Code.gs의 generateReportXlsx)가 구글시트를 만들어 서식을
+   입힌 뒤 xlsx로 변환해서 내려줬지만, 지금은 서버가 없으므로 ExcelJS로 브라우저에서
+   같은 서식(병합/정렬/테두리/숫자서식)을 직접 만들어 다운로드합니다. */
+function buildReportWorkbook(customers, asofStr){
+  const groups = {};
+  customers.forEach(function(c){
+    if(c.overdueMonths<=0) return;
+    if(!groups[c.overdueMonths]) groups[c.overdueMonths]=[];
+    groups[c.overdueMonths].push(c);
+  });
+  const monthKeys = Object.keys(groups).map(Number).sort((a,b)=>a-b);
+
+  let totalAmt=0, totalCount=0, severeAmt=0, severeCount=0;
+  customers.forEach(function(c){
+    const remMonths = (c.remainingOverdueMonths!=null) ? c.remainingOverdueMonths : c.overdueMonths;
+    const remTotal = (c.remainingTotal!=null) ? c.remainingTotal : c.total;
+    if(remMonths<=0) return;
+    totalAmt += remTotal; totalCount++;
+    if(remMonths>=3){ severeAmt+=remTotal; severeCount++; }
+  });
+
+  function fmt(n){ return Number(n||0).toLocaleString('ko-KR'); }
+
+  function buildPaidNote(c){
+    if(!c.monthly || !c.monthly.length) return '';
+    const remainingByMonth = {};
+    (c.remainingMonthly||[]).forEach(function(m){ remainingByMonth[m.month]=m.amount; });
+    const notes = [];
+    const paidOffMonths = c.monthly.filter(function(m){ return !(m.month in remainingByMonth); });
+    if(paidOffMonths.length && c.payments && c.payments.length){
+      const pays = c.payments.slice().sort(function(a,b){ return a.date<b.date?-1:(a.date>b.date?1:0); });
+      paidOffMonths.forEach(function(m,i){
+        const p = pays[i];
+        if(!p){ notes.push('▷ '+m.month+'분 납부 완료'); return; }
+        const dt = new Date(p.date);
+        const md = !isNaN(dt) ? (dt.getMonth()+1)+'/'+dt.getDate() : p.date;
+        notes.push('▷ '+m.month+'분 '+md+' 납부 완료');
+      });
+    } else {
+      paidOffMonths.forEach(function(m){ notes.push('▷ '+m.month+'분 납부 완료'); });
+    }
+    c.monthly.forEach(function(m){
+      if(!(m.month in remainingByMonth)) return;
+      const paidPortion = Number(m.amount) - Number(remainingByMonth[m.month]);
+      if(paidPortion>0) notes.push('▷ '+m.month+'분 '+fmt(paidPortion)+' 부분 납부');
+    });
+    return notes.join('\n');
+  }
+
+  const rows = [];
+  const merges = [];
+  const centerRanges = [];
+  const rightSingle = [];
+  const numberMulti = [];
+  const monthlyBlocks = [];
+
+  rows.push(['연체 수용가 현황 보고','','','','','']);
+  merges.push([1,1,1,6]);
+  rows.push(['','','','','','']);
+  merges.push([2,1,2,5]);
+  rows.push(['','','','','',asofStr+' / 마케팅팀']);
+  rows.push(['','','','','','[단위: 원]']);
+  merges.push([4,1,4,5]);
+  rows.push(['미납개월','수용가 명','미납금액','','현황 및 발생원인','대응계획']);
+  merges.push([5,3,5,4]);
+
+  monthKeys.forEach(function(m){
+    const custs = groups[m];
+    const groupStartRow = rows.length+1;
+    custs.forEach(function(c){
+      const custStartRow = rows.length+1;
+      const monthly = (c.monthly && c.monthly.length>1) ? c.monthly : [];
+      const lineCount = monthly.length>0 ? monthly.length : 1;
+      const paidNote = buildPaidNote(c);
+      for(let i=0;i<lineCount;i++){
+        const monthlyText = monthly.length ? (monthly[i].month+'분 '+fmt(monthly[i].amount)) : '';
+        const amountCell = i===0 ? c.total : '';
+        rows.push(['', i===0?c.name:'', amountCell, monthlyText, i===0?paidNote:'', '']);
+      }
+      if(lineCount>1){
+        merges.push([custStartRow,3,custStartRow+lineCount-1,3]);
+        numberMulti.push({r:custStartRow, endR:custStartRow+lineCount-1});
+        monthlyBlocks.push({r:custStartRow, endR:custStartRow+lineCount-1});
+      } else {
+        merges.push([custStartRow,3,custStartRow,4]);
+        rightSingle.push({r:custStartRow});
+      }
+      merges.push([custStartRow,2,custStartRow+lineCount-1,2]);
+      centerRanges.push([custStartRow,2,custStartRow+lineCount-1,2]);
+      if(lineCount>1){
+        merges.push([custStartRow,5,custStartRow+lineCount-1,5]);
+        merges.push([custStartRow,6,custStartRow+lineCount-1,6]);
+      }
+      centerRanges.push([custStartRow,5,custStartRow+lineCount-1,5]);
+      centerRanges.push([custStartRow,6,custStartRow+lineCount-1,6]);
+    });
+    const groupRowCount = (rows.length+1)-groupStartRow;
+    rows[groupStartRow-1][0] = m;
+    if(groupRowCount>1) merges.push([groupStartRow,1,groupStartRow+groupRowCount-1,1]);
+    centerRanges.push([groupStartRow,1,groupStartRow+groupRowCount-1,1]);
+  });
+
+  const sumRow = rows.length+1;
+  rows.push([
+    '계','','','',
+    '* '+asofStr+' 기준 연체 현황\n'+
+      '- 총규모 : '+fmt(totalAmt)+' / '+totalCount+'개소\n'+
+      '- 3개월 이상 : '+fmt(severeAmt)+' / '+severeCount+'개소',
+    ''
+  ]);
+  merges.push([sumRow,1,sumRow,4]);
+  merges.push([sumRow,5,sumRow,6]);
+
+  const numRows = rows.length, numCols = 6;
+  const wb = new ExcelJS.Workbook();
+  const sheet = wb.addWorksheet('연체현황보고', {views:[{showGridLines:false}]});
+
+  for(let r=0;r<numRows;r++){
+    for(let c=0;c<numCols;c++){
+      const cell = sheet.getRow(r+1).getCell(c+1);
+      cell.value = rows[r][c];
+      cell.font = {name:'맑은 고딕', size:10};
+      cell.alignment = {vertical:'middle', wrapText:true};
+    }
+  }
+  merges.forEach(function(m){ sheet.mergeCells(m[0],m[1],m[2],m[3]); });
+
+  for(let r=5;r<=numRows;r++){
+    for(let c=1;c<=numCols;c++) sheet.getRow(r).getCell(c).border = FULL_BORDER;
+  }
+  monthlyBlocks.forEach(function(b){
+    for(let r=b.r;r<b.endR;r++){
+      const cellA = sheet.getRow(r).getCell(4);
+      cellA.border = Object.assign({}, cellA.border, {bottom:undefined});
+      const cellB = sheet.getRow(r+1).getCell(4);
+      cellB.border = Object.assign({}, cellB.border, {top:undefined});
+    }
+  });
+
+  const titleCell = sheet.getRow(1).getCell(1);
+  titleCell.font = {name:'맑은 고딕', size:20, bold:true};
+  titleCell.alignment = {vertical:'middle', horizontal:'center'};
+  titleCell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:HEADER_GRAY_ARGB}};
+  sheet.getRow(1).height = 34;
+
+  sheet.getRow(3).getCell(6).font = {name:'맑은 고딕', size:10, bold:true};
+  sheet.getRow(3).getCell(6).alignment = {horizontal:'right', vertical:'middle'};
+  sheet.getRow(4).getCell(6).font = {name:'맑은 고딕', size:9, bold:true};
+  sheet.getRow(4).getCell(6).alignment = {horizontal:'right', vertical:'middle'};
+
+  for(let c=1;c<=numCols;c++){
+    const hc = sheet.getRow(5).getCell(c);
+    hc.font = {name:'맑은 고딕', size:10, bold:true};
+    hc.alignment = {horizontal:'center', vertical:'middle'};
+    hc.fill = {type:'pattern', pattern:'solid', fgColor:{argb:HEADER_GRAY_ARGB}};
+  }
+  sheet.getRow(5).height = 21;
+
+  if(numRows>5){
+    for(let r=6;r<=numRows;r++){
+      sheet.getRow(r).getCell(1).alignment = Object.assign({}, sheet.getRow(r).getCell(1).alignment, {horizontal:'center'});
+      sheet.getRow(r).getCell(2).alignment = Object.assign({}, sheet.getRow(r).getCell(2).alignment, {horizontal:'left'});
+      sheet.getRow(r).getCell(4).alignment = Object.assign({}, sheet.getRow(r).getCell(4).alignment, {horizontal:'center'});
+      sheet.getRow(r).getCell(5).alignment = Object.assign({}, sheet.getRow(r).getCell(5).alignment, {horizontal:'left'});
+    }
+  }
+  rightSingle.forEach(function(o){
+    const cell = sheet.getRow(o.r).getCell(3);
+    cell.alignment = {horizontal:'right', vertical:'middle'};
+    cell.numFmt = '#,##0';
+  });
+  numberMulti.forEach(function(o){
+    for(let r=o.r;r<=o.endR;r++){
+      const cell = sheet.getRow(r).getCell(3);
+      cell.alignment = {horizontal:'right', vertical:'middle'};
+      cell.numFmt = '#,##0';
+    }
+  });
+
+  sheet.getRow(sumRow).getCell(1).font = {name:'맑은 고딕', size:10, bold:true};
+  sheet.getRow(sumRow).getCell(1).alignment = {horizontal:'left', vertical:'middle'};
+  sheet.getRow(sumRow).getCell(5).alignment = {wrapText:true, vertical:'middle'};
+  sheet.getRow(sumRow).height = 46;
+
+  sheet.getColumn(1).width = 10;
+  sheet.getColumn(2).width = 26;
+  sheet.getColumn(3).width = 14;
+  sheet.getColumn(4).width = 24;
+  sheet.getColumn(5).width = 40;
+  sheet.getColumn(6).width = 22;
+
+  return wb;
+}
+
+document.getElementById('report-export-btn').addEventListener('click', function(){
+  const statusEl = document.getElementById('report-export-status');
+  const btnEl = document.getElementById('report-export-btn');
+  statusEl.textContent = '엑셀 생성 중... (몇 초 걸릴 수 있어요)';
+  statusEl.style.color = 'rgba(255,255,255,0.75)';
+  btnEl.style.pointerEvents = 'none';
+  btnEl.style.opacity = '0.6';
+
+  const asof = currentAsofDate || new Date();
+  const asofStr = `${asof.getFullYear()}. ${asof.getMonth()+1}. ${asof.getDate()}.`;
+
+  function finish(){
+    btnEl.style.pointerEvents = '';
+    btnEl.style.opacity = '';
+  }
+
+  setTimeout(async function(){
+    try{
+      const wb = buildReportWorkbook(customers, asofStr);
+      const dateTag = asofStr.replace(/[^0-9]/g,'').slice(0,8);
+      await downloadWorkbook(wb, '연체_수용가_현황_보고_'+dateTag+'.xlsx', statusEl);
+    }catch(err){
+      console.error(err);
+      statusEl.textContent = '생성 실패: '+(err && err.message ? err.message : err);
+      statusEl.style.color = '#ffb4ae';
+    }
+    finish();
+  }, 0);
+});
+
+/* ============ 엑셀 출력(월 말 기준 미납, 클라이언트에서 직접 생성) ============
+   현재_미납내역 시트와 같은 열 구성으로 출력하되, 값은 납부이력이 반영된 이후(잔여 미납) 기준으로 채우고,
+   완납되어 남은 미납액이 없는 고객은 행 자체를 뺀다. */
+function buildCurrentOverdueWorkbook(payload, asofStr){
+  const header = payload.header || [];
+  const monthLabels = payload.monthLabels || [];
+  const dataRows = payload.rows || [];
+
+  const aoa = [header.slice()];
+  dataRows.forEach(function(r){
+    const monthlyByLabel = {};
+    (r.remainingMonthly||[]).forEach(function(m){ monthlyByLabel[m.month]=m.amount; });
+    const rowArr = [r.name, r.custNo, r.remainingOverdueMonths, r.remainingTotal];
+    monthLabels.forEach(function(label){
+      rowArr.push(Object.prototype.hasOwnProperty.call(monthlyByLabel,label) ? monthlyByLabel[label] : '');
+    });
+    aoa.push(rowArr);
+  });
+
+  const numRows = aoa.length, numCols = header.length || 4;
+  const wb = new ExcelJS.Workbook();
+  const sheet = wb.addWorksheet('미납내역', {views:[{state:'frozen', ySplit:1, showGridLines:false}]});
+
+  for(let r=0;r<numRows;r++){
+    for(let c=0;c<numCols;c++){
+      const cell = sheet.getRow(r+1).getCell(c+1);
+      cell.value = aoa[r][c];
+      cell.font = {name:'맑은 고딕', size:10};
+      cell.alignment = {vertical:'middle'};
+      cell.border = FULL_BORDER;
+    }
+  }
+  for(let c=1;c<=numCols;c++){
+    const hc = sheet.getRow(1).getCell(c);
+    hc.font = {name:'맑은 고딕', size:10, bold:true};
+    hc.alignment = {horizontal:'center', vertical:'middle'};
+    hc.fill = {type:'pattern', pattern:'solid', fgColor:{argb:HEADER_GRAY_ARGB}};
+  }
+  if(numRows>1){
+    for(let r=2;r<=numRows;r++){
+      for(let c=3;c<=numCols;c++){
+        const cell = sheet.getRow(r).getCell(c);
+        cell.alignment = {horizontal:'right', vertical:'middle'};
+        cell.numFmt = '#,##0';
+      }
+    }
+  }
+  sheet.getColumn(1).width = 26;
+  sheet.getColumn(2).width = 16;
+  sheet.getColumn(3).width = 12;
+  sheet.getColumn(4).width = 14;
+  for(let c=5;c<=numCols;c++) sheet.getColumn(c).width = 12;
+
+  return wb;
+}
+
+document.getElementById('overdue-export-btn').addEventListener('click', function(){
+  const statusEl = document.getElementById('overdue-export-status');
+  const btnEl = document.getElementById('overdue-export-btn');
+  statusEl.textContent = '엑셀 생성 중... (몇 초 걸릴 수 있어요)';
+  statusEl.style.color = 'rgba(255,255,255,0.75)';
+  btnEl.style.pointerEvents = 'none';
+  btnEl.style.opacity = '0.6';
+
+  const asof = currentAsofDate || new Date();
+  const asofStr = `${asof.getFullYear()}. ${asof.getMonth()+1}. ${asof.getDate()}.`;
+
+  const header = (SERVER_DATA.currOverdue && SERVER_DATA.currOverdue[0]) ? SERVER_DATA.currOverdue[0] : [];
+  const monthLabels = header.slice(4);
+  const rows = customers
+    .filter(c=>c.remainingOverdueMonths>0)
+    .map(c=>({
+      name: c.name,
+      custNo: c.custNo,
+      remainingOverdueMonths: c.remainingOverdueMonths,
+      remainingTotal: c.remainingTotal,
+      remainingMonthly: c.remainingMonthly
+    }));
+
+  function finish(){
+    btnEl.style.pointerEvents = '';
+    btnEl.style.opacity = '';
+  }
+
+  setTimeout(async function(){
+    try{
+      const wb = buildCurrentOverdueWorkbook({ header, monthLabels, rows }, asofStr);
+      const dateTag = asofStr.replace(/[^0-9]/g,'').slice(0,8);
+      await downloadWorkbook(wb, '월말기준_미납내역_'+dateTag+'.xlsx', statusEl);
+    }catch(err){
+      console.error(err);
+      statusEl.textContent = '생성 실패: '+(err && err.message ? err.message : err);
+      statusEl.style.color = '#ffb4ae';
+    }
+    finish();
+  }, 0);
+});
+</script>
+</body>
+</html>
