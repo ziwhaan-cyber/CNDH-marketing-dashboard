@@ -520,8 +520,8 @@
   }
   .subnav-btn:hover{ background:#EFEDE7; }
   .subnav-btn.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
-  /* [추가] 이슈 모니터링 탭 — 민원/ 폴더 화면을 그대로 표시 */
-  .voc-monitor-frame{
+  /* [추가] 다른 폴더의 화면을 탭 안에 표시 (이슈 모니터링 · 미납관리 공용) */
+  .voc-monitor-frame, .embed-frame{
     width:100%; height:100%; min-height:0; border:0; border-radius:0.6vw;
     background:#fff; box-shadow:0 0 0 1px var(--line);
   }
@@ -719,10 +719,19 @@
         <div class="subnav">
           <button class="subnav-btn active" data-arr-tab="arr-tab-status" onclick="showArrTab(this)">연체 현황</button>
           <button class="subnav-btn" data-arr-tab="arr-tab-notice" onclick="showArrTab(this)">미납안내</button>
+          <!-- [추가] 미납관리 탭 — cheongna-overdue-dashboard 폴더의 화면을 불러온다.
+               다음 버전에도 이 버튼과 arr-tab-overdue 패널, .embed-frame CSS, loadEmbedFrame 함수를 유지할 것 -->
+          <button class="subnav-btn" data-arr-tab="arr-tab-overdue" onclick="showArrTab(this);loadEmbedFrame('overdue-frame')">미납관리</button>
         </div>
       </div>
 
       <!-- ---------- 연체 현황 (기존 화면 그대로) ---------- -->
+      <!-- ---------- [추가] 미납관리 ---------- -->
+      <div class="arr-tab" id="arr-tab-overdue" style="grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); min-width:0;">
+        <iframe class="embed-frame" id="overdue-frame" title="미납관리 대시보드"
+                data-src="cheongna-overdue-dashboard/index.html" src="about:blank" loading="lazy"></iframe>
+      </div>
+
       <div class="arr-tab active" id="arr-tab-status" style="grid-template-columns:0.95fr 1.45fr; gap:1.6vw;">
 
       <!-- 왼쪽: 파일 업로드 + 연체 현황 표 -->
@@ -2313,11 +2322,12 @@
   // 필드 순서: [접수일, 고객명, 접수내용, 처리내용, 구분, 유형, 접수경로, 키워드, 대표지역, 상세지역, 접수주체, 계약종별, 에너지바우처구분, 해당월(접수일의 연-월만 추출)]
   var VOC_FULL = []; // 내장 스냅샷 제거 — 데이터는 엑셀 업로드로만 채워짐
 
-  // [추가] 이슈 모니터링 탭을 처음 열 때만 불러온다(첫 로딩을 늦추지 않기 위함)
-  function loadMonitorFrame(){
-    var f=document.getElementById('voc-monitor-frame');
+  // [추가] 끼워 넣은 화면은 그 탭을 처음 열 때만 불러온다(첫 로딩을 늦추지 않기 위함)
+  function loadEmbedFrame(id){
+    var f=document.getElementById(id);
     if(f&&f.getAttribute('src')==='about:blank')f.setAttribute('src',f.getAttribute('data-src'));
   }
+  function loadMonitorFrame(){ loadEmbedFrame('voc-monitor-frame'); }
 
   function showVocTab(btn){
     var target = btn.getAttribute('data-voc-tab');
