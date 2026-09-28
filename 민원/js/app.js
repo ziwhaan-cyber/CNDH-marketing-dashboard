@@ -27,6 +27,35 @@ function renderAll(){
   renderSiteWatch();
   renderDashContent();
   renderDashTodo();
+  saveSummary();
+}
+
+// 개요(첫 화면)에서 읽을 요약값만 저장한다. 접수 내용·고객명은 저장하지 않는다.
+function saveSummary(){
+  try{
+    if(!DATA.length){localStorage.removeItem('voc_im_summary');return;}
+    const c=dashCtx();
+    const {rows:prevRows}=dashPrevRows(c);
+    const sig=paBuildThemeSignals(c.rows,prevRows,paScanPeriodRawRows(c.y-1,c.mi),
+      {minCount:THEME_RULES.minCount,monthKey:dashMonthKey(),
+       inProgress:c.mode!=='end',cutDay:c.mode==='end'?0:c.cut,dim:c.dim});
+    const issues=(sig.themes||[]).filter(t=>t.grade!=='감소');
+    const open=c.rows.filter(paIsUnresolved);
+    const last=latestDataDate();
+    localStorage.setItem('voc_im_summary',JSON.stringify({
+      at:Date.now(), source:getSource(), month:dashMonthKey(), mode:c.mode,
+      count:c.rows.length, prevCount:prevRows.length,
+      pct:prevRows.length?Math.round((c.rows.length-prevRows.length)/prevRows.length*1000)/10:null,
+      issues:issues.length, topIssue:issues.length?`${issues[0].subject} ${issues[0].count}건`:'',
+      unresolved:open.length, asOf:last?fmt(last):'',
+      aged:(function(){const d=paDayNum(`${c.y}-${String(c.mi+1).padStart(2,'0')}-${String(c.cut).padStart(2,'0')}`);
+        return open.filter(r=>{const x=paDayNum(r.date);return x!=null&&d!=null&&(d-x)>=7;}).length;})(),
+      lagging:(sig.laggingMissing||[]).join(' · '),
+      unmapped:(sig.unmappedKeywords||[]).length,
+      sites:(function(){const w=buildSiteWatch();const a=w.filter(o=>o.level==='alert');
+        return a.length?`${a[0].site} ${a[0].count}건`:'';})()
+    }));
+  }catch(e){}
 }
 
 // ----- 월 선택 · 월중/월말 전환 -----

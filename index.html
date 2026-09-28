@@ -520,6 +520,33 @@
   }
   .subnav-btn:hover{ background:#EFEDE7; }
   .subnav-btn.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+  /* [추가] 개요 화면 */
+  .home-wrap{ overflow:auto; padding:1.8vw 1.2vw 2vw; }
+  .home-top{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:1.2vw; }
+  .home-top h2{ font-size:1.5vw; font-weight:800; color:var(--text); margin:0 0 0.3vw; }
+  .home-top p{ font-size:0.8vw; color:var(--text-soft); margin:0; }
+  .home-refresh{ background:#fff; border:1px solid var(--line); color:var(--text-soft);
+    border-radius:1.2vw; padding:0.3vw 0.9vw; font-size:0.75vw; cursor:pointer; }
+  .home-kpis{ display:grid; grid-template-columns:1fr 1fr; gap:1vw; margin-bottom:1.4vw; }
+  .home-kpi{ background:var(--panel); border:1px solid var(--line); border-radius:0.5vw; padding:1.1vw 1.3vw; }
+  .home-kpi-h{ display:flex; align-items:center; justify-content:space-between; margin-bottom:0.8vw; }
+  .home-kpi-t{ font-size:0.9vw; font-weight:700; color:var(--text); }
+  .home-kpi-s{ font-size:0.72vw; color:var(--text-soft); }
+  .home-nums{ display:flex; gap:2vw; }
+  .home-num .v{ font-size:1.5vw; font-weight:800; color:var(--text); line-height:1.2; }
+  .home-num .v small{ font-size:0.75vw; font-weight:600; margin-left:0.15vw; color:var(--text-soft); }
+  .home-num .k{ font-size:0.72vw; color:var(--text-soft); margin-top:0.2vw; }
+  .home-num .v.up{ color:#B4593F; } .home-num .v.dn{ color:#7C8894; }
+  .home-empty{ font-size:0.8vw; color:var(--text-soft); line-height:1.8; }
+  .home-link{ display:inline-block; margin-top:0.7vw; font-size:0.76vw; font-weight:700; color:var(--navy); cursor:pointer; }
+  .home-sec{ font-size:0.8vw; font-weight:700; color:var(--text); border-bottom:2px solid var(--navy);
+    padding-bottom:0.3vw; margin:0 0 0.7vw; }
+  .home-todo{ background:var(--panel); border:1px solid var(--line); border-radius:0.5vw; padding:0.2vw 1.2vw; }
+  .home-todo-row{ font-size:0.8vw; color:var(--text); line-height:1.8; padding:0.55vw 0; border-bottom:1px solid var(--line); }
+  .home-todo-row:last-child{ border-bottom:0; }
+  .home-todo-row b{ color:var(--navy); }
+  .home-todo-row .tag{ font-size:0.68vw; font-weight:700; color:var(--navy); background:rgba(35,107,122,.1);
+    padding:0.1vw 0.45vw; border-radius:1vw; margin-right:0.5vw; }
   /* [추가] 다른 폴더의 화면을 탭 안에 표시 (이슈 모니터링 · 미납관리 공용) */
   .voc-monitor-frame, .embed-frame{
     width:100%; height:100%; min-height:0; border:0; border-radius:0.6vw;
@@ -691,6 +718,8 @@
   .sales-md .md-preview .sub{ color:var(--text-soft); }
 
 </style>
+<!-- [추가] 세 화면 공통 테마 (레포 최상단 theme.css) — 이 한 줄만 유지하면 됨 -->
+<link rel="stylesheet" href="theme.css">
 </head>
 <body>
 <div class="slide">
@@ -704,7 +733,9 @@
 
   <!-- [신규] 좌상단 페이지 전환 버튼. 나중에 페이지 추가시 여기에 <button> 한 줄만 더 추가하면 됨 -->
   <nav class="page-nav">
-    <button class="page-btn active" data-target="page-arrears" onclick="showPage(this)">고객관리(연체)</button>
+    <!-- [추가] 홈 — 세 화면으로 들어가는 첫 화면 -->
+    <button class="page-btn active" data-target="page-home" onclick="showPage(this)">현황</button>
+    <button class="page-btn" data-target="page-arrears" onclick="showPage(this)">고객관리(연체)</button>
     <button class="page-btn" data-target="page-voc" onclick="showPage(this)">고객관리(민원)</button>
     <button type="button" id="btn-clear-uploaded-data" onclick="clearAllUploadedData()" class="btn-reset-data">데이터 초기화</button>
   </nav>
@@ -712,8 +743,30 @@
   <!-- [신규] 페이지들을 담는 컨테이너 (지금은 1개, 앞으로 여기에 .page 형제를 추가) -->
   <div class="page-container">
 
+
+    <!-- ---------- [추가] 개요 ---------- -->
+    <div class="page active body" id="page-home" style="grid-template-rows:minmax(0,1fr); min-width:0;">
+      <div class="home-wrap">
+        <div class="home-top">
+          <div>
+            <h2 id="home-title">전체 현황</h2>
+            <p id="home-asof">화면을 열면 각 업무의 최신 상태를 모아서 보여줍니다.</p>
+          </div>
+          <button class="home-refresh" onclick="renderHome()">새로고침</button>
+        </div>
+
+        <div class="home-kpis">
+          <div class="home-kpi" id="home-minap"></div>
+          <div class="home-kpi" id="home-voc"></div>
+        </div>
+
+        <div class="home-sec">오늘 확인할 것</div>
+        <div class="home-todo" id="home-todo"></div>
+      </div>
+    </div>
+
     <!-- [신규] 고객관리(연체) 페이지 -->
-    <div class="page active body" id="page-arrears">
+    <div class="page body" id="page-arrears">
 
       <div class="page-top">
         <div class="subnav">
@@ -1157,7 +1210,7 @@
       <!-- ---------- 데이터 ---------- -->
       <!-- ---------- [추가] 이슈 모니터링 ---------- -->
       <div class="voc-tab" id="voc-monitor" style="grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); min-width:0;">
-        <iframe class="voc-monitor-frame" id="voc-monitor-frame" title="민원 이슈 모니터링"
+        <iframe class="voc-monitor-frame" id="voc-monitor-frame" title="이슈 모니터링"
                 data-src="민원/index.html?embed=1" src="about:blank" loading="lazy"></iframe>
       </div>
 
@@ -1189,6 +1242,15 @@
 
 <script>
   // [신규] 페이지 전환 로직: 클릭한 버튼의 data-target에 해당하는 .page만 보이게 전환
+  // [추가] 홈 카드 → 해당 페이지와 탭으로 이동
+  function goHome(pageId,kind,tabId){
+    var pb=document.querySelector('.page-btn[data-target="'+pageId+'"]');
+    if(pb)showPage(pb);
+    var sel=(kind==='arr')?'[data-arr-tab="'+tabId+'"]':'[data-voc-tab="'+tabId+'"]';
+    var tb=document.querySelector('#'+pageId+' '+sel);
+    if(tb){ tb.click(); }
+  }
+
   function showPage(btn){
     var targetId = btn.getAttribute('data-target');
 
@@ -2326,6 +2388,31 @@
   function loadEmbedFrame(id){
     var f=document.getElementById(id);
     if(f&&f.getAttribute('src')==='about:blank')f.setAttribute('src',f.getAttribute('data-src'));
+    fitEmbed(id);
+  }
+  // [추가] 끼워 넣은 화면은 글자 크기가 고정(px)이라 큰 모니터에서 혼자 작아 보인다.
+  // 이 대시보드는 화면 너비(vw)에 맞춰 커지므로, 같은 비율로 배율을 맞춘다.
+  function fitEmbed(id){
+    var f=document.getElementById(id);
+    if(!f)return;
+    var apply=function(){
+      try{
+        var d=f.contentDocument; if(!d||!d.documentElement)return;
+        var z=Math.min(1.45,Math.max(0.85,f.clientWidth/1600));
+        d.documentElement.style.zoom=z;
+        // 공통 테마를 끼워 넣은 화면에도 적용한다(그쪽 파일은 수정하지 않는다)
+        if(d.head&&!d.getElementById('sharedTheme')){
+          var l=d.createElement('link');
+          l.id='sharedTheme'; l.rel='stylesheet';
+          l.href=new URL('theme.css',location.href).href;
+          d.head.appendChild(l);
+        }
+      }catch(e){}
+    };
+    f.addEventListener('load',apply);
+    apply();
+    if(!window.__fitBound){ window.__fitBound=true;
+      window.addEventListener('resize',function(){ ['overdue-frame','voc-monitor-frame'].forEach(fitEmbed); }); }
   }
   function loadMonitorFrame(){ loadEmbedFrame('voc-monitor-frame'); }
 
@@ -3411,5 +3498,85 @@
   })();
 </script>
 
+
+<script>
+/* [추가] 개요 화면 — 각 업무 화면이 저장해 둔 요약값을 읽어 보여준다.
+   요약에는 집계 숫자만 들어 있고 고객명·접수 내용은 들어 있지 않다. */
+function homeRead(key){ try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch(e){ return null; } }
+function homeWon(n){
+  if(n>=100000000) return (n/100000000).toFixed(1)+'억';
+  if(n>=10000) return Math.round(n/10000).toLocaleString()+'만';
+  return n.toLocaleString();
+}
+function renderHome(){
+  var v=homeRead('voc_im_summary'), m=homeRead('minap_summary');
+
+  var vocEl=document.getElementById('home-voc');
+  if(v){
+    var pct=(v.pct==null)?'—':((v.pct>0?'+':'')+v.pct+'%');
+    var cls=(v.pct>0)?'up':(v.pct<0?'dn':'');
+    vocEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">민원</span>'
+      +'<span class="home-kpi-s">'+(v.month||'')+(v.mode==='mid'?' 진행 중':' 확정')+(v.source==='sample'?' · 샘플':'')+'</span></div>'
+      +'<div class="home-nums">'
+      +'<div class="home-num"><div class="v">'+v.count+'<small>건</small></div><div class="k">접수</div></div>'
+      +'<div class="home-num"><div class="v '+cls+'">'+pct+'</div><div class="k">전월 대비</div></div>'
+      +'<div class="home-num"><div class="v">'+v.issues+'<small>건</small></div><div class="k">뜬 이슈</div></div>'
+      +'<div class="home-num"><div class="v">'+v.unresolved+'<small>건</small></div><div class="k">미처리</div></div>'
+      +'</div><span class="home-link" onclick="goHome(\'page-voc\',\'voc\',\'voc-monitor\')">이슈 모니터링 열기 →</span>';
+  }else{
+    vocEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">민원</span></div>'
+      +'<div class="home-empty">아직 데이터가 없습니다.<br>엑셀을 올리거나 샘플 데이터로 먼저 확인해 보세요.</div>'
+      +'<span class="home-link" onclick="goHome(\'page-voc\',\'voc\',\'voc-monitor\')">이슈 모니터링 열기 →</span>';
+  }
+
+  var mEl=document.getElementById('home-minap');
+  if(m){
+    mEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">연체 · 미납</span>'
+      +'<span class="home-kpi-s">'+(m.asOf||'')+' 기준</span></div>'
+      +'<div class="home-nums">'
+      +'<div class="home-num"><div class="v">'+m.count+'<small>개소</small></div><div class="k">미납 고객</div></div>'
+      +'<div class="home-num"><div class="v">'+homeWon(m.amount)+'<small>원</small></div><div class="k">미납 금액</div></div>'
+      +'<div class="home-num"><div class="v">'+m.longTerm+'<small>개소</small></div><div class="k">3개월 이상</div></div>'
+      +'</div><span class="home-link" onclick="goHome(\'page-arrears\',\'arr\',\'arr-tab-overdue\')">미납관리 열기 →</span>';
+  }else{
+    mEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">연체 · 미납</span></div>'
+      +'<div class="home-empty">미납 화면은 보안을 위해 데이터를 저장하지 않습니다.<br>엑셀을 올리면 이 자리에 현황이 표시됩니다.</div>'
+      +'<span class="home-link" onclick="goHome(\'page-arrears\',\'arr\',\'arr-tab-overdue\')">미납관리 열기 →</span>';
+  }
+
+  var rows=[];
+  var row=function(tag,text,cls){ return '<div class="home-todo-row"><span class="tag'+(cls?' '+cls:'')+'">'+tag+'</span>'+text+'</div>'; };
+  if(m){
+    if(m.longTerm) rows.push(row('미납','3개월 이상 장기 미납 <b>'+m.longTerm+'개소</b> · 법적조치 검토 대상'));
+    if(m.big) rows.push(row('미납','미납 100만원 이상 <b>'+m.big+'개소</b> · 개별 안내 필요'));
+    if(m.newly) rows.push(row('미납','이번 달 새로 밀린 곳 <b>'+m.newly+'개소</b> · 1차 안내 대상'));
+  }
+  if(v){
+    if(v.topIssue) rows.push(row('민원','뜬 이슈 · <b>'+v.topIssue+'</b>'));
+    if(v.sites) rows.push(row('민원','다발 단지 · <b>'+v.sites+'</b>'));
+    if(v.aged) rows.push(row('민원','처리내용 미입력 중 <b>'+v.aged+'건</b>은 7일 이상 경과'));
+    else if(v.unresolved) rows.push(row('민원','처리내용 미입력 <b>'+v.unresolved+'건</b>'));
+    if(v.lagging) rows.push(row('민원','<b>'+v.lagging+'</b> 자료 미유입 · 0건을 감소로 보지 말 것'));
+    if(v.unmapped) rows.push(row('민원','테마에 없는 새 키워드 <b>'+v.unmapped+'건</b> · 분류 확인'));
+  }
+  if(!rows.length) rows.push('<div class="home-todo-row">각 화면에서 데이터를 올리면 확인할 항목이 여기에 모입니다.</div>');
+  document.getElementById('home-todo').innerHTML=rows.join('');
+
+  var now=new Date();
+  var wd=['일','월','화','수','목','금','토'][now.getDay()];
+  document.getElementById('home-title').textContent =
+    (now.getMonth()+1)+'월 '+now.getDate()+'일 ('+wd+') 현황';
+  var when=[];
+  if(m&&m.asOf) when.push('미납 '+m.asOf);
+  if(v&&v.asOf) when.push('민원 '+v.asOf);
+  document.getElementById('home-asof').textContent = when.length
+    ? ('데이터 기준일 · '+when.join(' / '))
+    : '각 화면에서 엑셀을 올리면 이 자리에 현황이 모입니다.';
+}
+document.addEventListener('DOMContentLoaded',renderHome);
+window.addEventListener('storage',function(e){
+  if(e.key==='voc_im_summary'||e.key==='minap_summary')renderHome();
+});
+</script>
 </body>
 </html>
