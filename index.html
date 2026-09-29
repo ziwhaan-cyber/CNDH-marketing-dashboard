@@ -520,6 +520,8 @@
   }
   .subnav-btn:hover{ background:#EFEDE7; }
   .subnav-btn.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+  /* [수정] 채널별 키워드는 상위 3개만 표시 */
+  #voc-kw-wire-body tr:nth-child(n+4), #voc-kw-bot-body tr:nth-child(n+4){ display:none; }
   /* [추가] 개요 화면 */
   .home-wrap{ overflow:auto; padding:1.8vw 1.2vw 2vw; }
   .home-top{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:1.2vw; }
@@ -978,9 +980,9 @@
       <div class="page-top">
         <div class="subnav">
           <button class="subnav-btn active" data-voc-tab="voc-overview" onclick="showVocTab(this)">민원통계</button>
-          <button class="subnav-btn" data-voc-tab="voc-stats" onclick="showVocTab(this)">민원분석</button>
           <button class="subnav-btn" data-voc-tab="voc-voucher" onclick="showVocTab(this)">추가사항</button>
-          <button class="subnav-btn" data-voc-tab="voc-list" onclick="showVocTab(this)">접수내용</button>
+          <!-- [수정] 접수내용 탭 숨김 — 유선·챗봇에서 누르면 팝업으로 열리므로 탭은 노출하지 않음 -->
+          <button class="subnav-btn" style="display:none;" data-voc-tab="voc-list" onclick="showVocTab(this)">접수내용</button>
           <!-- [추가] 이슈 모니터링 탭 — 민원/ 폴더의 화면을 불러온다.
                다음 버전에도 이 버튼과 voc-monitor 패널, .voc-monitor-frame CSS, loadMonitorFrame 함수를 유지할 것 -->
           <button class="subnav-btn" data-voc-tab="voc-monitor" onclick="showVocTab(this);loadMonitorFrame()">이슈 모니터링</button>
@@ -991,6 +993,19 @@
       <!-- ---------- 민원통계 (신규) ---------- -->
       <div class="voc-tab active" id="voc-overview" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:1.1vw; min-width:0;">
         <div class="col" style="gap:0.7vw;">
+
+          <div class="kpi-row">
+            <div class="kpi-card">
+              <div class="kpi-top"><span class="kpi-label">당월 민원</span><span class="rate-badge bad" id="voc-kpi-delta">-</span></div>
+              <div class="kpi-value" id="voc-kpi-cur">-<span class="unit">건</span></div>
+              <div class="kpi-sub"><span id="voc-kpi-cur-label">-</span><b>전월 대비</b></div>
+            </div>
+            <div class="kpi-card type-c">
+              <div class="kpi-top"><span class="kpi-label">전월 민원</span></div>
+              <div class="kpi-value" style="color:var(--text-soft)" id="voc-kpi-prev">-<span class="unit">건</span></div>
+              <div class="kpi-sub"><span id="voc-kpi-prev-label">-</span></div>
+            </div>
+          </div>
 
           <!-- 1. 민원접수 현황 (접수방법 기준) -->
           <div class="panel" style="flex-shrink:0;">
@@ -1019,8 +1034,8 @@
             </div>
           </div>
 
-          <!-- 2. 키워드별 (민원분류와 위치 교체) -->
-          <div class="panel" style="flex:1; min-height:0;">
+          <!-- [수정] 키워드별 표는 화면에서 내림(집계 코드가 참조하므로 요소는 남겨 숨김) -->
+          <div class="panel" style="flex:1; min-height:0; display:none;">
             <div class="panel-title">키워드별 <span class="tag">당월 · 전월 · 누적</span></div>
             <table class="voc-sum-table" style="width:100%;">
               <thead><tr><th>키워드</th><th>당월</th><th>전월</th><th>누적</th></tr></thead>
@@ -1030,7 +1045,49 @@
 
         </div>
 
+        <!-- [수정] 지역별·고객유형별·민원분류는 화면에서 내림. 집계 코드가 참조하므로 요소는 남겨 숨김 -->
         <div class="col" style="gap:0.7vw;">
+
+          <div class="panel" style="flex-shrink:0;">
+            <div class="panel-title">챗봇 · 유선 채널 현황 <span class="tag">유선 vs 챗봇만 비교</span></div>
+            <div class="channel-compare">
+              <div class="channel-box">
+                <div class="cb-title" id="voc-ch-cur-title">당월</div>
+                <div id="voc-ch-cur-body"></div>
+              </div>
+              <div class="channel-box">
+                <div class="cb-title" id="voc-ch-ly-title">전년동월</div>
+                <div id="voc-ch-ly-body"></div>
+              </div>
+            </div>
+            <div class="channel-note" id="voc-ch-note"></div>
+          </div>
+
+          <div class="panel" style="flex-shrink:0;">
+            <div class="panel-title">채널별 키워드 TOP 3 <span class="tag" id="voc-kw-channel-tag">-</span></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8vw;">
+              <div>
+                <div class="kpi-section-title" id="voc-kw-wire-title">유선</div>
+                <table class="kw-table"><thead><tr><th>키워드</th><th>건수</th></tr></thead><tbody id="voc-kw-wire-body"></tbody></table>
+              </div>
+              <div>
+                <div class="kpi-section-title" id="voc-kw-bot-title">챗봇</div>
+                <table class="kw-table"><thead><tr><th>키워드</th><th>건수</th></tr></thead><tbody id="voc-kw-bot-body"></tbody></table>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" style="flex-shrink:0;">
+            <div class="panel-title">상위 키워드 5 <span class="tag">건수·비율</span></div>
+            <table class="kw-table">
+              <thead><tr><th>키워드</th><th>건수</th><th>비율</th></tr></thead>
+              <tbody id="voc-top5-body"></tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <div class="col" style="gap:0.7vw; display:none;">
 
           <div class="panel" style="flex-shrink:0;">
             <div class="panel-title">지역별 <span class="tag">당월 · 전월 · 누적</span></div>
@@ -1093,8 +1150,9 @@
 
       </div>
 
-      <!-- ---------- 민원분석 ---------- -->
-      <div class="voc-tab" id="voc-stats" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:1.1vw; min-width:0;">
+      <!-- ---------- [수정] 민원분석 탭 삭제 — 당월·전월, 채널 현황, 상위 키워드5는 민원통계로 옮김.
+           남은 표는 집계 코드가 참조하므로 화면에서만 숨김 ---------- -->
+      <div class="voc-tab" id="voc-stats" data-hidden-tab="1" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:1.1vw; min-width:0;">
         <div class="col" style="gap:0.7vw;">
 
           <div class="kpi-row">

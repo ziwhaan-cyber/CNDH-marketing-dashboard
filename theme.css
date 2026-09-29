@@ -65,33 +65,34 @@ body{ background:var(--ui-bg) !important; }
 
 /* ---------- 미납관리 대시보드 ---------- */
 /* 상단을 민원 화면과 같은 형태로 맞춘다: 짙은 박스 대신 흰 바탕 + 아래 구분선 */
-.dashboard-container{ max-width:none; padding:18px 22px 28px; }
+.dashboard-container{ max-width:none; padding:12px 18px 24px; }
 .dashboard-header{
   background:none !important; color:var(--ui-ink) !important;
   border-radius:0; border-bottom:1px solid var(--ui-line);
-  padding:0 0 16px; margin-bottom:18px; align-items:flex-end;
+  padding:0 0 9px; margin-bottom:12px; align-items:center;
 }
-.dashboard-header h1{ font-size:17px; font-weight:700; color:var(--ui-ink); }
-.dashboard-header p{ color:var(--ui-muted); font-size:13px; margin-top:4px; }
+.dashboard-header h1{ font-size:13px; font-weight:700; color:var(--ui-ink); }
+.dashboard-header p{ color:var(--ui-muted); font-size:11px; margin-top:2px; }
 .header-meta{
-  color:var(--ui-muted) !important; font-size:12px;
-  display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:10px;
+  color:var(--ui-muted) !important; font-size:11px;
+  display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:7px;
+  margin-left:auto; text-align:right;
 }
-.header-meta #asof-date{ font-size:15px; font-weight:700; color:var(--ui-ink); margin-left:4px; }
+.header-meta #asof-date{ font-size:12px; font-weight:700; color:var(--ui-ink); margin-left:3px; }
 /* 기준일과 버튼을 같은 줄에, 안내 문구는 그 아래 한 줄로 */
 .upload-row{ display:contents; }   /* 버튼과 안내문구를 상위 줄에 직접 배치 */
 .signed-in-row{ display:flex; gap:8px; align-items:center; }
 .upload-btn{
   background:var(--ui-accent) !important; border:1px solid var(--ui-accent) !important; color:#fff !important;
-  border-radius:20px !important; padding:4px 13px !important; font-size:12px !important; line-height:1.4;
+  border-radius:20px !important; padding:3px 11px !important; font-size:11px !important; line-height:1.4;
 }
 .refresh-btn,.export-btn{
   background:#fff !important; border:1px solid var(--ui-line) !important; color:#4A5560 !important;
-  border-radius:20px !important; padding:3px 11px !important; font-size:12px !important; line-height:1.4;
+  border-radius:20px !important; padding:2px 10px !important; font-size:11px !important; line-height:1.4;
 }
 #gsheet-status{
   order:99; width:100%; max-width:none !important; text-align:right !important;
-  color:var(--ui-muted) !important; font-size:11.5px !important; line-height:1.6; margin-top:2px;
+  color:var(--ui-muted) !important; font-size:10.5px !important; line-height:1.5; margin-top:1px;
 }
 #report-export-status,#overdue-export-status{ color:var(--ui-muted) !important; font-size:11.5px !important; }
 
@@ -180,3 +181,32 @@ body.embed .card{ padding:11px 13px; margin-bottom:9px; }
 .pa-box-c .pa-box-h{ color:var(--ui-accent) !important; }
 .pa-point-e b,.ai-action b,.ai-line b{ color:var(--ui-accent) !important; }
 .setup-card{ background:#FAF8F4 !important; }
+
+/* 끼워 넣었을 때 제목줄을 더 납작하게 — 대시보드 탭 줄과 높이를 맞춘다 */
+body.embed .top{ padding-bottom:5px; margin-bottom:6px; align-items:center; }
+body.embed .brand h1{ font-size:12.5px; }
+body.embed .asof{ font-size:10px; line-height:1.2; }
+body.embed .asof strong{ font-size:11.5px; display:inline; margin-left:4px; }
+body.embed .top-r{ gap:8px; align-items:center; }
+body.embed .top-acts{ gap:4px; }
+body.embed .top-acts .btn{ font-size:10.5px; padding:2px 9px; }
+body.embed .source-bar{ padding:5px 10px; font-size:11px; margin-top:6px; }
+body.embed .source-bar .btn{ font-size:10.5px; padding:2px 8px; }
+body.embed .toolbar{ margin:8px 0 5px; }
+body.embed .inp{ font-size:11.5px; padding:4px 8px; }
+
+/* 상단 액션 버튼은 눈에 덜 띄게 — 화면 주인공은 숫자와 이슈이지 버튼이 아니다 */
+.upload-btn,.refresh-btn,.export-btn{
+  border-radius:5px !important; padding:2px 8px !important; font-size:10.5px !important;
+  font-weight:600 !important; line-height:1.5 !important; box-shadow:none !important;
+}
+.upload-btn{ background:#fff !important; color:var(--ui-accent) !important; border:1px solid var(--ui-accent) !important; }
+.upload-btn:hover{ background:var(--ui-accent-soft) !important; }
+.refresh-btn,.export-btn{ color:var(--ui-muted) !important; border:1px solid var(--ui-line) !important; }
+#ai-notice-btn{ background:var(--ui-accent) !important; color:#fff !important; }
+
+.top-acts .btn{ border-radius:5px; padding:2px 9px; font-size:10.5px; font-weight:600; }
+.top-acts .btn.primary{ background:#fff; color:var(--ui-accent); border-color:var(--ui-accent); }
+.top-acts .btn.primary:hover{ background:var(--ui-accent-soft); color:var(--ui-accent); }
+body.embed .top-acts .btn{ font-size:10px; padding:2px 8px; }
+.source-bar .btn{ border-radius:5px; }
