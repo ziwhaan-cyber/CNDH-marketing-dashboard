@@ -34,7 +34,8 @@
     min-height:100vh;
   }
   .slide{
-    width:100%;
+    /* [수정] 창 높이가 모자라면 폭을 줄여 16:9를 유지 — 아래가 잘리거나 스크롤되지 않게 */
+    width:min(100%, 1920px, calc((100vh - 2px) * 16 / 9));
     max-width:1920px;
     aspect-ratio:16/9;
     background:var(--bg);
@@ -3915,5 +3916,6 @@ window.addEventListener('storage',function(e){
   if(e.key==='voc_im_summary'||e.key==='minap_summary')renderHome();
 });
 </script>
+
 </body>
 </html>
