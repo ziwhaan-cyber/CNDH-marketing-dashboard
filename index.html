@@ -919,8 +919,8 @@
                 <div class="nt-row">
                   <span>기준일</span><input type="date" id="nt-base-date" onchange="ntOnBaseDateChange()">
                   <span style="margin-left:0.6vw;">안내 시작월</span>
-                  <span id="nt-year-wrap" style="display:contents;"><input type="number" id="nt-start-year" min="2000" max="2100" onchange="ntYearTouched=true; ntRefreshAll()"><span>년</span></span>
-                  <select id="nt-start-month" onchange="if(!ntYearTouched) ntSetDefaultYear(); ntRefreshAll()"><option value="">-</option></select><span>월분부터</span>
+                  <span id="nt-year-wrap" style="display:none;"><input type="number" id="nt-start-year" min="2000" max="2100" onchange="ntYearTouched=true; ntRefreshAll()"><span>년</span></span>
+                  <select id="nt-start-month" onchange="if(!ntYearTouched) ntSetDefaultYear(); ntRefreshAll()"><option value="">00.0</option></select><span>월분부터</span>
                 </div>
                 <div class="nt-hint" id="nt-month-hint">엑셀을 올리면 월 컬럼을 읽어 목록을 채웁니다. 안내문에 표시할 첫 월을 고르세요(2개월 대상은 그 전월까지 표시).</div>
               </div>
@@ -3212,10 +3212,10 @@
   function ntFillMonthSelect(){
     var sel = document.getElementById('nt-start-month');
     sel.innerHTML = '';
-    // 월 컬럼에 연도가 있으면(26.7월) 연도 입력칸을 숨김 -> "26.7 월분부터"
+    // 기본은 연도 입력칸 숨김 -> "26.7 월분부터". 연도 없는 옛 양식(7월)을 올렸을 때만 연도칸 표시
     var hasYear = NT_MONTH_COLS.some(function(mc){ return mc.year; });
-    document.getElementById('nt-year-wrap').style.display = hasYear ? 'none' : 'contents';
-    if (!NT_MONTH_COLS.length){ sel.innerHTML = '<option value="">-</option>'; return; }
+    document.getElementById('nt-year-wrap').style.display = (NT_MONTH_COLS.length && !hasYear) ? 'contents' : 'none';
+    if (!NT_MONTH_COLS.length){ sel.innerHTML = '<option value="">00.0</option>'; return; }
     NT_MONTH_COLS.forEach(function(mc, i){
       var o = document.createElement('option');
       o.value = i; o.textContent = (mc.year ? String(mc.year).slice(2)+'.' : '')+mc.month;
