@@ -80,7 +80,9 @@ document.addEventListener('drop',e=>{
 function renderSourceBar(){
   const bar=document.getElementById('sourceBar');if(!bar)return;
   const s=getSource(),info=sourceLabel();
-  const opts=[['link','대시보드 데이터',linkAvailable()],['own','직접 올린 엑셀',true],['sample','샘플 데이터',true]];
+  // 끼워 넣은 화면에서는 출처 줄을 숨긴다(대시보드 데이터 고정)
+  if(isEmbedded()){bar.hidden=true;return;}
+  const opts=[['link','대시보드 데이터',linkAvailable()],['own','직접 올린 엑셀',true]];
   bar.className='source-bar src-'+s;
   bar.innerHTML=`<span class="src-now"><b>${esc(info.name)}</b>${esc(info.desc)}</span>`
     +`<span class="src-sw">${opts.filter(o=>o[2]).map(([v,label])=>

@@ -27,11 +27,13 @@ function linkRows(){
 }
 
 function getSource(){
+  // 대시보드 안(iframe)에서는 항상 대시보드 데이터를 쓴다 — 여기서 따로 올리지 않는다
+  if(isEmbedded())return 'link';
   let s=null;try{s=localStorage.getItem(SRC_LS);}catch(e){}
   if(s==='link'||s==='own'||s==='sample')return s;
-  // 처음 열었을 때: 대시보드 데이터가 있으면 그것부터
   return linkAvailable()?'link':'own';
 }
+function isEmbedded(){try{return window.self!==window.top;}catch(e){return true;}}
 function setSource(s){
   try{localStorage.setItem(SRC_LS,s);}catch(e){}
   // 출처가 바뀌면 이전 출처로 돌린 AI 결과는 맞지 않으므로 비운다

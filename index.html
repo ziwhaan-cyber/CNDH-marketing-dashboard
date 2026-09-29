@@ -522,46 +522,88 @@
   .subnav-btn.active{ background:var(--navy); color:#fff; border-color:var(--navy); }
   /* [수정] 채널별 키워드는 상위 3개만 표시 */
   #voc-kw-wire-body tr:nth-child(n+4), #voc-kw-bot-body tr:nth-child(n+4){ display:none; }
-  /* [추가] 개요 화면 */
-  .home-wrap{ overflow:auto; padding:1.8vw 1.2vw 2vw; }
-  .home-top{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:1.2vw; }
-  .home-top h2{ font-size:1.5vw; font-weight:800; color:var(--text); margin:0 0 0.3vw; }
-  .home-top p{ font-size:0.8vw; color:var(--text-soft); margin:0; }
-  .home-refresh{ background:#fff; border:1px solid var(--line); color:var(--text-soft);
-    border-radius:1.2vw; padding:0.3vw 0.9vw; font-size:0.75vw; cursor:pointer; }
-  .home-kpis{ display:grid; grid-template-columns:1fr 1fr; gap:1vw; margin-bottom:1.4vw; }
-  .home-kpi{ background:var(--panel); border:1px solid var(--line); border-radius:0.5vw; padding:1.1vw 1.3vw;
-    border-left:3px solid var(--line); }
-  #home-minap{ border-left-color:#236B7A; }                  /* 연체·미납 */
-  #home-voc{ border-left-color:#4A6B82; }                    /* 민원 */
-  #home-minap .home-kpi-t::before,#home-voc .home-kpi-t::before{
-    content:''; display:inline-block; width:0.42vw; height:0.42vw; border-radius:50%;
-    margin-right:0.4vw; vertical-align:middle; }
-  #home-minap .home-kpi-t::before{ background:#236B7A; }
-  #home-voc .home-kpi-t::before{ background:#4A6B82; }
-  #home-minap .home-link{ color:#236B7A; }
-  #home-voc .home-link{ color:#4A6B82; }
-  .home-kpi-h{ display:flex; align-items:center; justify-content:space-between; margin-bottom:0.8vw; }
-  .home-kpi-t{ font-size:0.9vw; font-weight:700; color:var(--text); }
-  .home-kpi-s{ font-size:0.72vw; color:var(--text-soft); }
-  .home-nums{ display:flex; gap:2vw; }
-  .home-num .v{ font-size:1.5vw; font-weight:800; color:var(--text); line-height:1.2; }
-  .home-num .v small{ font-size:0.75vw; font-weight:600; margin-left:0.15vw; color:var(--text-soft); }
-  .home-num .k{ font-size:0.72vw; color:var(--text-soft); margin-top:0.2vw; }
-  .home-num .v.up{ color:#A26A52; } .home-num .v.dn{ color:#7C8894; }
-  #home-minap .home-num .v.point{ color:#236B7A; }           /* 미납 카드의 강조 숫자 */
-  #home-minap .home-num .v.point small{ color:#236B7A; opacity:.8; }
-  .home-empty{ font-size:0.8vw; color:var(--text-soft); line-height:1.8; }
-  .home-link{ display:inline-block; margin-top:0.7vw; font-size:0.76vw; font-weight:700; color:var(--navy); cursor:pointer; }
-  .home-sec{ font-size:0.8vw; font-weight:700; color:var(--text); border-bottom:2px solid var(--navy);
-    padding-bottom:0.3vw; margin:0 0 0.7vw; }
-  .home-todo{ background:var(--panel); border:1px solid var(--line); border-radius:0.5vw; padding:0.2vw 1.2vw; }
-  .home-todo-row{ font-size:0.8vw; color:var(--text); line-height:1.8; padding:0.55vw 0; border-bottom:1px solid var(--line); }
+  /* [추가] 현황(메인) 화면 — 기존 대시보드 톤 유지 + 여백·계층·미니 차트 */
+  .home-wrap{ display:flex; flex-direction:column; width:100%; height:100%; min-width:0; min-height:0;
+    overflow:auto; padding:1.5vw 1.4vw 1.5vw; }
+  .home-top{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:1.1vw; }
+  .home-top h2{ font-size:1.6vw; font-weight:800; color:var(--text); margin:0 0 0.25vw; letter-spacing:-0.02em; }
+  .home-top p{ font-size:0.76vw; color:#6B7280; margin:0; }
+  .home-refresh{ background:#fff; border:1px solid var(--line); color:#6B7280; border-radius:1.2vw;
+    padding:0.34vw 1vw; font-size:0.72vw; font-weight:600; cursor:pointer; transition:background .12s,color .12s; }
+  .home-refresh:hover{ background:var(--bg); color:var(--text); }
+
+  .home-grid{ display:grid; grid-template-columns:minmax(0,0.85fr) minmax(0,1fr); gap:1.1vw;
+    flex:1; min-height:0; align-items:stretch; }
+  .home-col-left{ display:grid; grid-template-rows:1fr 1fr; gap:1.1vw; min-height:0; }
+  .home-col-right{ display:flex; flex-direction:column; min-width:0; min-height:0; }
+
+  .home-kpi{ position:relative; background:#fff; border:1px solid var(--line); border-radius:0.7vw;
+    padding:1.1vw 1.3vw 1vw 1.5vw; display:flex; flex-direction:column; min-height:0;
+    box-shadow:0 1px 3px rgba(15,23,42,.06); overflow:hidden; }
+  .home-kpi::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:0.28vw; }
+  #home-minap::before{ background:#236B7A; }
+  #home-voc::before{ background:#B45309; }
+
+  .home-kpi-h{ display:flex; align-items:baseline; justify-content:space-between; gap:0.5vw; margin-bottom:0.9vw; }
+  .home-kpi-t{ font-size:0.95vw; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
+  .home-kpi-t::before{ content:'●'; font-size:0.5vw; margin-right:0.35vw; vertical-align:middle; }
+  #home-minap .home-kpi-t::before{ color:#236B7A; }
+  #home-voc .home-kpi-t::before{ color:#B45309; }
+  .home-kpi-s{ font-size:0.68vw; color:#6B7280; font-weight:500; }
+
+  .home-nums{ display:flex; justify-content:space-between; gap:0.7vw; }
+  .home-num{ min-width:0; }
+  .home-num .v{ font-size:1.55vw; font-weight:800; color:var(--text); line-height:1.15; letter-spacing:-0.02em; }
+  .home-num .v small{ font-size:0.7vw; font-weight:600; margin-left:0.1vw; color:#6B7280; }
+  .home-num .k{ font-size:0.68vw; color:#6B7280; margin-top:0.25vw; }
+  .home-num .v.up{ color:#0F766E; } .home-num .v.dn{ color:#B45309; }
+  #home-minap .home-num .v.point{ color:#236B7A; }
+  #home-minap .home-num .v.point small{ color:#236B7A; opacity:.75; }
+
+  .home-chart{ margin-top:auto; padding-top:0.9vw; }
+  .home-chart-h{ display:flex; align-items:center; justify-content:space-between;
+    font-size:0.64vw; color:#9AA3AE; margin-bottom:0.35vw; }
+  .home-chart svg{ display:block; width:100%; height:4vw; }
+  .home-chart-empty{ font-size:0.66vw; color:#9AA3AE; padding:0.8vw 0; }
+
+  .home-foot-row{ display:flex; align-items:center; justify-content:flex-start; margin-top:0.85vw;
+    border-top:1px solid #EEF1F4; padding-top:0.8vw; }
+  .home-link{ font-size:0.72vw; font-weight:700; cursor:pointer; border:1px solid var(--line);
+    border-radius:1.2vw; padding:0.3vw 0.9vw; background:#fff; transition:background .12s; }
+  .home-link:hover{ background:var(--bg); }
+  #home-minap .home-link{ color:#236B7A; border-color:rgba(35,107,122,.35); }
+  #home-voc .home-link{ color:#B45309; border-color:rgba(180,83,9,.32); }
+  .home-empty{ font-size:0.76vw; color:#6B7280; line-height:1.75; }
+  .home-kpi.stale .home-nums,.home-kpi.stale .home-chart{ opacity:.45; }
+  .home-kpi.stale .home-kpi-s{ color:#B45309; font-weight:600; }
+
+  .home-sec-row{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:0.6vw; }
+  .home-sec{ font-size:0.9vw; font-weight:700; color:var(--text); }
+  .home-sec-note{ font-size:0.66vw; color:#9AA3AE; }
+  .home-todo{ background:#fff; border:1px solid var(--line); border-radius:0.7vw; padding:0 1.2vw;
+    flex:1; min-height:0; overflow:auto; box-shadow:0 1px 3px rgba(15,23,42,.06); }
+  .home-todo-row{ display:flex; align-items:center; gap:0.6vw; font-size:0.8vw; color:var(--text);
+    line-height:1.6; padding:0.78vw 0; border-bottom:1px solid #EEF1F4; transition:opacity .15s; }
   .home-todo-row:last-child{ border-bottom:0; }
-  .home-todo-row b{ color:var(--navy); }
-  .home-todo-row .tag{ font-size:0.68vw; font-weight:700; padding:0.1vw 0.45vw; border-radius:1vw; margin-right:0.5vw; }
-  .home-todo-row .tag.t-minap{ color:#236B7A; background:rgba(35,107,122,.12); }
-  .home-todo-row .tag.t-voc{ color:#4A6B82; background:rgba(74,107,130,.13); }
+  .home-todo-row b{ font-weight:700; }
+  .home-todo-row .mark{ flex:0 0 auto; width:0.6vw; height:0.6vw; border:1.5px solid #CBD5E1; border-radius:50%; }
+  #home-minap .home-kpi-t::before{ color:#236B7A; }
+  .home-todo-row .tag{ flex:0 0 auto; font-size:0.66vw; font-weight:700; color:#fff;
+    padding:0.16vw 0.6vw; border-radius:1vw; letter-spacing:-0.01em; }
+  .home-todo-row .tag.t-minap{ background:#0F766E; }
+  .home-todo-row .tag.t-voc{ background:#B45309; }
+  .home-todo-row .todo-text{ flex:1; min-width:0; }
+  .home-todo-row .delta{ flex:0 0 auto; font-size:0.66vw; font-weight:600; }
+  .home-todo-row .delta.up{ color:#B45309; }
+  .home-todo-row .delta.dn{ color:#0F766E; }
+  .home-todo-row .delta.same{ color:#9AA3AE; font-weight:500; }
+  .home-todo-row .go{ flex:0 0 auto; width:1.2vw; height:1.2vw; border-radius:50%; cursor:pointer;
+    border:1px solid var(--line); background:#fff; color:#9AA3AE; font-size:0.66vw; font-weight:700;
+    display:flex; align-items:center; justify-content:center; }
+  .home-todo-row .go:hover{ background:var(--bg); color:var(--text); }
+  .home-todo-row.done{ opacity:.5; }
+  .home-todo-row.done .mark{ background:#0F766E; border-color:#0F766E; position:relative; }
+  .home-todo-row.done .todo-text{ text-decoration:line-through; }
   .home-todo-row .mark{ display:inline-block; width:0.62vw; height:0.62vw; border:1.5px solid var(--line);
     border-radius:50%; margin-right:0.55vw; vertical-align:middle; }
   /* [추가] 다른 폴더의 화면을 탭 안에 표시 (이슈 모니터링 · 미납관리 공용) */
@@ -762,7 +804,7 @@
 
 
     <!-- ---------- [추가] 개요 ---------- -->
-    <div class="page active body" id="page-home" style="grid-template-rows:minmax(0,1fr); min-width:0;">
+    <div class="page active body" id="page-home" style="grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); min-width:0;">
       <div class="home-wrap">
         <div class="home-top">
           <div>
@@ -772,13 +814,20 @@
           <button class="home-refresh" onclick="renderHome()">새로고침</button>
         </div>
 
-        <div class="home-kpis">
-          <div class="home-kpi" id="home-minap"></div>
-          <div class="home-kpi" id="home-voc"></div>
+        <div class="home-grid">
+          <div class="home-col-left">
+            <div class="home-kpi" id="home-minap"></div>
+            <div class="home-kpi" id="home-voc"></div>
+          </div>
+          <div class="home-col-right">
+            <div class="home-sec-row">
+              <div class="home-sec">데일리 체크</div>
+              <span class="home-sec-note" id="home-check-note"></span>
+            </div>
+            <div class="home-todo" id="home-todo"></div>
+          </div>
         </div>
-
-        <div class="home-sec">데일리 체크</div>
-        <div class="home-todo" id="home-todo"></div>
+        </div>
       </div>
     </div>
 
@@ -3628,73 +3677,213 @@ function homeWon(n){
   if(n>=10000) return Math.round(n/10000).toLocaleString()+'만';
   return n.toLocaleString();
 }
+function homeSpark(vals,color){
+  if(!vals||vals.length<2) return '<div class="home-chart-empty">추이는 며칠 쌓이면 표시됩니다</div>';
+  var w=100,h=28,max=Math.max.apply(null,vals),min=Math.min.apply(null,vals),rng=(max-min)||1;
+  var pts=vals.map(function(v,i){ return [(i/(vals.length-1))*w, h-2-((v-min)/rng)*(h-6)]; });
+  var d=pts.map(function(p,i){ return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1); }).join(' ');
+  var area=d+' L'+w+' '+h+' L0 '+h+' Z';
+  var last=pts[pts.length-1];
+  return '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'
+    +'<path d="'+area+'" fill="'+color+'" opacity="0.10"></path>'
+    +'<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"></path>'
+    +'<circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="1.8" fill="'+color+'"></circle></svg>';
+}
+function homeBars(items,color,opt){
+  opt=opt||{};
+  if(!items||!items.length) return '<div class="home-chart-empty">데이터가 쌓이면 표시됩니다</div>';
+  var w=100,h=28,n=items.length,gap=opt.gap||3,bwMax=opt.maxW||4.5;
+  var bw=Math.min(bwMax,(w-gap*(n-1))/n);
+  var span=bw*n+gap*(n-1), off=(w-span)/2;
+  var max=Math.max.apply(null,items.map(function(o){return o.v;}))||1;
+  var bars=items.map(function(o,i){
+    var bh=Math.max(1.5,(o.v/max)*(h-6)), x=off+i*(bw+gap), y=h-bh;
+    var op=(i===n-1)?'1':'0.45';
+    return '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="0.6" fill="'+color+'" opacity="'+op+'"></rect>';
+  }).join('');
+  return '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'+bars+'</svg>';
+}
+// 민원 영업일 최근 7일 — 주말은 빼고 접수일 기준으로 센다
+function homeVocWorkdays(n){
+  try{
+    var raw=JSON.parse(localStorage.getItem('r9_vocRawRows')||'null');
+    if(!Array.isArray(raw)||!raw.length) return [];
+    var cnt={};
+    raw.forEach(function(r){
+      var d=String(r&&r[0]||''), m=/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/.exec(d);
+      if(!m){ var s2=Number(d); if(s2>20000&&s2<80000){ var dt=new Date(Date.UTC(1899,11,30+Math.floor(s2)));
+        m=[null,String(dt.getUTCFullYear()),String(dt.getUTCMonth()+1),String(dt.getUTCDate())]; } }
+      if(!m) return;
+      var key=m[1]+'-'+String(Number(m[2])).padStart(2,'0')+'-'+String(Number(m[3])).padStart(2,'0');
+      var w=new Date(key+'T00:00:00').getDay();
+      if(w===0||w===6) return;                 // 주말 제외
+      cnt[key]=(cnt[key]||0)+1;
+    });
+    return Object.keys(cnt).sort().slice(-n).map(function(k){
+      var dt=new Date(k+'T00:00:00');
+      return {k:(dt.getMonth()+1)+'.'+dt.getDate(), v:cnt[k]};
+    });
+  }catch(e){ return []; }
+}
+// 민원 월별 건수 — 대시보드 데이터 탭에 올린 원본에서 직접 센다
+function homeVocMonths(n){
+  try{
+    var raw=JSON.parse(localStorage.getItem('r9_vocRawRows')||'null');
+    if(!Array.isArray(raw)||!raw.length) return [];
+    var cnt={};
+    raw.forEach(function(r){
+      var d=String(r&&r[0]||'');
+      var m=/^(\d{4})[-./](\d{1,2})/.exec(d);
+      if(!m){ var n2=Number(d); if(n2>20000&&n2<80000){ var dt=new Date(Date.UTC(1899,11,30+Math.floor(n2)));
+        m=[null,String(dt.getUTCFullYear()),String(dt.getUTCMonth()+1)]; } }
+      if(!m) return;
+      var key=m[1]+'-'+String(Number(m[2])).padStart(2,'0');
+      cnt[key]=(cnt[key]||0)+1;
+    });
+    return Object.keys(cnt).sort().slice(-n).map(function(k){ return {k:k,v:cnt[k]}; });
+  }catch(e){ return []; }
+}
+// 데일리 체크 항목을 눌러 확인 표시 — 날짜가 바뀌면 자동으로 초기화된다
+function homeToggleDone(el){
+  el.classList.toggle('done');
+  var now=new Date();
+  var ymd=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  var keys=[].slice.call(document.querySelectorAll('.home-todo-row.done')).map(function(r){ return r.dataset.key; });
+  try{ localStorage.setItem('home_done',JSON.stringify({date:ymd,keys:keys})); }catch(e){}
+}
 function renderHome(){
   var v=homeRead('voc_im_summary'), m=homeRead('minap_summary');
 
-  var vocEl=document.getElementById('home-voc');
-  if(v){
-    var pct=(v.pct==null)?'—':((v.pct>0?'+':'')+v.pct+'%');
-    var cls=(v.pct>0)?'up':(v.pct<0?'dn':'');
-    vocEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">민원</span>'
-      +'<span class="home-kpi-s">'+(v.month||'')+(v.mode==='mid'?' 진행 중':' 확정')+(v.source==='sample'?' · 샘플':'')+'</span></div>'
-      +'<div class="home-nums">'
-      +'<div class="home-num"><div class="v">'+v.count+'<small>건</small></div><div class="k">접수</div></div>'
-      +'<div class="home-num"><div class="v '+cls+'">'+pct+'</div><div class="k">전월 대비</div></div>'
-      +'<div class="home-num"><div class="v">'+v.issues+'<small>건</small></div><div class="k">뜬 이슈</div></div>'
-      +'<div class="home-num"><div class="v">'+v.unresolved+'<small>건</small></div><div class="k">미처리</div></div>'
-      +'</div><span class="home-link" onclick="goHome(\'page-voc\',\'voc\',\'voc-monitor\')">이슈 모니터링 열기 →</span>';
-  }else{
-    vocEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">민원</span></div>'
-      +'<div class="home-empty">아직 데이터가 없습니다.<br>엑셀을 올리거나 샘플 데이터로 먼저 확인해 보세요.</div>'
-      +'<span class="home-link" onclick="goHome(\'page-voc\',\'voc\',\'voc-monitor\')">이슈 모니터링 열기 →</span>';
-  }
-
-  var mEl=document.getElementById('home-minap');
-  if(m){
-    mEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">연체 · 미납</span>'
-      +'<span class="home-kpi-s">'+(m.asOf||'')+' 기준</span></div>'
-      +'<div class="home-nums">'
-      +'<div class="home-num"><div class="v">'+m.count+'<small>개소</small></div><div class="k">미납 고객</div></div>'
-      +'<div class="home-num"><div class="v">'+homeWon(m.amount)+'<small>원</small></div><div class="k">미납 금액</div></div>'
-      +'<div class="home-num"><div class="v point">'+m.longTerm+'<small>개소</small></div><div class="k">3개월 이상</div></div>'
-      +'</div><span class="home-link" onclick="goHome(\'page-arrears\',\'arr\',\'arr-tab-overdue\')">미납관리 열기 →</span>';
-  }else{
-    mEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">연체 · 미납</span></div>'
-      +'<div class="home-empty">미납 화면은 보안을 위해 데이터를 저장하지 않습니다.<br>엑셀을 올리면 이 자리에 현황이 표시됩니다.</div>'
-      +'<span class="home-link" onclick="goHome(\'page-arrears\',\'arr\',\'arr-tab-overdue\')">미납관리 열기 →</span>';
-  }
-
-  var rows=[];
-  var row=function(tag,text){
-    var cls=(tag==='미납')?'t-minap':'t-voc';
-    return '<div class="home-todo-row"><span class="mark"></span><span class="tag '+cls+'">'+tag+'</span>'+text+'</div>';
-  };
-  if(m){
-    if(m.longTerm) rows.push(row('미납','3개월 이상 장기 미납 <b>'+m.longTerm+'개소</b> · 법적조치 검토 대상'));
-    if(m.big) rows.push(row('미납','미납 1,000만원 이상 <b>'+m.big+'개소</b> · 개별 안내 필요'));
-    if(m.newly) rows.push(row('미납','이번 달 새로 밀린 곳 <b>'+m.newly+'개소</b> · 1차 안내 대상'));
-  }
-  if(v){
-    if(v.topIssue) rows.push(row('민원','뜬 이슈 · <b>'+v.topIssue+'</b>'));
-    if(v.sites) rows.push(row('민원','다발 단지 · <b>'+v.sites+'</b>'));
-    if(v.aged) rows.push(row('민원','처리내용 미입력 중 <b>'+v.aged+'건</b>은 7일 이상 경과'));
-    else if(v.unresolved) rows.push(row('민원','처리내용 미입력 <b>'+v.unresolved+'건</b>'));
-    if(v.lagging) rows.push(row('민원','<b>'+v.lagging+'</b> 자료 미유입 · 0건을 감소로 보지 말 것'));
-    if(v.unmapped) rows.push(row('민원','테마에 없는 새 키워드 <b>'+v.unmapped+'건</b> · 분류 확인'));
-  }
-  if(!rows.length) rows.push('<div class="home-todo-row">각 화면에서 데이터를 올리면 조치할 항목이 여기에 모입니다.</div>');
-  document.getElementById('home-todo').innerHTML=rows.join('');
-
-  var now=new Date();
-  var wd=['일','월','화','수','목','금','토'][now.getDay()];
-  document.getElementById('home-title').textContent =
-    (now.getMonth()+1)+'월 '+now.getDate()+'일 ('+wd+') 현황';
+  // ── 날짜 제목 · 기준일
+  var now=new Date(), wd=['일','월','화','수','목','금','토'][now.getDay()];
+  document.getElementById('home-title').textContent=(now.getMonth()+1)+'월 '+now.getDate()+'일 ('+wd+') 현황';
   var when=[];
   if(m&&m.asOf) when.push('미납 '+m.asOf);
   if(v&&v.asOf) when.push('민원 '+v.asOf);
   document.getElementById('home-asof').textContent = when.length
     ? ('데이터 기준일 · '+when.join(' / '))
     : '각 화면에서 엑셀을 올리면 이 자리에 현황이 모입니다.';
+
+  // ── 어제 값 (변화 표시용)
+  var ymd=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  var hist={}; try{ hist=JSON.parse(localStorage.getItem('home_daily')||'{}'); }catch(e){ hist={}; }
+  var days=Object.keys(hist).sort();
+  var prevDays=days.filter(function(d){ return d<ymd; });
+  var prev=prevDays.length?hist[prevDays[prevDays.length-1]]:null;
+  var prevLabel=prevDays.length?prevDays[prevDays.length-1].slice(5).replace('-','.'):'';
+
+  // ── 연체·미납 카드
+  var mEl=document.getElementById('home-minap');
+  // 미납 화면은 데이터를 저장하지 않으므로, 요약이 오래되면 '지난 업로드 기준'임을 분명히 한다
+  var mAgeDays = m&&m.at ? Math.floor((Date.now()-m.at)/86400000) : null;
+  var mStale = (mAgeDays!=null && mAgeDays>=1);
+  if(m){
+    var amtSeries=days.map(function(d){ return hist[d] && hist[d].amount; }).filter(function(x){ return typeof x==='number'; });
+    if(typeof m.amount==='number') amtSeries=amtSeries.concat([m.amount]);
+    mEl.className='home-kpi'+(mStale?' stale':'');
+    mEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">연체 · 미납</span>'
+      +'<span class="home-kpi-s">'+(mStale
+          ? (mAgeDays+'일 전 업로드 기준 · 다시 올려주세요')
+          : ((m.asOf||'')+' 기준'))+'</span></div>'
+      +'<div class="home-nums">'
+      +'<div class="home-num"><div class="v">'+m.count+'<small>개소</small></div><div class="k">미납 고객</div></div>'
+      +'<div class="home-num"><div class="v">'+homeWon(m.amount)+'<small>원</small></div><div class="k">미납 금액</div></div>'
+      +'<div class="home-num"><div class="v point">'+m.longTerm+'<small>개소</small></div><div class="k">3개월 이상</div></div>'
+      +'</div>'
+      +'<div class="home-chart">'
+      +((amtSeries.length>2)
+        ? '<div class="home-chart-h"><span>미납 금액 추이</span><span>'+amtSeries.length+'일</span></div>'+homeSpark(amtSeries.slice(-7),'#236B7A')
+        : '<div class="home-chart-h"><span>연체 개월 구간별 고객 수</span><span>단위: 개소</span></div>'
+          +homeBars((m.buckets||[]).map(function(b){return {k:b.k,v:b.v};}),'#236B7A',{gap:3.4,maxW:4.5}))
+      +'</div>'
+      +'<div class="home-foot-row"><span></span><span class="home-link" onclick="goHome(\'page-arrears\',\'arr\',\'arr-tab-overdue\')">미납관리 열기 →</span></div>';
+  }else{
+    mEl.className='home-kpi';
+    mEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">연체 · 미납</span></div>'
+      +'<div class="home-empty">미납 화면은 보안을 위해 데이터를 저장하지 않습니다.<br>엑셀을 올리면 이 자리에 현황이 표시됩니다.</div>'
+      +'<div class="home-foot-row"><span></span><span class="home-link" onclick="goHome(\'page-arrears\',\'arr\',\'arr-tab-overdue\')">미납관리 열기 →</span></div>';
+  }
+
+  // ── 민원 카드
+  var vocEl=document.getElementById('home-voc');
+  if(v){
+    var pct=(v.pct==null)?'—':((v.pct>0?'+':'')+v.pct+'%');
+    var cls=(v.pct>0)?'up':(v.pct<0?'dn':'');
+    var days7=homeVocWorkdays(7);
+    vocEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">민원</span>'
+      +'<span class="home-kpi-s">'+(v.month||'')+(v.mode==='mid'?' 진행 중':' 확정')+'</span></div>'
+      +'<div class="home-nums">'
+      +'<div class="home-num"><div class="v">'+v.count+'<small>건</small></div><div class="k">접수</div></div>'
+      +'<div class="home-num"><div class="v '+cls+'">'+pct+'</div><div class="k">전월 대비</div></div>'
+      +'<div class="home-num"><div class="v">'+v.issues+'<small>건</small></div><div class="k">뜬 이슈</div></div>'
+      +'<div class="home-num"><div class="v">'+v.unresolved+'<small>건</small></div><div class="k">미처리</div></div>'
+      +'</div>'
+      +'<div class="home-chart"><div class="home-chart-h"><span>영업일 최근 7일 접수</span><span>'
+      +(days7.length?days7[0].k+' ~ '+days7[days7.length-1].k:'')+'</span></div>'
+      + homeBars(days7,'#B45309',{gap:3,maxW:4.5})+'</div>'
+      +'<div class="home-foot-row"><span></span><span class="home-link" onclick="goHome(\'page-voc\',\'voc\',\'voc-monitor\')">이슈 모니터링 열기 →</span></div>';
+  }else{
+    vocEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">민원</span></div>'
+      +'<div class="home-empty">데이터 탭에 엑셀을 올리면 이 자리에 현황이 표시됩니다.</div>'
+      +'<div class="home-foot-row"><span></span><span class="home-link" onclick="goHome(\'page-voc\',\'voc\',\'voc-monitor\')">이슈 모니터링 열기 →</span></div>';
+  }
+
+  // ── 데일리 체크 (중요도 정렬 + 어제 대비)
+  var items=[];
+  var add=function(o){ items.push(o); };
+  if(m&&!mStale){
+    if(m.longTerm) add({tag:'미납',key:'longTerm',v:m.longTerm,unit:'개소',w:100,go:['page-arrears','arr','arr-tab-overdue'],
+      text:'3개월 이상 장기 미납 <b>'+m.longTerm+'개소</b> · 법적조치 검토 대상'});
+    if(m.big) add({tag:'미납',key:'big',v:m.big,unit:'개소',w:90,go:['page-arrears','arr','arr-tab-overdue'],
+      text:'미납 1,000만원 이상 <b>'+m.big+'개소</b> · 개별 안내 필요'});
+    if(m.newly) add({tag:'미납',key:'newly',v:m.newly,unit:'개소',w:60,go:['page-arrears','arr','arr-tab-overdue'],
+      text:'이번 달 새로 밀린 곳 <b>'+m.newly+'개소</b> · 1차 안내 대상'});
+  }
+  if(v){
+    if(v.topIssue) add({tag:'민원',key:'issues',v:v.issues,unit:'건',w:95,go:['page-voc','voc','voc-monitor'],
+      text:'뜬 이슈 <b>'+v.issues+'건</b> · '+v.topIssue});
+    if(v.sites) add({tag:'민원',key:'sites',v:1,unit:'',w:80,go:['page-voc','voc','voc-monitor'],
+      text:'다발 단지 · <b>'+v.sites+'</b>'});
+    if(v.aged) add({tag:'민원',key:'aged',v:v.aged,unit:'건',w:85,go:['page-voc','voc','voc-monitor'],
+      text:'처리내용 미입력 중 <b>'+v.aged+'건</b>이 7일 이상 경과'});
+    else if(v.unresolved) add({tag:'민원',key:'unresolved',v:v.unresolved,unit:'건',w:50,go:['page-voc','voc','voc-monitor'],
+      text:'처리내용 미입력 <b>'+v.unresolved+'건</b>'});
+    if(v.lagging) add({tag:'민원',key:'lagging',v:1,unit:'',w:45,go:['page-voc','voc','voc-monitor'],
+      text:'<b>'+v.lagging+'</b> 자료 미유입 · 0건을 감소로 보지 말 것'});
+    if(v.unmapped) add({tag:'민원',key:'unmapped',v:v.unmapped,unit:'건',w:30,go:['page-voc','voc','voc-monitor'],
+      text:'테마에 없는 새 키워드 <b>'+v.unmapped+'건</b> · 분류 확인'});
+  }
+  items.sort(function(a,b){ return (b.w+Math.min(20,b.v))-(a.w+Math.min(20,a.v)); });
+
+  var doneKeys=[]; try{ var dn=JSON.parse(localStorage.getItem('home_done')||'{}'); if(dn.date===ymd) doneKeys=dn.keys||[]; }catch(e){}
+  var rows=items.map(function(it){
+    var delta='';
+    if(prev&&prev[it.key]!=null&&it.unit){
+      var d=it.v-prev[it.key];
+      if(d>0) delta='<span class="delta up">'+prevLabel+' 대비 +'+d+it.unit+'</span>';
+      else if(d<0) delta='<span class="delta dn">'+prevLabel+' 대비 '+d+it.unit+'</span>';
+      else delta='<span class="delta same">'+prevLabel+'과 같음</span>';
+    }
+    var cls=(it.tag==='미납')?'t-minap':'t-voc';
+    return '<div class="home-todo-row'+(doneKeys.indexOf(it.key)>=0?' done':'')+'" data-key="'+it.key+'" onclick="homeToggleDone(this)">'
+      +'<span class="mark"></span><span class="tag '+cls+'">'+it.tag+'</span>'
+      +'<span class="todo-text">'+it.text+'</span>'+delta
+      +'<span class="go" title="해당 화면 열기" onclick="event.stopPropagation();goHome(\''+it.go[0]+'\',\''+it.go[1]+'\',\''+it.go[2]+'\')">i</span></div>';
+  });
+  if(!rows.length) rows.push('<div class="home-todo-row"><span class="todo-text">각 화면에서 데이터를 올리면 조치할 항목이 여기에 모입니다.</span></div>');
+  document.getElementById('home-todo').innerHTML=rows.join('');
+  document.getElementById('home-check-note').textContent =
+    items.length ? (items.length+'건 · 중요한 순서') : '';
+
+  // ── 오늘 값 저장 (최근 7일)
+  var todayVals={}; items.forEach(function(it){ todayVals[it.key]=it.v; });
+  if(m&&typeof m.amount==='number') todayVals.amount=m.amount;
+  if(Object.keys(todayVals).length){
+    hist[ymd]=todayVals;
+    var keep=Object.keys(hist).sort().slice(-7), trimmed={};
+    keep.forEach(function(d){ trimmed[d]=hist[d]; });
+    try{ localStorage.setItem('home_daily',JSON.stringify(trimmed)); }catch(e){}
+  }
 }
 document.addEventListener('DOMContentLoaded',renderHome);
 window.addEventListener('storage',function(e){
