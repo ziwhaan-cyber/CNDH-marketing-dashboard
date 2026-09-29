@@ -524,27 +524,29 @@
   #voc-kw-wire-body tr:nth-child(n+4), #voc-kw-bot-body tr:nth-child(n+4){ display:none; }
   /* [추가] 현황(메인) 화면 — 기존 대시보드 톤 유지 + 여백·계층·미니 차트 */
   .home-wrap{ display:flex; flex-direction:column; width:100%; height:100%; min-width:0; min-height:0;
-    overflow:auto; padding:1.5vw 1.4vw 1.5vw; }
-  .home-top{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:1.1vw; }
-  .home-top h2{ font-size:1.6vw; font-weight:800; color:var(--text); margin:0 0 0.25vw; letter-spacing:-0.02em; }
+    overflow:hidden; padding:min(1.5vw,2.2vh) min(1.4vw,2vh) min(1.2vw,1.8vh); }
+  .home-top{ display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:min(1.1vw,1.7vh); flex:0 0 auto; }
+  .home-top h2{ font-size:min(1.6vw,2.5vh); font-weight:800; color:var(--text); margin:0 0 0.25vw; letter-spacing:-0.02em; }
   .home-top p{ font-size:0.76vw; color:#6B7280; margin:0; }
   .home-refresh{ background:#fff; border:1px solid var(--line); color:#6B7280; border-radius:1.2vw;
     padding:0.34vw 1vw; font-size:0.72vw; font-weight:600; cursor:pointer; transition:background .12s,color .12s; }
   .home-refresh:hover{ background:var(--bg); color:var(--text); }
 
-  .home-grid{ display:grid; grid-template-columns:minmax(0,0.85fr) minmax(0,1fr); gap:1.1vw;
-    flex:1; min-height:0; align-items:stretch; }
-  .home-col-left{ display:grid; grid-template-rows:1fr 1fr; gap:1.1vw; min-height:0; }
+  .home-grid{ display:grid; grid-template-columns:minmax(0,0.85fr) minmax(0,1fr); gap:min(1.1vw,1.6vh);
+    flex:1 1 auto; min-height:0; align-items:stretch; overflow:hidden; }
+  .home-col-left{ display:grid; grid-template-rows:minmax(0,1fr) minmax(0,1fr); gap:min(1.1vw,1.6vh);
+    min-height:0; overflow:hidden; }
   .home-col-right{ display:flex; flex-direction:column; min-width:0; min-height:0; }
 
   .home-kpi{ position:relative; background:#fff; border:1px solid var(--line); border-radius:0.7vw;
-    padding:1.1vw 1.3vw 1vw 1.5vw; display:flex; flex-direction:column; min-height:0;
+    padding:min(1.2vw,1.9vh) min(1.4vw,2vh) min(1vw,1.5vh) min(1.5vw,2.1vh);
+    display:flex; flex-direction:column; justify-content:space-between; min-height:0;
     box-shadow:0 1px 3px rgba(15,23,42,.06); overflow:hidden; }
   .home-kpi::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:0.28vw; }
   #home-minap::before{ background:#236B7A; }
   #home-voc::before{ background:#B45309; }
 
-  .home-kpi-h{ display:flex; align-items:baseline; justify-content:space-between; gap:0.5vw; margin-bottom:0.9vw; }
+  .home-kpi-h{ display:flex; align-items:baseline; justify-content:space-between; gap:0.5vw; margin-bottom:min(0.9vw,1.4vh); flex:0 0 auto; }
   .home-kpi-t{ font-size:0.95vw; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
   .home-kpi-t::before{ content:'●'; font-size:0.5vw; margin-right:0.35vw; vertical-align:middle; }
   #home-minap .home-kpi-t::before{ color:#236B7A; }
@@ -553,21 +555,22 @@
 
   .home-nums{ display:flex; justify-content:space-between; gap:0.7vw; }
   .home-num{ min-width:0; }
-  .home-num .v{ font-size:1.55vw; font-weight:800; color:var(--text); line-height:1.15; letter-spacing:-0.02em; }
+  .home-num .v{ font-size:min(1.55vw,2.4vh); font-weight:800; color:var(--text); line-height:1.15; letter-spacing:-0.02em; }
   .home-num .v small{ font-size:0.7vw; font-weight:600; margin-left:0.1vw; color:#6B7280; }
   .home-num .k{ font-size:0.68vw; color:#6B7280; margin-top:0.25vw; }
   .home-num .v.up{ color:#0F766E; } .home-num .v.dn{ color:#B45309; }
   #home-minap .home-num .v.point{ color:#236B7A; }
   #home-minap .home-num .v.point small{ color:#236B7A; opacity:.75; }
 
-  .home-chart{ margin-top:auto; padding-top:0.9vw; }
+  .home-chart{ margin-top:min(0.8vw,1.2vh); padding-top:min(0.7vw,1vh); min-height:0; flex:1 1 auto;
+    display:flex; flex-direction:column; justify-content:flex-end; }
   .home-chart-h{ display:flex; align-items:center; justify-content:space-between;
     font-size:0.64vw; color:#9AA3AE; margin-bottom:0.35vw; }
-  .home-chart svg{ display:block; width:100%; height:4vw; }
+  .home-chart svg{ display:block; width:100%; height:min(4.4vw,7vh); }
   .home-chart-empty{ font-size:0.66vw; color:#9AA3AE; padding:0.8vw 0; }
 
-  .home-foot-row{ display:flex; align-items:center; justify-content:flex-start; margin-top:0.85vw;
-    border-top:1px solid #EEF1F4; padding-top:0.8vw; }
+  .home-foot-row{ display:flex; align-items:center; justify-content:flex-start; margin-top:min(0.85vw,1.3vh);
+    border-top:1px solid #EEF1F4; padding-top:min(0.8vw,1.2vh); flex:0 0 auto; }
   .home-link{ font-size:0.72vw; font-weight:700; cursor:pointer; border:1px solid var(--line);
     border-radius:1.2vw; padding:0.3vw 0.9vw; background:#fff; transition:background .12s; }
   .home-link:hover{ background:var(--bg); }
@@ -581,9 +584,9 @@
   .home-sec{ font-size:0.9vw; font-weight:700; color:var(--text); }
   .home-sec-note{ font-size:0.66vw; color:#9AA3AE; }
   .home-todo{ background:#fff; border:1px solid var(--line); border-radius:0.7vw; padding:0 1.2vw;
-    flex:1; min-height:0; overflow:auto; box-shadow:0 1px 3px rgba(15,23,42,.06); }
-  .home-todo-row{ display:flex; align-items:center; gap:0.6vw; font-size:0.8vw; color:var(--text);
-    line-height:1.6; padding:0.78vw 0; border-bottom:1px solid #EEF1F4; transition:opacity .15s; }
+    flex:1 1 auto; min-height:0; overflow:auto; box-shadow:0 1px 3px rgba(15,23,42,.06); }
+  .home-todo-row{ display:flex; align-items:center; gap:0.6vw; font-size:min(0.8vw,1.25vh); color:var(--text);
+    line-height:1.55; padding:min(0.78vw,1.2vh) 0; border-bottom:1px solid #EEF1F4; transition:opacity .15s; }
   .home-todo-row:last-child{ border-bottom:0; }
   .home-todo-row b{ font-weight:700; }
   .home-todo-row .mark{ flex:0 0 auto; width:0.6vw; height:0.6vw; border:1.5px solid #CBD5E1; border-radius:50%; }
@@ -3753,6 +3756,10 @@ function homeToggleDone(el){
 }
 function renderHome(){
   var v=homeRead('voc_im_summary'), m=homeRead('minap_summary');
+  // 데이터 탭 원본이 없으면 예전 요약이 남아 있어도 표시하지 않는다(숫자와 화면이 어긋나지 않게)
+  var hasVocRaw=false;
+  try{ var raw=JSON.parse(localStorage.getItem('r9_vocRawRows')||'null'); hasVocRaw=Array.isArray(raw)&&raw.length>0; }catch(e){}
+  if(!hasVocRaw) v=null;
 
   // ── 날짜 제목 · 기준일
   var now=new Date(), wd=['일','월','화','수','목','금','토'][now.getDay()];
