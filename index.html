@@ -919,8 +919,8 @@
                 <div class="nt-row">
                   <span>기준일</span><input type="date" id="nt-base-date" onchange="ntOnBaseDateChange()">
                   <span style="margin-left:0.6vw;">안내 시작월</span>
-                  <input type="number" id="nt-start-year" min="2000" max="2100" onchange="ntYearTouched=true; ntRefreshAll()"><span>년</span>
-                  <select id="nt-start-month" onchange="ntRefreshAll()"><option value="">-</option></select><span>월분부터</span>
+                  <span id="nt-year-wrap" style="display:contents;"><input type="number" id="nt-start-year" min="2000" max="2100" onchange="ntYearTouched=true; ntRefreshAll()"><span>년</span></span>
+                  <select id="nt-start-month" onchange="if(!ntYearTouched) ntSetDefaultYear(); ntRefreshAll()"><option value="">-</option></select><span>월분부터</span>
                 </div>
                 <div class="nt-hint" id="nt-month-hint">엑셀을 올리면 월 컬럼을 읽어 목록을 채웁니다. 안내문에 표시할 첫 월을 고르세요(2개월 대상은 그 전월까지 표시).</div>
               </div>
@@ -2260,6 +2260,46 @@
     reader.readAsArrayBuffer(file);
   }
 
+  // ===== [공용] 미납 엑셀 월 컬럼 헤더 해석 =====
+  // "7월" -> {year:null, month:7} / "26.7월", "2026.7월", "26-07월", "26년 7월" -> {year:2026, month:7}
+  function arrParseMonthHeader(c){
+    var m = /^(?:(\d{2}|\d{4})\s*(?:[.\-\/]|년)\s*)?(\d{1,2})\s*월$/.exec(String(c===null||c===undefined?'':c).trim());
+    if (!m) return null;
+    var mo = Number(m[2]);
+    if (mo < 1 || mo > 12) return null;
+    var y = m[1] ? Number(m[1]) : null;
+    if (y !== null && y < 100) y += 2000;
+    return {year:y, month:mo};
+  }
+  // 연체 현황 기준일: 엑셀에서 가장 최근 미납월의 "다음 달 말일" (예: 26.7월 -> 2026. 8. 31.)
+  // 연도 없는 옛 양식은 첫 월 컬럼(가장 최근 월)을 쓰고, 연도는 시트명(예: "26.4월") 또는 오늘 날짜로 추정
+  function arrBaseDateFromSheet(ws, sheetName){
+    var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true});
+    var h = -1;
+    for (var i=0; i<Math.min(rows.length, 10); i++){
+      if (rows[i] && rows[i].some(function(c){ return String(c===null?'':c).trim() === '연체개월'; })){ h = i; break; }
+    }
+    if (h === -1) return null;
+    var cols = [];
+    rows[h].forEach(function(c){ var p = arrParseMonthHeader(c); if (p) cols.push(p); });
+    if (!cols.length) return null;
+    var y, mo;
+    var withYear = cols.filter(function(p){ return p.year !== null; });
+    if (withYear.length){
+      withYear.sort(function(a,b){ return (b.year*12+b.month) - (a.year*12+a.month); });
+      y = withYear[0].year; mo = withYear[0].month;
+    } else {
+      mo = cols[0].month;
+      var ref = /(\d{2}|\d{4})\s*\.\s*(\d{1,2})\s*월/.exec(sheetName||'');
+      var ry, rm;
+      if (ref){ ry = Number(ref[1]); if (ry < 100) ry += 2000; rm = Number(ref[2]); }
+      else { var t = new Date(); ry = t.getFullYear(); rm = t.getMonth()+1; }
+      y = (mo > rm) ? ry-1 : ry;
+    }
+    var last = new Date(y, mo+1, 0); // mo(1~12)의 다음 달 말일
+    return last.getFullYear()+'. '+(last.getMonth()+1)+'. '+last.getDate()+'.';
+  }
+
   // ===== [신규] 고객관리(연체) 페이지: 엑셀 업로드 -> 자동 집계 =====
   function renderArrearsFromRows(rows, ymd){
     // 연체개월 -> {count, amount} 집계
@@ -2319,8 +2359,9 @@
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, {defval:null});
 
-        // [고정 스냅샷] 업로드 시점의 실제 날짜 대신 '2026.07.31.' 기준으로 고정 표기
-        const ymd = '2026.07.31.';
+        // 기준일 = 가장 최근 미납월의 다음 달 말일 (예: 26.7월 -> 2026. 8. 31.)
+        const ymd = arrBaseDateFromSheet(ws, wb.SheetNames[0]);
+        if (!ymd) throw new Error("'26.7월' 같은 월 컬럼을 찾을 수 없어 기준일을 정할 수 없습니다");
         renderArrearsFromRows(rows, ymd);
         lsSave('arrearsRows', rows);
         lsSave('arrearsYmd', ymd);
@@ -3124,8 +3165,8 @@
 
         NT_MONTH_COLS = [];
         header.forEach(function(c, idx){
-          var m = /^(\d{1,2})\s*월$/.exec(c);
-          if (m) NT_MONTH_COLS.push({idx:idx, month:Number(m[1])});
+          var p = arrParseMonthHeader(c);   // "7월" 또는 "26.7월" 모두 인식
+          if (p) NT_MONTH_COLS.push({idx:idx, month:p.month, year:p.year});
         });
         if (!NT_MONTH_COLS.length) throw new Error("'3월' 같은 월 컬럼을 찾을 수 없습니다");
 
@@ -3171,10 +3212,13 @@
   function ntFillMonthSelect(){
     var sel = document.getElementById('nt-start-month');
     sel.innerHTML = '';
+    // 월 컬럼에 연도가 있으면(26.7월) 연도 입력칸을 숨김 -> "26.7 월분부터"
+    var hasYear = NT_MONTH_COLS.some(function(mc){ return mc.year; });
+    document.getElementById('nt-year-wrap').style.display = hasYear ? 'none' : 'contents';
     if (!NT_MONTH_COLS.length){ sel.innerHTML = '<option value="">-</option>'; return; }
     NT_MONTH_COLS.forEach(function(mc, i){
       var o = document.createElement('option');
-      o.value = i; o.textContent = mc.month;
+      o.value = i; o.textContent = (mc.year ? String(mc.year).slice(2)+'.' : '')+mc.month;
       sel.appendChild(o);
     });
     sel.value = String(NT_RAW.length ? ntGuessStartIdx() : 0);
@@ -3188,7 +3232,9 @@
     if (!NT_MONTH_COLS.length) return;
     var base = document.getElementById('nt-base-date').value || ntTodayIso();
     var by = Number(base.slice(0,4)), bm = Number(base.slice(5,7));
-    var sm = NT_MONTH_COLS[ntStartIdx()].month;
+    var sc = NT_MONTH_COLS[ntStartIdx()];
+    if (sc.year){ document.getElementById('nt-start-year').value = sc.year; return; } // 엑셀에 연도가 있으면 그대로 사용
+    var sm = sc.month;
     document.getElementById('nt-start-year').value = (sm > bm) ? by-1 : by;
   }
   function ntOnBaseDateChange(){
@@ -3204,7 +3250,8 @@
     for (var k=0; k<count; k++){
       var cur = NT_MONTH_COLS[start+k];
       if (!cur) break;
-      if (k > 0 && cur.month > NT_MONTH_COLS[start+k-1].month) y--;
+      if (cur.year && !ntYearTouched) y = cur.year;                          // 엑셀에 연도가 있으면 그 연도 사용
+      else if (k > 0 && cur.month > NT_MONTH_COLS[start+k-1].month) y--;
       out.push({label:y+'년 '+cur.month+'월분', idx:cur.idx});
     }
     return out;
@@ -3318,7 +3365,7 @@
       '<ul class="np-acct"><li>은 행 명 : 우리은행</li><li>계좌번호 : <b>1005-603-148101</b></li><li>예 금 주 : 청라에너지 ㈜.&nbsp;&nbsp;끝.</li></ul>'+
       '<div class="np-foot">'+
         '<div class="np-foot-logo"><img alt="청라에너지주식회사" src="'+NT_LOGO_WORD+'"></div>'+
-        '<div class="np-foot-row"><span class="np-foot-l"><span>우</span><span>22865 인천 서구 원당대로 1045 금호헤리티지Ⅶ 9층</span></span><span>www.e-cheongna.co.kr</span></div>'+
+        '<div class="np-foot-row"><span class="np-foot-l"><span>우</span><span>23450 인천광역시 검단구 원당대로 1045 금호헤리티지Ⅶ 9층</span></span><span>www.cndh.co.kr</span></div>'+
         '<div class="np-foot-row"><span class="np-foot-l"><span>전화</span><span>1522-2479</span><span>FAX</span><span>032-563-8869</span><span>/</span></span><span>cs@e-cheongna.co.kr</span></div>'+
       '</div>';
     page.querySelector('.np-to').textContent = rec.name;
