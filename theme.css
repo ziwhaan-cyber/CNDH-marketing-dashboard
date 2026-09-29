@@ -209,4 +209,70 @@ body.embed .inp{ font-size:11.5px; padding:4px 8px; }
 .top-acts .btn.primary{ background:#fff; color:var(--ui-accent); border-color:var(--ui-accent); }
 .top-acts .btn.primary:hover{ background:var(--ui-accent-soft); color:var(--ui-accent); }
 body.embed .top-acts .btn{ font-size:10px; padding:2px 8px; }
-.source-bar .btn{ border-radius:5px; } 
+.source-bar .btn{ border-radius:5px; }
+
+/* 좁은 화면에서 표가 잘리지 않게 — 넘치면 그 칸 안에서만 가로 스크롤 */
+html,body{ max-width:100%; }
+.dashboard-container{ min-width:0; overflow-x:hidden; }
+.table-container,.chart-container,.customer-detail{ min-width:0; overflow-x:auto; }
+
+
+/* 차트가 칸 밖으로 나가지 않게 — 배율이 바뀌어도 칸 너비에 맞춘다 */
+.chart-container{ overflow:hidden; }
+.chart-container canvas{ max-width:100% !important; height:auto !important; }
+
+/* 미납 화면 정리 — 카드는 작게, 차트는 나란히 */
+:root{ --ui-up:#A26A52; }                       /* 증가 표시를 덜 튀는 톤으로 */
+.kpi-row{ grid-template-columns:repeat(auto-fit,minmax(180px,1fr)) !important; gap:10px !important; margin-bottom:12px !important; }
+.kpi-card{ padding:10px 14px !important; box-shadow:none !important; border:1px solid var(--ui-line); border-left:3px solid var(--ui-accent) !important; border-radius:var(--ui-radius) !important; }
+.kpi-label{ font-size:10.5px !important; margin-bottom:2px !important; }
+.kpi-value{ font-size:19px !important; line-height:1.25 !important; }
+.kpi-sub,.kpi-note{ font-size:10.5px !important; }
+/* 차트는 항상 가로로 나란히, 높이도 낮춘다 */
+.chart-row{ grid-template-columns:1fr 1fr !important; gap:10px !important; margin-bottom:12px !important; }
+/* 원래 한 칸짜리로 만든 줄은 그대로 한 칸 전체 폭 */
+.chart-row[style*="grid-template-columns:1fr"]{ grid-template-columns:1fr !important; }
+.chart-container{ padding:10px 12px !important; }
+.chart-container h3{ font-size:11.5px !important; margin-bottom:6px !important; }
+.chart-wrap{ height:180px !important; }
+.chart-wrap canvas{ max-height:180px !important; }
+/* 검색·타임라인 영역이 잘리지 않게 */
+.search-section{ padding:12px 14px !important; }
+.search-bar{ flex-wrap:wrap; }
+#search-input,#table-filter{ min-width:220px !important; flex:1 1 220px; }
+#search-result,#timeline-wrap,.timeline-wrap{ overflow-x:auto; }
+.table-section{ overflow-x:auto; }
+
+/* 미납 고객 목록은 가로 스크롤 없이 한 화면에 — 타임라인 버튼까지 바로 보이게 */
+.table-section{ overflow-x:visible !important; }
+.data-table{ width:100%; min-width:0 !important; table-layout:fixed; font-size:10.5px !important; }
+.data-table th,.data-table td{ padding:4px 6px !important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.data-table th{ font-size:9.5px !important; letter-spacing:0 !important; }
+.data-table td:first-child,.data-table th:first-child{ width:11%; }
+.data-table .pill-btn{ padding:2px 7px !important; font-size:10px !important; }
+
+/* 이슈 모니터링 상단 4칸을 낮춰 아래 내용이 먼저 보이게 */
+body.embed .stat-row{ gap:8px; }
+body.embed .stat-cell{ padding:8px 11px; }
+body.embed .stat-cell .k{ font-size:10.5px; margin-bottom:2px; }
+body.embed .stat-cell .v{ font-size:19px; line-height:1.2; }
+body.embed .stat-cell .v small{ font-size:10.5px; }
+body.embed .stat-cell .s{ font-size:10px; margin-top:2px; }
+body.embed .scope-h{ margin:8px 0 6px; }
+body.embed .scope-t{ font-size:14px; }
+body.embed .dash-sec-l{ margin:12px 0 5px; }
+body.embed .card{ padding:9px 11px; margin-bottom:8px; }
+body.embed .stat-line{ padding:4px 0; }
+
+/* 끼워 넣은 화면에서는 이슈 카드를 요약만 — 판정 기준·근거 줄은 접어둔다.
+   상세는 '새 탭에서 크게 보기'로 확인. 조치 필요 사항은 현황 화면의 데일리 체크와 겹쳐서 내린다. */
+body.embed #dashTodo{ display:none; }
+body.embed #themeAlerts .stat-line-b{ display:none; }
+body.embed #themeAlerts .stat-line{ padding:6px 0; }
+body.embed #themeAlerts .ai-line{ margin-top:3px; }
+/* AI 분석에 무게를 싣는다 */
+body.embed #aiSection .card{ border-left:3px solid var(--ui-accent); }
+body.embed #aiSection .dash-sec-l{ font-size:14px; }
+body.embed #aiSection .pa-box{ padding:10px 12px; }
+/* 이슈 카드의 '조치' 줄도 끼워 넣은 화면에서는 생략 — AI 분석 칸에서 원인과 함께 본다 */
+body.embed #themeAlerts .ai-line-a{ display:none; }

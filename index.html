@@ -530,7 +530,17 @@
   .home-refresh{ background:#fff; border:1px solid var(--line); color:var(--text-soft);
     border-radius:1.2vw; padding:0.3vw 0.9vw; font-size:0.75vw; cursor:pointer; }
   .home-kpis{ display:grid; grid-template-columns:1fr 1fr; gap:1vw; margin-bottom:1.4vw; }
-  .home-kpi{ background:var(--panel); border:1px solid var(--line); border-radius:0.5vw; padding:1.1vw 1.3vw; }
+  .home-kpi{ background:var(--panel); border:1px solid var(--line); border-radius:0.5vw; padding:1.1vw 1.3vw;
+    border-left:3px solid var(--line); }
+  #home-minap{ border-left-color:#236B7A; }                  /* 연체·미납 */
+  #home-voc{ border-left-color:#4A6B82; }                    /* 민원 */
+  #home-minap .home-kpi-t::before,#home-voc .home-kpi-t::before{
+    content:''; display:inline-block; width:0.42vw; height:0.42vw; border-radius:50%;
+    margin-right:0.4vw; vertical-align:middle; }
+  #home-minap .home-kpi-t::before{ background:#236B7A; }
+  #home-voc .home-kpi-t::before{ background:#4A6B82; }
+  #home-minap .home-link{ color:#236B7A; }
+  #home-voc .home-link{ color:#4A6B82; }
   .home-kpi-h{ display:flex; align-items:center; justify-content:space-between; margin-bottom:0.8vw; }
   .home-kpi-t{ font-size:0.9vw; font-weight:700; color:var(--text); }
   .home-kpi-s{ font-size:0.72vw; color:var(--text-soft); }
@@ -538,7 +548,9 @@
   .home-num .v{ font-size:1.5vw; font-weight:800; color:var(--text); line-height:1.2; }
   .home-num .v small{ font-size:0.75vw; font-weight:600; margin-left:0.15vw; color:var(--text-soft); }
   .home-num .k{ font-size:0.72vw; color:var(--text-soft); margin-top:0.2vw; }
-  .home-num .v.up{ color:#B4593F; } .home-num .v.dn{ color:#7C8894; }
+  .home-num .v.up{ color:#A26A52; } .home-num .v.dn{ color:#7C8894; }
+  #home-minap .home-num .v.point{ color:#236B7A; }           /* 미납 카드의 강조 숫자 */
+  #home-minap .home-num .v.point small{ color:#236B7A; opacity:.8; }
   .home-empty{ font-size:0.8vw; color:var(--text-soft); line-height:1.8; }
   .home-link{ display:inline-block; margin-top:0.7vw; font-size:0.76vw; font-weight:700; color:var(--navy); cursor:pointer; }
   .home-sec{ font-size:0.8vw; font-weight:700; color:var(--text); border-bottom:2px solid var(--navy);
@@ -547,8 +559,11 @@
   .home-todo-row{ font-size:0.8vw; color:var(--text); line-height:1.8; padding:0.55vw 0; border-bottom:1px solid var(--line); }
   .home-todo-row:last-child{ border-bottom:0; }
   .home-todo-row b{ color:var(--navy); }
-  .home-todo-row .tag{ font-size:0.68vw; font-weight:700; color:var(--navy); background:rgba(35,107,122,.1);
-    padding:0.1vw 0.45vw; border-radius:1vw; margin-right:0.5vw; }
+  .home-todo-row .tag{ font-size:0.68vw; font-weight:700; padding:0.1vw 0.45vw; border-radius:1vw; margin-right:0.5vw; }
+  .home-todo-row .tag.t-minap{ color:#236B7A; background:rgba(35,107,122,.12); }
+  .home-todo-row .tag.t-voc{ color:#4A6B82; background:rgba(74,107,130,.13); }
+  .home-todo-row .mark{ display:inline-block; width:0.62vw; height:0.62vw; border:1.5px solid var(--line);
+    border-radius:50%; margin-right:0.55vw; vertical-align:middle; }
   /* [추가] 다른 폴더의 화면을 탭 안에 표시 (이슈 모니터링 · 미납관리 공용) */
   .voc-monitor-frame, .embed-frame{
     width:100%; height:100%; min-height:0; border:0; border-radius:0.6vw;
@@ -762,7 +777,7 @@
           <div class="home-kpi" id="home-voc"></div>
         </div>
 
-        <div class="home-sec">오늘 확인할 것</div>
+        <div class="home-sec">데일리 체크</div>
         <div class="home-todo" id="home-todo"></div>
       </div>
     </div>
@@ -3641,7 +3656,7 @@ function renderHome(){
       +'<div class="home-nums">'
       +'<div class="home-num"><div class="v">'+m.count+'<small>개소</small></div><div class="k">미납 고객</div></div>'
       +'<div class="home-num"><div class="v">'+homeWon(m.amount)+'<small>원</small></div><div class="k">미납 금액</div></div>'
-      +'<div class="home-num"><div class="v">'+m.longTerm+'<small>개소</small></div><div class="k">3개월 이상</div></div>'
+      +'<div class="home-num"><div class="v point">'+m.longTerm+'<small>개소</small></div><div class="k">3개월 이상</div></div>'
       +'</div><span class="home-link" onclick="goHome(\'page-arrears\',\'arr\',\'arr-tab-overdue\')">미납관리 열기 →</span>';
   }else{
     mEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">연체 · 미납</span></div>'
@@ -3650,10 +3665,13 @@ function renderHome(){
   }
 
   var rows=[];
-  var row=function(tag,text,cls){ return '<div class="home-todo-row"><span class="tag'+(cls?' '+cls:'')+'">'+tag+'</span>'+text+'</div>'; };
+  var row=function(tag,text){
+    var cls=(tag==='미납')?'t-minap':'t-voc';
+    return '<div class="home-todo-row"><span class="mark"></span><span class="tag '+cls+'">'+tag+'</span>'+text+'</div>';
+  };
   if(m){
     if(m.longTerm) rows.push(row('미납','3개월 이상 장기 미납 <b>'+m.longTerm+'개소</b> · 법적조치 검토 대상'));
-    if(m.big) rows.push(row('미납','미납 100만원 이상 <b>'+m.big+'개소</b> · 개별 안내 필요'));
+    if(m.big) rows.push(row('미납','미납 1,000만원 이상 <b>'+m.big+'개소</b> · 개별 안내 필요'));
     if(m.newly) rows.push(row('미납','이번 달 새로 밀린 곳 <b>'+m.newly+'개소</b> · 1차 안내 대상'));
   }
   if(v){
@@ -3664,7 +3682,7 @@ function renderHome(){
     if(v.lagging) rows.push(row('민원','<b>'+v.lagging+'</b> 자료 미유입 · 0건을 감소로 보지 말 것'));
     if(v.unmapped) rows.push(row('민원','테마에 없는 새 키워드 <b>'+v.unmapped+'건</b> · 분류 확인'));
   }
-  if(!rows.length) rows.push('<div class="home-todo-row">각 화면에서 데이터를 올리면 확인할 항목이 여기에 모입니다.</div>');
+  if(!rows.length) rows.push('<div class="home-todo-row">각 화면에서 데이터를 올리면 조치할 항목이 여기에 모입니다.</div>');
   document.getElementById('home-todo').innerHTML=rows.join('');
 
   var now=new Date();
