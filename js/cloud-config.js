@@ -4,6 +4,6 @@
 // ★ 'service_role' 키는 절대 여기에 넣지 않는다(모든 규칙을 무시하는 관리자 키).
 // 두 값이 비어 있으면 공유 기능 없이 지금처럼 이 PC 안에서만 동작한다.
 window.CLOUD_CONFIG = {
-  url: '',
-  anonKey: ''
+  url: 'https://ojeklhggfjtmjtktcgou.supabase.co',
+  anonKey: 'sb_publishable_6FullXky-FZ1NQFfh1j6Hw_Tt4IC91R'
 };
