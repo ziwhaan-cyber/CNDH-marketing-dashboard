@@ -383,35 +383,86 @@ function demoExit(){
     .forEach(function(k){ localStorage.removeItem(k); }); }catch(e){}
   location.href=location.pathname;
 }
-// 연체 현황 시연 데이터 — 대시보드 쪽에서 가상 연체 파일을 만든다.
-// (미납관리 화면은 다른 분이 만든 화면이라 시연 모드를 넣지 않았다. 미납관리 탭은 엑셀을 올려야 채워진다)
-function demoArrearsRows(){
+// ---- 미납관리 시연 데이터 ----
+// 미납관리 화면은 다른 분이 만든 화면이라 파일에 시연 모드를 넣지 않는다. 대신 사람이 하듯이
+// 그 화면의 '엑셀 업로드'로 가상 고객 142명 샘플(그 화면에 보존된 샘플 생성 규칙과 같음)을 올린다.
+function demoFillMinap(cw){
+  try{
+    var X=cw.XLSX, inp=cw.document.getElementById('data-file-input'); if(!X||!inp) return;
+    var seed=20260918, rnd=function(){ seed=(seed*48271)%2147483647; return seed/2147483647; };
+    var months=['2026-04','2026-05','2026-06','2026-07','2026-08'];
+    var overdue=[['고객명','고객번호','연체개월','합계'].concat(months)], payment=[['고객명','고객번호','납부일시','납부금액']];
+    var prevOverdue=[overdue[0].slice()], prevPayment=[payment[0].slice()];
+    for(var i=0;i<142;i++){
+      var custNo='27'+String(1000000+Math.floor(rnd()*8999999)), name='고객 '+String(1001+i);
+      var n=1+Math.floor(Math.pow(rnd(),1.7)*5), amts=[], total=0;
+      for(var m=0;m<months.length;m++){ if(m>=months.length-n){ var a=40000+Math.floor(rnd()*260000); amts.push(a); total+=a; } else amts.push(0); }
+      overdue.push([name,custNo,n,total].concat(amts));
+      var pAmts=amts.slice(), pTotal=total;
+      if(rnd()<0.35){ var extra=50000+Math.floor(rnd()*150000); pAmts[0]=extra; pTotal+=extra; }
+      prevOverdue.push([name,custNo,Math.min(5,n+(rnd()<0.35?1:0)),pTotal].concat(pAmts));
+      var pays=Math.floor(rnd()*3);
+      for(var k=0;k<pays;k++){
+        var d=new Date(2026,7+Math.floor(rnd()*2),1+Math.floor(rnd()*28)), amt=30000+Math.floor(rnd()*180000);
+        payment.push([name,custNo,d,amt]);
+        if(rnd()<0.6) prevPayment.push([name,custNo,new Date(2026,6,1+Math.floor(rnd()*28)),amt]);
+      }
+    }
+    var wb=X.utils.book_new();
+    [['전월_미납내역',prevOverdue],['전월_납부이력',prevPayment],['현재_미납내역',overdue],['현재_납부이력',payment]]
+      .forEach(function(s){ X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(s[1],{cellDates:true}), s[0]); });
+    var buf=X.write(wb,{bookType:'xlsx',type:'array'});
+    var file=new cw.File([buf],'시연용_미납샘플.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    var dt=new cw.DataTransfer(); dt.items.add(file); inp.files=dt.files;
+    inp.dispatchEvent(new cw.Event('change',{bubbles:true}));
+  }catch(e){}
+}
+// 연체 현황 시연 데이터 — 미납관리 샘플 요약(연체 개월 구간별 고객 수·남은 금액)에서 만든다.
+// 두 화면의 개소 수·금액 합계가 서로 맞게 하기 위함
+function demoArrearsFromMinap(m){
+  if(!m||!m.buckets||!m.amount) return;
   var seed=11, rnd=function(){ seed=(seed*48271)%2147483647; return seed/2147483647; };
-  var rows=[];
-  for(var i=0;i<148;i++){
-    var mo = rnd()<.6 ? 1+Math.floor(rnd()*2) : (rnd()<.7 ? 3+Math.floor(rnd()*3) : 6+Math.floor(rnd()*13));
-    rows.push({'연체개월':mo, '합계':Math.round((60000+rnd()*240000)*mo/10)*10});
-  }
-  return rows;
+  var rows=[], w=0;
+  m.buckets.forEach(function(b){
+    for(var i=0;i<b.v;i++){
+      var mo=(b.k==='5+') ? 5+(i%5) : Number(b.k);   // 5개월 이상은 5~9개월로 나눠 장기 칸도 보이게
+      var x=mo*(0.6+rnd()*0.8); w+=x; rows.push({'연체개월':mo, _w:x});
+    }
+  });
+  var left=m.amount;
+  rows.forEach(function(r,i){ var a=(i===rows.length-1)?left:Math.round(m.amount*r._w/w/10)*10; left-=a; r['합계']=a; delete r._w; });
+  var ymd=m.asOf||'2026. 9. 18';
+  lsSave('arrearsRows',rows); lsSave('arrearsYmd',ymd);
+  try{ renderArrearsFromRows(rows,ymd); }catch(e){}
 }
 if(DEMO){
-  // 페이지가 저장값을 복원하기 전에 넣어 두면 연체 현황·데일리 체크가 평소처럼 읽는다
   try{
-    if(!lsLoad('arrearsRows',null)){ lsSave('arrearsRows',demoArrearsRows()); lsSave('arrearsYmd','2026. 8. 31.'); }
     // 시연용 '어제 기록' — 데일리 체크의 어제 대비 변화와 '해결' 표시를 보여주기 위한 가상 값(demo_ 저장 이름에만)
     if(!localStorage.getItem('demo_home_daily')){
-      var ar=lsLoad('arrearsRows',[]), arM=0, arL=0;
-      ar.forEach(function(r){ var mo=Number(r['연체개월'])||0; if(mo>=6) arL++; else if(mo>=3) arM++; });
       var yd=new Date(Date.now()-86400000), yk=yd.getFullYear()+'-'+String(yd.getMonth()+1).padStart(2,'0')+'-'+String(yd.getDate()).padStart(2,'0');
-      var hist0={}; hist0[yk]={arrLong:arL+2,arrMid:arM,issues:3,aged:6,lagging:1,unmapped:2};
+      var hist0={}; hist0[yk]={longTerm:49,newly:51,issues:3,aged:6,lagging:1,unmapped:2};
       localStorage.setItem('demo_home_daily',JSON.stringify(hist0));
     }
   }catch(e){}
+  // 미납관리 화면은 시연 모드를 몰라 항상 원래 이름(minap_summary)에 저장한다.
+  // 시연 값은 demo_ 이름으로 옮기고, 원래 이름에는 실제로 올렸던 값을 그대로 되돌려 둔다(실제 데이터 보호)
+  window.addEventListener('storage',function(e){
+    if(e.key!=='minap_summary' || !e.newValue) return;
+    try{
+      localStorage.setItem('demo_minap_summary', e.newValue);
+      if(e.oldValue) localStorage.setItem('minap_summary', e.oldValue); else localStorage.removeItem('minap_summary');
+      demoArrearsFromMinap(JSON.parse(e.newValue)); renderHome();
+      if(typeof renderTabHighlights==='function') renderTabHighlights();
+    }catch(err){}
+  });
   document.addEventListener('DOMContentLoaded',function(){
     var h=document.querySelector('.header h1');
     if(h){ var b=document.createElement('span'); b.className='demo-badge';
       b.innerHTML='시연 데이터 · 가상 고객<a onclick="demoExit()" title="시연 데이터를 지우고 일반 화면으로">종료</a>'; h.appendChild(b); }
     // 이슈 모니터링을 미리 불러 두면 민원 요약이 저장되어 현황 카드가 바로 채워진다
     var f=document.getElementById('voc-monitor-frame'); if(f){ f.removeAttribute('loading'); loadEmbedFrame('voc-monitor-frame'); }
+    // 미납관리도 미리 불러 샘플 엑셀을 올린다
+    var o=document.getElementById('overdue-frame');
+    if(o){ o.removeAttribute('loading'); o.addEventListener('load',function(){ setTimeout(function(){ demoFillMinap(o.contentWindow); },300); },{once:true}); loadEmbedFrame('overdue-frame'); }
   });
 }
