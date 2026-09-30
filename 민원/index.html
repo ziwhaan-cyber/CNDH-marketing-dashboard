@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>이슈 모니터링</title>
+<script>
+// [v2] 이 화면을 대시보드 밖에서 단독으로 열면(배포 주소) 로그인이 없고 샘플 데이터 선택도 보이므로 대시보드(로그인)로 보낸다.
+// 대시보드 안(iframe)과 이 PC(localhost)에서는 그대로 열린다.
+(function(){ var top; try{ top = window.top === window.self; }catch(e){ top = false; }
+  var local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  if (top && !local) location.replace('../'); })();
+</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="stylesheet" href="css/style.css">
 

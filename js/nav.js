@@ -1,7 +1,8 @@
 // 페이지 전환 · 시연 모드 표시 — index.html 안에 있던 스크립트를 그대로 옮김
   // [v2 추가] 시연 모드 — 주소 끝에 ?demo=1 이 있을 때만 켜진다(평소 화면에는 영향 없음).
   // 저장 이름 앞에 'demo_'를 붙여 실제로 올린 데이터와 절대 섞이지 않게 한다.
-  var DEMO = /[?&]demo=1(&|$)/.test(location.search);
+  // 시연 화면을 닫아 둔 동안(js/cloud-config.js demoOpen:false)은 주소에 demo=1이 있어도 켜지 않는다
+  var DEMO = /[?&]demo=1(&|$)/.test(location.search) && !(window.CLOUD_CONFIG && window.CLOUD_CONFIG.demoOpen === false);
   var DEMO_PFX = DEMO ? 'demo_' : '';
 
   // [v2] 16:9 화면 맞춤 — 글자·칸 크기가 모두 창 너비(vw) 기준인데, 창이 16:9보다 넓으면(주소창·작업표시줄 때문에 보통 그렇다)

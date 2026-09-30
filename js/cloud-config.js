@@ -5,5 +5,8 @@
 // 두 값이 비어 있으면 공유 기능 없이 지금처럼 이 PC 안에서만 동작한다.
 window.CLOUD_CONFIG = {
   url: 'https://ojeklhggfjtmjtktcgou.supabase.co',
-  anonKey: 'sb_publishable_6FullXky-FZ1NQFfh1j6Hw_Tt4IC91R'
+  anonKey: 'sb_publishable_6FullXky-FZ1NQFfh1j6Hw_Tt4IC91R',
+  // 시연 화면(?demo=1 · 가상 데이터) 공개 여부. false면 주소로 열어도 로그인 화면 + "본선에서 공개" 안내만 나온다.
+  // 서면심사 동안은 false, 본선 시연 때 true로 바꾸고 푸시.
+  demoOpen: false
 };

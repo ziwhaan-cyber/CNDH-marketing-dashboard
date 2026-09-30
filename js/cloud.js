@@ -8,7 +8,8 @@
 // 설정(js/cloud-config.js)이 비어 있거나 시연 모드(?demo=1)면 아무것도 하지 않는다 → 지금처럼 이 PC 안에서만 동작.
 (function(){
   var CFG = window.CLOUD_CONFIG || {};
-  var DEMO_ON = /[?&]demo=1(&|$)/.test(location.search);
+  var DEMO_ASKED = /[?&]demo=1(&|$)/.test(location.search);
+  var DEMO_ON = DEMO_ASKED && CFG.demoOpen !== false;   // 시연을 닫아 둔 동안은 시연 주소로 와도 로그인 화면
   var ON = !!(CFG.url && CFG.anonKey) && !DEMO_ON;
   var ROLE_LABEL = { admin:'관리자', arrears:'연체 담당', voc:'민원 담당', viewer:'조회자' };
   // [v2] 시연 모드에서 조회자 화면 미리보기 — 주소에 &view=viewer. 데이터는 그대로 시연용 가상 데이터
@@ -264,6 +265,7 @@
       box.innerHTML = '<form class="cl-card" autocomplete="on">'
         + '<div class="cl-brand">청라에너지 마케팅 AI코파일럿</div>'
         + '<div class="cl-sub">' + (setPw ? '새 비밀번호를 정해 주세요' : '사내 계정으로 로그인하세요') + '</div>'
+        + (DEMO_ASKED && !DEMO_ON ? '<div class="cl-demo">시연 화면(가상 데이터)은 본선 PT · 시연회에서 공개됩니다.</div>' : '')
         + (setPw ? '' : '<label>이메일<input type="email" name="email" autocomplete="username" required></label>')
         + '<label>' + (setPw ? '새 비밀번호 (8자 이상)' : '비밀번호') + '<input type="password" name="pw" minlength="' + (setPw ? 8 : 1) + '" autocomplete="' + (setPw ? 'new-password' : 'current-password') + '" required></label>'
         + '<div class="cl-err">' + esc(msg || '') + '</div>'
