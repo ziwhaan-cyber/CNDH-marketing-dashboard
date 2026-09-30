@@ -186,13 +186,14 @@ function renderHome(){
     aiEl.innerHTML='<div class="home-ai-h"><span class="home-ai-ic">✦</span>AI 인사이트'
       +'<span class="home-ai-meta">규칙이 계산 · AI가 해석 · 할 일은 데일리 체크에</span></div>'
       // 미납 칸은 미납관리 화면이 AI 요약(ai)을 넘겨줄 때만 보인다 — 지금 미납관리 화면에는 AI 분석이 없으므로 민원만 한 칸으로
+      // 순서는 화면 왼쪽 카드와 같게 미납 → 민원
       +'<div class="home-ai-cols'+(mai?'':' one')+'">'
+      + (mai ? aiCol('미납','t-minap',!!(m&&!mStale),mai, esc(mai.headline),
+          '미납관리',"'page-arrears','arr','arr-tab-overdue'") : '')
       + aiCol('민원','t-voc',!!v,vai,
           vai?('규칙이 찾은 이슈 '+(v.issues||0)+'건 중 <b>'+(vai.confirmed||0)+'건</b>을 실제 사안으로 확인'
             +(vai.unrelated?' · '+vai.unrelated+'건은 무관한 문의 겹침':'')):'',
           '이슈 모니터링',"'page-voc','voc','voc-monitor'")
-      + (mai ? aiCol('미납','t-minap',!!(m&&!mStale),mai, esc(mai.headline),
-          '미납관리',"'page-arrears','arr','arr-tab-overdue'") : '')
       +'</div>';
   }
 
