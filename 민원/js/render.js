@@ -38,6 +38,12 @@ function openMemoPopup(kw,route,scope){
   document.getElementById('memoPopupTitle').textContent=(scope&&scope.title)||kw||'접수내용';
   document.getElementById('memoPopupSub').textContent=[periodLabel,route].filter(Boolean).join(' · ');
   document.getElementById('memoPopupCount').textContent=`${rows.length}건`;
+  // [v2] 조회자(민원 담당 · 관리자가 아닌 사람)에게는 개별 접수 건을 펼치지 않는다 — 건수만.
+  // 연체 쪽에서 고객별 화면(미납관리)을 담당자 전용으로 둔 것과 같은 기준. 표시는 대시보드(js/cloud.js)가 붙인다.
+  if(document.documentElement.classList.contains('no-voc')){
+    document.getElementById('memoPopupBody').innerHTML='<div class="an-empty">개별 접수 내용은 민원 담당만 볼 수 있습니다.<br>건수 · 단지 · 테마별 집계와 이슈 판정은 이 화면에서 확인할 수 있습니다.</div>';
+    back.classList.add('on');return;
+  }
   const body=document.getElementById('memoPopupBody');
   body.innerHTML=rows.length
     ? rows.map(r=>`<div class="memo-row"><div class="memo-row-body">`
