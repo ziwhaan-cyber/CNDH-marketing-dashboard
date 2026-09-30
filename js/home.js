@@ -162,28 +162,36 @@ function renderHome(){
       +'<div class="home-foot-row"><span></span><span class="home-link" onclick="goHome(\'page-voc\',\'voc\',\'voc-monitor\')">이슈 모니터링 열기 →</span></div>';
   }
 
-  // ── [v2] AI 인사이트 — 규칙이 판정한 이슈를 AI가 읽고 정리한 결과. 샘플 예시면 그렇다고 밝힌다
-  var aiEl=document.getElementById('home-ai'), ai=v&&v.ai;
-  if(!v){ aiEl.hidden=true; }
-  else if(!ai){
-    aiEl.hidden=false;
-    aiEl.innerHTML='<div class="home-ai-h"><span class="home-ai-ic">✦</span>AI 인사이트</div>'
-      +'<div class="home-ai-empty">이슈 모니터링에서 <b>AI 분석 실행</b>을 누르면 원인·리스크·조치 요약이 여기에 표시됩니다.'
-      +' <span class="home-link" onclick="goHome(\'page-voc\',\'voc\',\'voc-monitor\')">이슈 모니터링 열기 →</span></div>';
-  }else{
-    var esc=function(s){ return String(s||'').replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
-    var row=function(lbl,o,ev){ return o&&(o.point||o.text) ?'<div class="home-ai-it"><span class="home-ai-lbl">'+lbl+'</span>'
-      +'<b>'+esc(o.point||o.text)+'</b>'+(ev&&o.evidence?'<p>'+esc(o.evidence)+'</p>':'')+'</div>' : ''; };
-    var meta=(ai.sample?'샘플 예시 · 실제 AI 호출 아님':('Gemini'+(ai.at?' · '+new Date(ai.at).toLocaleDateString('ko-KR'):'')))
-      +(ai.conf?' · 신뢰도 '+esc(ai.conf):'');
+  // ── [v2] AI 인사이트 — "왜, 앞으로 어떻게 될지"(원인·리스크)만 민원/미납 두 칸으로 보여준다.
+  //    할 일(조치)은 아래 데일리 체크에 합쳐 두 곳에 같은 내용이 나오지 않게 한다. 샘플 예시면 그렇다고 밝힌다.
+  var esc=function(s){ return String(s||'').replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+  var aiEl=document.getElementById('home-ai');
+  var vai=v&&v.ai, mai=(m&&!mStale)?m.ai:null;
+  var aiMeta=function(ai){ return (ai.sample?'샘플 예시 · 실제 AI 호출 아님':('Gemini'+(ai.at?' · '+new Date(ai.at).toLocaleDateString('ko-KR'):'')))
+      +(ai.conf?' · 신뢰도 '+esc(ai.conf):''); };
+  var aiRow=function(lbl,o){ return o&&o.point ? '<div class="home-ai-it"><span class="home-ai-lbl">'+lbl+'</span><b>'+esc(o.point)+'</b>'
+      +(o.evidence?'<p>'+esc(o.evidence)+'</p>':'')+'</div>' : ''; };
+  var aiCol=function(tag,cls,has,ai,head,where,go){
+    var h='<div class="home-ai-col"><div class="home-ai-dom"><span class="tag '+cls+'">'+tag+'</span>'
+      +(ai?'<span class="home-ai-meta">'+aiMeta(ai)+'</span>':'')+'</div>';
+    if(!has) return h+'<div class="home-ai-empty">데이터를 올리면 표시됩니다.</div></div>';
+    if(!ai) return h+'<div class="home-ai-empty">'+where+'에서 <b>AI 분석 실행</b>을 누르면 원인·리스크가 여기에 모입니다. '
+      +'<span class="home-link" onclick="goHome('+go+')">열기 →</span></div></div>';
+    return h+'<div class="home-ai-head">'+head+'</div>'+aiRow('원인',ai.cause)+aiRow('리스크',ai.risk)+'</div>';
+  };
+  if(!v && !m){ aiEl.hidden=true; }
+  else{
     aiEl.hidden=false;
     aiEl.innerHTML='<div class="home-ai-h"><span class="home-ai-ic">✦</span>AI 인사이트'
-      +'<span class="home-ai-meta">'+meta+'</span></div>'
-      +'<div class="home-ai-sub">규칙이 찾은 이슈 '+(v.issues||0)+'건 중 AI가 <b>'+(ai.confirmed||0)+'건</b>을 실제 사안으로 확인'
-      +(ai.unrelated?', '+ai.unrelated+'건은 무관한 문의 겹침으로 판정':'')+'</div>'
-      +row('원인',ai.cause,true)+row('리스크',ai.risk,true)
-      +(ai.action?'<div class="home-ai-it"><span class="home-ai-lbl">조치 · '+esc(ai.action.theme)+'</span><b>'+esc(ai.action.text)+'</b></div>':'')
-      +'<div class="home-ai-foot"><span class="home-link" onclick="goHome(\'page-voc\',\'voc\',\'voc-monitor\')">AI 분석 전체 보기 →</span></div>';
+      +'<span class="home-ai-meta">규칙이 계산 · AI가 해석 · 할 일은 데일리 체크에</span></div>'
+      +'<div class="home-ai-cols">'
+      + aiCol('민원','t-voc',!!v,vai,
+          vai?('규칙이 찾은 이슈 '+(v.issues||0)+'건 중 <b>'+(vai.confirmed||0)+'건</b>을 실제 사안으로 확인'
+            +(vai.unrelated?' · '+vai.unrelated+'건은 무관한 문의 겹침':'')):'',
+          '이슈 모니터링',"'page-voc','voc','voc-monitor'")
+      + aiCol('미납','t-minap',!!(m&&!mStale),mai, mai?esc(mai.headline):'',
+          '미납관리',"'page-arrears','arr','arr-tab-overdue'")
+      +'</div>';
   }
 
   // ── 데일리 체크 (중요도 정렬 + 어제 대비)
@@ -211,6 +219,17 @@ function renderHome(){
     if(v.unmapped) add({tag:'민원',key:'unmapped',v:v.unmapped,unit:'건',w:30,go:['page-voc','voc','voc-monitor'],
       text:'테마에 없는 새 키워드 <b>'+v.unmapped+'건</b> · 분류 확인'});
   }
+  // [v2] AI가 제안한 조치를 데일리 체크에 합친다. 같은 사안의 줄이 이미 있으면 그 줄에 붙이고, 없으면 새 줄로.
+  if(vai&&vai.action&&vai.action.text){
+    var hit=items.filter(function(it){ return it.key==='issues' && v.topIssue && v.topIssue.indexOf(vai.action.theme)>=0; })[0];
+    if(hit) hit.ai=vai.action.text;
+    else add({tag:'민원',key:'ai-voc',v:0,unit:'',w:92,go:['page-voc','voc','voc-monitor'],aiRow:true,
+      text:esc(vai.action.theme)+' · '+esc(vai.action.text)});
+  }
+  if(mai&&mai.action&&mai.action.point){
+    add({tag:'미납',key:'ai-minap',v:0,unit:'',w:97,go:['page-arrears','arr','arr-tab-overdue'],aiRow:true,
+      text:esc(mai.action.point)+(mai.action.evidence?' <span class="todo-ev">'+esc(mai.action.evidence)+'</span>':'')});
+  }
   items.sort(function(a,b){ return (b.w+Math.min(20,b.v))-(a.w+Math.min(20,a.v)); });
 
   var doneKeys=[]; try{ var dn=JSON.parse(localStorage.getItem('home_done')||'{}'); if(dn.date===ymd) doneKeys=dn.keys||[]; }catch(e){}
@@ -225,7 +244,8 @@ function renderHome(){
     var cls=(it.tag==='미납')?'t-minap':'t-voc';
     return '<div class="home-todo-row'+(doneKeys.indexOf(it.key)>=0?' done':'')+'" data-key="'+it.key+'" onclick="homeToggleDone(this)">'
       +'<span class="mark"></span><span class="tag '+cls+'">'+it.tag+'</span>'
-      +'<span class="todo-text">'+it.text+'</span>'+delta
+      +'<span class="todo-text">'+(it.aiRow?'<span class="ai-mark">AI 제안</span>':'')+it.text
+      +(it.ai?'<small class="todo-ai"><span class="ai-mark">AI 제안</span>'+esc(it.ai)+'</small>':'')+'</span>'+delta
       +'<span class="go" title="해당 화면 열기" onclick="event.stopPropagation();goHome(\''+it.go[0]+'\',\''+it.go[1]+'\',\''+it.go[2]+'\')">i</span></div>';
   });
   if(!rows.length) rows.push('<div class="home-todo-row"><span class="todo-text">각 화면에서 데이터를 올리면 조치할 항목이 여기에 모입니다.</span></div>');
