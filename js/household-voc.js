@@ -294,7 +294,26 @@
         d.documentElement.style.zoom=z;
         // [v2] 끼워 넣은 화면 표시 — theme.css가 이 표시가 있을 때만 제목줄·글자 크기를 대시보드에 맞춘다.
         // (미납관리·이슈 모니터링 파일 자체는 고치지 않는다. 따로 열면 원래 모습 그대로)
-        d.documentElement.classList.add('in-dash');        // 공통 테마를 끼워 넣은 화면에도 적용한다(그쪽 파일은 수정하지 않는다)
+        d.documentElement.classList.add('in-dash');
+        // [v2] 끼워 넣은 화면의 차트 색을 대시보드 색으로 — 차트는 그림(canvas)이라 CSS로는 못 바꾸므로,
+        // 그 화면의 차트 라이브러리에 '그리기 직전 색 바꾸기' 규칙만 등록한다(그 화면 파일은 고치지 않음)
+        // [v2] 글꼴도 대시보드와 같은 Pretendard로(그 화면이 불러오지 않는 경우에만 추가)
+        if(d.head && !d.getElementById('dashFont')){
+          var fl=d.createElement('link'); fl.id='dashFont'; fl.rel='stylesheet';
+          fl.href='https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css';
+          d.head.appendChild(fl);
+        }
+        var cw=f.contentWindow;
+        if(cw && cw.Chart && !cw.__dashChartTheme){
+          cw.__dashChartTheme=true;
+          try{ cw.Chart.defaults.font.family="'Pretendard','Pretendard Variable','Noto Sans KR',sans-serif"; }catch(e){}
+          var MAP={'#2f6fed':'#236B7A','#8a63d2':'#A9B4C0'};   // 파랑 → 딥 티얼, 보라 → 회색
+          var fix=function(v){ if(typeof v!=='string') return v; var k=v.slice(0,7).toLowerCase(); return MAP[k]? MAP[k]+v.slice(7) : v; };
+          cw.Chart.register({ id:'dashTheme', beforeUpdate:function(ch){
+            (ch.data.datasets||[]).forEach(function(ds){ ['backgroundColor','borderColor','pointBackgroundColor','pointBorderColor','hoverBackgroundColor'].forEach(function(p){ if(p in ds) ds[p]=fix(ds[p]); }); });
+          }});
+          try{ Object.values(cw.Chart.instances||{}).forEach(function(c){ c.update(); }); }catch(e){}
+        }        // 공통 테마를 끼워 넣은 화면에도 적용한다(그쪽 파일은 수정하지 않는다)
         if(d.head&&!d.getElementById('sharedTheme')){
           var l=d.createElement('link');
           l.id='sharedTheme'; l.rel='stylesheet';
@@ -344,7 +363,9 @@
       el.querySelectorAll('[data-mode]').forEach(function(b){ b.onclick=function(){ vocViewSet({month:VOC_VIEW&&VOC_VIEW.key, override:b.getAttribute('data-mode')}); }; });
     }
     var active=document.querySelector('#page-voc .subnav-btn.active');
-    el.hidden = !VOC_VIEW || !active || active.getAttribute('data-voc-tab')!=='voc-overview';
+    // 민원통계·이슈 모니터링 두 탭에서 같은 자리에 보인다(모니터링 화면 안의 같은 버튼 줄은 대시보드 안에서는 숨김)
+    var tabNow = active && active.getAttribute('data-voc-tab');
+    el.hidden = !VOC_VIEW || (tabNow!=='voc-overview' && tabNow!=='voc-monitor');
     if(!VOC_VIEW) return;
     var sel=el.querySelector('select');
     sel.innerHTML=VOC_VIEW.months.map(function(k){ return '<option value="'+k+'">'+k.slice(0,4)+'년 '+parseInt(k.slice(5,7),10)+'월</option>'; }).join('');
