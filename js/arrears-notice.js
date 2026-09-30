@@ -132,7 +132,7 @@
     // 기본은 연도 입력칸 숨김 -> "26.7 월분부터". 연도 없는 옛 양식(7월)을 올렸을 때만 연도칸 표시
     var hasYear = NT_MONTH_COLS.some(function(mc){ return mc.year; });
     document.getElementById('nt-year-wrap').style.display = (NT_MONTH_COLS.length && !hasYear) ? 'contents' : 'none';
-    if (!NT_MONTH_COLS.length){ sel.innerHTML = '<option value="">엑셀 업로드 후 선택</option>'; return; }
+    if (!NT_MONTH_COLS.length){ sel.innerHTML = '<option value="">월 선택</option>'; return; }
     NT_MONTH_COLS.forEach(function(mc, i){
       var o = document.createElement('option');
       o.value = i; o.textContent = (mc.year ? String(mc.year).slice(2)+'.' : '')+mc.month;

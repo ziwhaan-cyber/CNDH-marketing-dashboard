@@ -292,6 +292,7 @@
         var d=f.contentDocument; if(!d||!d.documentElement)return;
         var z=Math.min(1.45,Math.max(0.85,f.clientWidth/1600));
         d.documentElement.style.zoom=z;
+        d.documentElement.classList.add('in-dash');   // [v2] 끼워 넣은 화면 표시 — theme.css에서 제목줄·글자 크기를 대시보드에 맞춘다
         // 공통 테마를 끼워 넣은 화면에도 적용한다(그쪽 파일은 수정하지 않는다)
         if(d.head&&!d.getElementById('sharedTheme')){
           var l=d.createElement('link');
@@ -395,25 +396,49 @@
   }
 
   function vocRenderSummaryTab(y,mi,py,pm){
-    document.getElementById('voc-sum-period-tag').textContent = y+'년 '+(mi+1)+'월 기준';
+    // [v2] 달이 진행 중이면 전월도 같은 날짜까지만 센다(상단 숫자 카드와 같은 기준)
+    var cut = vocTrendPartialDay, prevKeyC = moKey(py,pm);
+    var inCut = function(r){ return !cut || parseInt(String(r.date).slice(8,10),10) <= cut; };
+    var prevFieldCut = function(field,value){ var n=0; DATA.forEach(function(r){ if(r.haedangwol===prevKeyC && inCut(r) && (!field || r[field]===value)) n++; }); return n; };
+    document.getElementById('voc-sum-period-tag').textContent = y+'년 '+(mi+1)+'월'+(cut?' 1~'+cut+'일':'')+' 기준';
+    var prevH = document.getElementById('voc-sum-prev-h'); if (prevH) prevH.textContent = cut ? '전월 같은 기간' : '전월';
     var totCur = monthTotal(y,mi,null), totPrev = monthTotal(py,pm,null), totalCum = DATA.length;
+    var totPrevCut = prevFieldCut(null);
 
     // ---- 1. 민원접수 현황 (접수방법 필드 기준: 통화매니저·수기·챗봇·메일·공문) ----
     var METHODS = ['통화매니저','수기','챗봇','메일','공문'];
     var methodRows = METHODS.map(function(mt){
-      return { label:mt, cur:monthFieldCount(y,mi,'method',mt), prev:monthFieldCount(py,pm,'method',mt), cum:cumFieldCount('method',mt) };
+      return { label:mt, cur:monthFieldCount(y,mi,'method',mt), prev:prevFieldCut('method',mt), cum:cumFieldCount('method',mt) };
     });
-    var methodNamedCum = methodRows.reduce(function(s,o){ return s+o.cum; },0);
     var methodEtcCur = totCur - methodRows.reduce(function(s,o){ return s+o.cur; },0);
-    var methodEtcPrev = totPrev - methodRows.reduce(function(s,o){ return s+o.prev; },0);
-    var methodEtcCum = totalCum - methodNamedCum;
-    if (methodEtcCum > 0) methodRows.push({ label:'미분류', cur:methodEtcCur, prev:methodEtcPrev, cum:methodEtcCum });
+    var methodEtcPrev = totPrevCut - methodRows.reduce(function(s,o){ return s+o.prev; },0);
+    if (methodEtcCur > 0 || methodEtcPrev > 0) methodRows.push({ label:'미분류', cur:methodEtcCur, prev:methodEtcPrev });
+    var dCell = function(c,p){ var d=c-p; return '<td class="num'+(d>0?' diff-bad':d<0?' diff-good':'')+'">'+(d>0?'+':'')+numFmt(d)+'</td>'; };
     var chanBody = methodRows.map(function(o){
-      var pct = totalCum ? (o.cum/totalCum*100).toFixed(0) : 0;
-      return '<tr><td>'+o.label+'</td><td class="num">'+numFmt(o.cur)+'</td><td class="num">'+numFmt(o.prev)+'</td><td class="num">'+numFmt(o.cum)+'</td><td class="num">'+pct+'%</td></tr>';
+      var pct = totCur ? (o.cur/totCur*100).toFixed(0) : 0;
+      return '<tr><td>'+o.label+'</td><td class="num">'+numFmt(o.cur)+'</td><td class="num">'+numFmt(o.prev)+'</td>'+dCell(o.cur,o.prev)+'<td class="num">'+pct+'%</td></tr>';
     }).join('');
-    chanBody += '<tr class="total-row"><td>합계</td><td class="num">'+numFmt(totCur)+'</td><td class="num">'+numFmt(totPrev)+'</td><td class="num">'+numFmt(totalCum)+'</td><td class="num">100%</td></tr>';
+    chanBody += '<tr class="total-row"><td>합계</td><td class="num">'+numFmt(totCur)+'</td><td class="num">'+numFmt(totPrevCut)+'</td>'+dCell(totCur,totPrevCut)+'<td class="num">100%</td></tr>';
     document.getElementById('voc-sum-channel-body').innerHTML = chanBody;
+
+    // ---- [v2] 전월 같은 기간 대비 많이 변한 키워드 (변동 폭 큰 순 5개) ----
+    var kcBox = document.getElementById('voc-kwchg-body');
+    if (kcBox){
+      var curK = monthByKw(y,mi,null), prevK = {};
+      DATA.forEach(function(r){ if(r.haedangwol===prevKeyC && inCut(r)) prevK[r.kw]=(prevK[r.kw]||0)+1; });
+      var ks = {}; Object.keys(curK).concat(Object.keys(prevK)).forEach(function(k){ if(k) ks[k]=1; });
+      var ch = Object.keys(ks).map(function(k){ var c=curK[k]||0, p=prevK[k]||0; return {k:k,c:c,p:p,d:c-p}; })
+        .filter(function(o){ return o.d!==0; })
+        .sort(function(a,b){ return Math.abs(b.d)-Math.abs(a.d) || b.c-a.c; }).slice(0,5);
+      var mx = ch.reduce(function(s,o){ return Math.max(s,Math.abs(o.d)); },1);
+      document.getElementById('voc-kwchg-tag').textContent = cut ? '1~'+cut+'일 · 전월 같은 기간 대비' : '전월 대비';
+      kcBox.innerHTML = ch.length ? ch.map(function(o){
+        var up = o.d>0, w = Math.max(4, Math.round(Math.abs(o.d)/mx*100));
+        return '<div class="kwchg-row"><span class="kwchg-k">'+o.k+'</span>'
+          +'<span class="kwchg-track"><i class="'+(up?'up':'dn')+'" style="width:'+w+'%"></i></span>'
+          +'<span class="kwchg-v">'+numFmt(o.p)+' → '+numFmt(o.c)+'<b class="'+(up?'diff-bad':'diff-good')+'">'+(up?'+':'')+numFmt(o.d)+'</b></span></div>';
+      }).join('') : '<div class="home-chart-empty">전월 같은 기간과 달라진 키워드가 없습니다</div>';
+    }
 
     // ---- 2-a. 민원분류: 유형별 (당월/전월/누적) ----
     var TYPES = ['일반','제도','요금','설비','교육','온도'];

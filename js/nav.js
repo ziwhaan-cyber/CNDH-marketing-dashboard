@@ -4,6 +4,16 @@
   var DEMO = /[?&]demo=1(&|$)/.test(location.search);
   var DEMO_PFX = DEMO ? 'demo_' : '';
 
+  // [v2] '엑셀 업로드' 버튼 옆에 브라우저 기본 '파일 선택 · 선택된 파일 없음' 칸이 또 보여 중복이었다.
+  // 기본 칸은 CSS로 숨기고(버튼이 그 칸을 연다), 고른 파일 이름만 버튼 옆에 작게 보여준다.
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.upload-inline input[type=file], .nt-row input[type=file], .voc-upload input[type=file]').forEach(function(inp){
+      var nm=document.createElement('span'); nm.className='file-name';
+      inp.parentNode.insertBefore(nm, inp.nextSibling);
+      inp.addEventListener('change', function(){ nm.textContent = inp.files && inp.files[0] ? inp.files[0].name : ''; });
+    });
+  });
+
   // [신규] 페이지 전환 로직: 클릭한 버튼의 data-target에 해당하는 .page만 보이게 전환
   // [추가] 홈 카드 → 해당 페이지와 탭으로 이동
   function goHome(pageId,kind,tabId){

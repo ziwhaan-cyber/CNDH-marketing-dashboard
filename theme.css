@@ -393,6 +393,30 @@ html,body{ background:#E7EBEF; }
   border-radius:4px; padding:0.04vw 0.35vw; margin-right:0.4vw; vertical-align:0.08vw; }
 .todo-ai{ display:block; font-size:min(0.7vw,1.1vh); color:var(--ui-muted); line-height:1.5; margin-top:0.15vw; }
 .todo-ev{ color:var(--ui-muted); font-size:min(0.68vw,1.05vh); margin-left:0.3vw; }
+/* 오늘 먼저 볼 것 (현황 제목 아래) */
+.home-headline{ display:flex; flex-wrap:wrap; align-items:center; gap:0.5vw 1.4vw; margin-top:0.7vw; }
+.hl-lbl{ font-size:0.72vw; font-weight:700; color:#fff; background:var(--ui-header); border-radius:999px; padding:0.22vw 0.75vw; }
+.hl-it{ display:inline-flex; align-items:baseline; gap:0.45vw; font-size:1.02vw; font-weight:600; color:var(--ui-ink); cursor:pointer; }
+.hl-it:hover{ text-decoration:underline; text-decoration-color:var(--ui-line); text-underline-offset:0.3vw; }
+.hl-it i{ font-style:normal; font-size:0.7vw; font-weight:800; color:#C4564A; border:1.5px solid #C4564A; border-radius:50%;
+  width:1.2vw; height:1.2vw; display:inline-flex; align-items:center; justify-content:center; transform:translateY(-0.1vw); }
+.hl-it b{ font-size:1.3vw; font-weight:800; color:#C4564A; letter-spacing:-0.02em; }
+
+/* 데일리 체크 — 중요도 표시와 1순위 강조 */
+.home-todo-row .mark{ border-color:#CBD5E1; }
+.home-todo-row.sev-hi .mark{ border-color:#C4564A; background:#FBEBE9; }
+.home-todo-row.sev-mid .mark{ border-color:#D08A3A; background:#FBF1E6; }
+.home-todo-row.top1{ background:linear-gradient(90deg,#FBF3F1 0%,#FFFFFF 60%); margin:0 -1.2vw; padding-left:1.2vw; padding-right:1.2vw;
+  box-shadow:inset 3px 0 0 #C4564A; }
+.home-todo-row.top1 .todo-text::before{ content:'최우선'; font-size:0.58vw; font-weight:800; color:#fff; background:#C4564A;
+  border-radius:4px; padding:0.04vw 0.35vw; margin-right:0.45vw; vertical-align:0.1vw; }
+.home-todo-row.top1 .todo-text b{ color:#B1443A; }
+
+/* 현황 민원 카드 — 민원이 '늘어난' 것은 경고색으로 (원래 늘면 초록·줄면 주황이었음) */
+#home-voc .home-num .v.up{ color:#C4564A; } #home-voc .home-num .v.dn{ color:#2F7FB8; }
+/* 현황 숫자 조금 더 크게 */
+.home-num .v{ font-size:min(1.8vw,2.8vh) !important; }
+
 /* 어제 대비 해결된 항목 */
 .home-todo-row.resolved{ background:#F1F8F4; margin:0 -1.2vw; padding-left:1.2vw; padding-right:1.2vw; color:#2F6B4F; cursor:default; }
 .home-todo-row.resolved b{ color:#1F7A4D; }
@@ -411,12 +435,78 @@ html,body{ background:#E7EBEF; }
 .voc-trend-legend{ display:flex; gap:1vw; font-size:0.64vw; color:var(--ui-muted); margin-left:auto; font-weight:500; }
 .voc-trend-legend i{ display:inline-block; width:0.9vw; height:2px; border-radius:2px; margin-right:0.3vw; vertical-align:middle; }
 
+/* 민원통계 — 전월 대비 많이 변한 키워드 */
+.kwchg-row{ display:grid; grid-template-columns:9vw 1fr 7.5vw; align-items:center; gap:0.8vw; padding:0.28vw 0; font-size:0.74vw; }
+.kwchg-row + .kwchg-row{ border-top:1px solid var(--ui-line-soft); }
+.kwchg-k{ font-weight:600; color:var(--ui-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kwchg-track{ height:0.45vw; background:var(--ui-sunken); border-radius:0.3vw; overflow:hidden; }
+.kwchg-track i{ display:block; height:100%; border-radius:0.3vw; }
+.kwchg-track i.up{ background:#C4564A; } .kwchg-track i.dn{ background:#3AA5C3; }
+.kwchg-v{ text-align:right; color:var(--ui-muted); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.kwchg-v b{ margin-left:0.45vw; }
+
+/* 업로드 — 브라우저 기본 '파일 선택' 칸은 숨기고 버튼 하나로 (고른 파일 이름은 옆에 작게) */
+.upload-inline input[type=file], .nt-row input[type=file], .voc-upload input[type=file]{ display:none; }
+.file-name{ font-size:0.62vw; color:var(--ui-muted); max-width:12vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* 미납안내 설정 — theme.css 위쪽의 공통 select 규칙(px 고정)이 대시보드에 새어 들어와 혼자 커 보이던 것을 되돌림 */
+.slide select, .slide .nt-row select, .slide .nt-row input[type=date], .slide .nt-row input[type=number]{
+  font-size:0.72vw !important; padding:0.22vw 0.45vw !important; height:auto; border-radius:6px !important;
+  border:1px solid var(--ui-line) !important; background:#fff !important; color:var(--ui-ink);
+}
+
 /* 시연 모드 표시 */
 .demo-badge{
   margin-left:0.8vw; font-size:0.7vw; font-weight:700; color:#fff; background:rgba(255,255,255,.14);
   border:1px solid rgba(255,255,255,.28); border-radius:999px; padding:0.18vw 0.7vw; vertical-align:middle;
 }
 .demo-badge a{ color:#fff; opacity:.75; margin-left:0.5vw; text-decoration:underline; cursor:pointer; font-weight:500; }
+
+/* ---------- 대시보드 안에 끼워 넣은 화면(이슈 모니터링·미납관리)을 대시보드와 한 몸처럼 ----------
+   - 틀의 흰 상자·테두리를 없애 대시보드 배경 위에 카드가 바로 놓이게
+   - 탭 이름과 겹치는 자체 제목줄은 숨기고 버튼 줄만 남김
+   - 글자·숫자 크기를 대시보드 패널과 같은 비율로 (끼워 넣은 화면은 약 1.1배 확대되어 보이므로 그만큼 뺀 값) */
+.voc-monitor-frame, .embed-frame{ background:transparent !important; box-shadow:none !important; border-radius:0 !important; }
+html.in-dash body, body.embed{ background:var(--ui-bg) !important; }
+
+/* 이슈 모니터링 */
+body.embed .wrap{ padding:2px 2px 20px !important; max-width:none; }
+body.embed .top{ border-bottom:0; padding-bottom:0; margin-bottom:4px; justify-content:flex-end; }
+body.embed .brand{ display:none; }
+body.embed .asof{ font-size:12px; } body.embed .asof strong{ font-size:13px; }
+body.embed .top-acts .btn, body.embed .mode-sw .btn, body.embed .ai-acts .btn{ font-size:12px; padding:4px 11px; border-radius:6px; }
+body.embed .scope-h, body.embed .scope-bar{ margin:6px 0 10px; }
+body.embed .scope-m, body.embed .scope-t{ font-size:18px; }
+body.embed .stat-row{ gap:12px; margin-bottom:14px; }
+body.embed .stat-cell{ padding:14px 16px; }
+body.embed .stat-cell .k, body.embed .stat-l{ font-size:13px; font-weight:600; margin-bottom:4px; }
+body.embed .stat-cell .v, body.embed .stat-v{ font-size:29px; font-weight:800; line-height:1.15; }
+body.embed .stat-cell .s, body.embed .stat-s{ font-size:12px; }
+body.embed .dash-sec-l{ font-size:16.5px !important; margin:18px 0 9px !important; padding-bottom:7px; }
+body.embed .card{ padding:14px 18px !important; margin-bottom:12px !important; }
+body.embed .stat-line-nm, body.embed .chg-nm, body.embed .site-row{ font-size:14px; }
+body.embed .stat-line-v{ font-size:14px; }
+body.embed .stat-line-b, body.embed .chg-kw, body.embed .site-head{ font-size:12px; }
+body.embed .ai-item-t{ font-size:14.5px; } body.embed .ai-item-e{ font-size:12.5px; }
+
+/* 미납관리 */
+html.in-dash .dashboard-container{ padding:2px 2px 20px !important; }
+html.in-dash .dashboard-header{ border-bottom:0 !important; padding:0 !important; margin-bottom:6px !important; }
+html.in-dash .dashboard-header > div:first-child{ display:none; }            /* '청라에너지 미납관리 대시보드' 제목·설명 */
+html.in-dash .header-meta{ font-size:12px !important; }
+html.in-dash .header-meta #asof-date{ font-size:13px !important; }
+html.in-dash .upload-btn, html.in-dash .refresh-btn, html.in-dash .export-btn{ font-size:12px !important; padding:4px 11px !important; border-radius:6px !important; }
+html.in-dash .section-title{ font-size:16.5px !important; margin:18px 0 9px !important; padding-bottom:7px; }
+html.in-dash .kpi-row{ gap:12px !important; }
+html.in-dash .kpi-card{ padding:14px 16px !important; }
+html.in-dash .kpi-label{ font-size:13px !important; font-weight:600; }
+html.in-dash .kpi-value{ font-size:29px !important; font-weight:800; }
+html.in-dash .kpi-sub, html.in-dash .kpi-note{ font-size:12px !important; }
+html.in-dash .chart-container{ padding:14px 16px !important; }
+html.in-dash .chart-container h3{ font-size:14px !important; font-weight:700; }
+html.in-dash .chart-wrap{ height:220px !important; } html.in-dash .chart-wrap canvas{ max-height:220px !important; }
+html.in-dash .data-table{ font-size:12.5px !important; } html.in-dash .data-table th{ font-size:11.5px !important; }
+html.in-dash .ai-item-t{ font-size:14.5px; } html.in-dash .ai-item-e{ font-size:12.5px; }
 
 /* ---------- 민원 이슈 모니터링 ---------- */
 .card, .stat-cell, .empty-card{ border:1px solid var(--ui-line-soft) !important; border-radius:12px !important; box-shadow:var(--ui-shadow); }

@@ -269,6 +269,17 @@ function renderHome(){
   items.sort(function(a,b){ return (b.w+Math.min(20,b.v))-(a.w+Math.min(20,a.v)); });
   window.__homeItems=items;   // 'i' 버튼이 항목별 이동 정보를 찾을 때 쓴다
 
+  // [v2] 오늘 먼저 볼 것 — 데일리 체크 1·2순위(알림성 줄 제외)를 제목 아래 한 줄로. 숫자는 크게, 누르면 해당 목록으로
+  var hl=document.getElementById('home-headline');
+  var tops=items.filter(function(it){ return it.key!=='minapStale' && it.key!=='lagging'; }).slice(0,2);
+  if(hl){
+    hl.hidden=!tops.length;
+    hl.innerHTML='<span class="hl-lbl">오늘 먼저 볼 것</span>'+tops.map(function(it,i){
+      var t=it.text.replace(/ <span class="todo-ev">[\s\S]*$/,'');   // 근거 문구는 빼고 본문만
+      return '<span class="hl-it" onclick="homeGo('+items.indexOf(it)+')"><i>'+(i+1)+'</i>'+t+'</span>';
+    }).join('');
+  }
+
   // [v2] 어제 있던 항목이 오늘 없어졌으면 '해결'로 보여준다. 그 영역 데이터가 오늘도 있을 때만(데이터가 없어서 빠진 건 해결이 아님)
   var RESOLVED_LABEL={long:'장기 미납',mid:'중기 미납',big:'고액 미납',fresh:'전월엔 없던 연체',newly:'연체 1개월',longTerm:'3개월 이상 미납',
     arrLong:'장기 연체',arrMid:'중기 연체',issues:'뜬 이슈',sites:'다발 단지',aged:'오래된 미처리',unresolved:'처리내용 미입력',lagging:'자료 미유입',unmapped:'새 키워드'};
@@ -292,7 +303,9 @@ function renderHome(){
       else delta='<span class="delta same">'+prevLabel+'과 같음</span>';
     }
     var cls=(it.tag==='민원')?'t-voc':'t-minap';
-    return '<div class="home-todo-row'+(doneKeys.indexOf(it.key)>=0?' done':'')+'" data-key="'+it.key+'" onclick="homeToggleDone(this)">'
+    // [v2] 중요도 표시: 1순위 강조, 95 이상 빨강 · 80 이상 주황 · 나머지 회색
+    var sev=(it.w>=95)?' sev-hi':(it.w>=80)?' sev-mid':'';
+    return '<div class="home-todo-row'+sev+(idx===0?' top1':'')+(doneKeys.indexOf(it.key)>=0?' done':'')+'" data-key="'+it.key+'" onclick="homeToggleDone(this)">'
       +'<span class="mark"></span><span class="tag '+cls+'">'+it.tag+'</span>'
       +'<span class="todo-text">'+(it.aiRow?'<span class="ai-mark">AI 제안</span>':'')+it.text
       +(it.ai?'<small class="todo-ai"><span class="ai-mark">AI 제안</span>'+esc(it.ai)+'</small>':'')+'</span>'+delta

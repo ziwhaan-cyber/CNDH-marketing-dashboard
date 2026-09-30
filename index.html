@@ -37,6 +37,8 @@
           <div>
             <h2 id="home-title">전체 현황</h2>
             <p id="home-asof">화면을 열면 각 업무의 최신 상태를 모아서 보여줍니다.</p>
+            <!-- [v2 추가] 오늘 먼저 볼 것 — 데일리 체크 1·2순위를 한 줄로 크게 -->
+            <div class="home-headline" id="home-headline" hidden></div>
           </div>
           <button class="home-refresh" onclick="renderHome()">새로고침</button>
         </div>
@@ -213,7 +215,7 @@
                   <span>기준일</span><input type="date" id="nt-base-date" onchange="ntOnBaseDateChange()">
                   <span style="margin-left:0.6vw;">안내 시작월</span>
                   <span id="nt-year-wrap" style="display:none;"><input type="number" id="nt-start-year" min="2000" max="2100" onchange="ntYearTouched=true; ntRefreshAll()"><span>년</span></span>
-                  <select id="nt-start-month" onchange="if(!ntYearTouched) ntSetDefaultYear(); ntRefreshAll()"><option value="">엑셀 업로드 후 선택</option></select><span>월분부터</span>
+                  <select id="nt-start-month" onchange="if(!ntYearTouched) ntSetDefaultYear(); ntRefreshAll()"><option value="">월 선택</option></select><span>월분부터</span>
                 </div>
                 <div class="nt-hint" id="nt-month-hint">엑셀을 올리면 월 컬럼을 읽어 목록을 채웁니다. 안내문에 표시할 첫 월을 고르세요(2개월 대상은 그 전월까지 표시).</div>
               </div>
@@ -304,13 +306,22 @@
           <div class="panel" style="flex-shrink:0;">
             <div class="panel-title">민원접수 현황 <span class="tag" id="voc-sum-period-tag">-</span></div>
             <table class="voc-sum-table" style="width:100%;">
-              <thead><tr><th>접수방법</th><th>당월</th><th>전월</th><th>누적</th><th>비중</th></tr></thead>
+              <!-- [v2] 누적(데이터 시작 이후 합계)·누적 비중은 기준이 드러나지 않아, 당월과 같은 기간의 전월·증감·당월 중 비중으로 바꿈 -->
+              <thead><tr><th>접수방법</th><th>당월</th><th id="voc-sum-prev-h">전월</th><th>증감</th><th>당월 중 비중</th></tr></thead>
               <tbody id="voc-sum-channel-body"></tbody>
             </table>
           </div>
 
-          <!-- 민원접수 관련 메모 (직접 작성) -->
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.7vw;">
+          <!-- [v2 추가] 전월 같은 기간 대비 많이 변한 키워드 — 직접 쓰던 '증감 사유'를 데이터로 자동 계산해 보여준다.
+               원인 해석은 이슈 모니터링의 AI 분석이 맡는다 -->
+          <div class="panel" style="flex-shrink:0;">
+            <div class="panel-title">전월 대비 많이 변한 키워드 <span class="tag" id="voc-kwchg-tag">자동 계산</span></div>
+            <div id="voc-kwchg-body" class="kwchg"><div class="home-chart-empty">데이터 탭에 엑셀을 올리면 표시됩니다</div></div>
+          </div>
+
+          <!-- 민원접수 관련 메모 (직접 작성) — [v2] 위 자동 계산 칸으로 대신해 화면에서 내림.
+               메모 저장 코드가 참조하므로 요소는 남겨 숨김 -->
+          <div style="display:none; grid-template-columns:1fr 1fr; gap:0.7vw;">
             <div class="panel" style="flex-shrink:0;">
               <div class="panel-title">전월 대비 증감 사유 <span class="tag">직접 작성</span></div>
               <div class="flow-md voc-note-box">
