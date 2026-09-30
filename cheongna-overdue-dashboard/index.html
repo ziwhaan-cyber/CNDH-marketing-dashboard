@@ -1476,6 +1476,16 @@ document.getElementById('overdue-export-btn').addEventListener('click', function
       var longTerm=customers.filter(function(c){return (c.remainingOverdueMonths||0)>=3;}).length;
       var big=customers.filter(function(c){return (c.remainingTotal||0)>=10000000;}).length;   // 1,000만원 이상
       var newly=customers.filter(function(c){return (c.remainingOverdueMonths||0)===1;}).length;
+      // [v2] 연체 현황 화면과 같은 단계로 나눈다 — 3~5개월(공급정지 안내) / 6개월 이상(법적조치)
+      var mid=customers.filter(function(c){var m=c.remainingOverdueMonths||0; return m>=3&&m<=5;}).length;
+      var longN=customers.filter(function(c){return (c.remainingOverdueMonths||0)>=6;}).length;
+      // [v2] 전월 파일이 있으면 '전월엔 없던 연체'를 센다(전월에 없었거나 전월엔 완납이었던 고객). 없으면 null
+      var fresh=null;
+      if(typeof previousSnapshot!=='undefined'&&previousSnapshot&&previousSnapshot.custMap){
+        var pm=previousSnapshot.custMap;
+        fresh=customers.filter(function(c){ if((c.remainingTotal||0)<=0) return false;
+          var p=pm[String(c.custNo)]; return !p||(p.remainingTotal||0)<=0; }).length;
+      }
       // 연체 개월 구간별 고객 수 — 개요 화면의 미니 차트에 쓴다
       var buckets=[1,2,3,4,5].map(function(n){
         return { k:(n===5?'5+':String(n)),
@@ -1483,6 +1493,7 @@ document.getElementById('overdue-export-btn').addEventListener('click', function
       });
       localStorage.setItem((DEMO?'demo_':'')+'minap_summary',JSON.stringify({
         at:Date.now(), count:cnt, amount:amount, longTerm:longTerm, big:big, newly:newly, buckets:buckets,
+        mid:mid, long:longN, fresh:fresh,
         asOf:(document.getElementById('asof-date')||{}).textContent||''
       }));
     }catch(e){}

@@ -198,12 +198,22 @@ function renderHome(){
   var items=[];
   var add=function(o){ items.push(o); };
   if(m&&!mStale){
-    if(m.longTerm) add({tag:'미납',key:'longTerm',v:m.longTerm,unit:'개소',w:100,go:['page-arrears','arr','arr-tab-overdue'],
-      text:'3개월 이상 장기 미납 <b>'+m.longTerm+'개소</b> · 법적조치 검토 대상'});
+    // [v2] 연체 현황 화면의 단계와 맞춘다: 3~5개월 공급정지 안내 / 6개월 이상 법적조치 검토
+    if(m.long!=null){
+      if(m.long) add({tag:'미납',key:'long',v:m.long,unit:'개소',w:100,go:['page-arrears','arr','arr-tab-overdue'],
+        text:'6개월 이상 장기 미납 <b>'+m.long+'개소</b> · 법적조치 검토 대상'});
+      if(m.mid) add({tag:'미납',key:'mid',v:m.mid,unit:'개소',w:88,go:['page-arrears','arr','arr-tab-overdue'],
+        text:'3~5개월 미납 <b>'+m.mid+'개소</b> · 공급정지 안내 대상'});
+    }else if(m.longTerm) add({tag:'미납',key:'longTerm',v:m.longTerm,unit:'개소',w:100,go:['page-arrears','arr','arr-tab-overdue'],
+      text:'3개월 이상 미납 <b>'+m.longTerm+'개소</b>'});      // 예전 형식 요약(단계 값 없음)
     if(m.big) add({tag:'미납',key:'big',v:m.big,unit:'개소',w:90,go:['page-arrears','arr','arr-tab-overdue'],
       text:'미납 1,000만원 이상 <b>'+m.big+'개소</b> · 개별 안내 필요'});
-    if(m.newly) add({tag:'미납',key:'newly',v:m.newly,unit:'개소',w:60,go:['page-arrears','arr','arr-tab-overdue'],
-      text:'이번 달 새로 밀린 곳 <b>'+m.newly+'개소</b> · 1차 안내 대상'});
+    // [v2] '새로 밀린 곳'은 전월 파일이 있을 때만 정확히 셀 수 있다. 없으면 '연체 1개월'로 사실대로 쓴다
+    if(m.fresh!=null){
+      if(m.fresh) add({tag:'미납',key:'fresh',v:m.fresh,unit:'개소',w:60,go:['page-arrears','arr','arr-tab-overdue'],
+        text:'전월엔 없던 연체 <b>'+m.fresh+'개소</b> · 1차 안내 대상'});
+    }else if(m.newly) add({tag:'미납',key:'newly',v:m.newly,unit:'개소',w:60,go:['page-arrears','arr','arr-tab-overdue'],
+      text:'연체 1개월 <b>'+m.newly+'개소</b> · 1차 안내 대상'});
   }
   if(v){
     if(v.topIssue) add({tag:'민원',key:'issues',v:v.issues,unit:'건',w:95,go:['page-voc','voc','voc-monitor'],
