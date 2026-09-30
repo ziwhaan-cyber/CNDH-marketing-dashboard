@@ -380,7 +380,7 @@
 
 
 
-          <div class="panel voc-kwch-panel" style="flex:1; min-height:0;">
+          <div class="panel voc-kwch-panel" style="flex-shrink:0;">
             <div class="panel-title">채널별 키워드 TOP 5 <span class="tag" id="voc-kw-channel-tag">-</span></div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8vw;">
               <div>
@@ -392,6 +392,13 @@
                 <table class="kw-table"><thead><tr><th>키워드</th><th>건수</th></tr></thead><tbody id="voc-kw-bot-body"></tbody></table>
               </div>
             </div>
+          </div>
+
+          <!-- [v2 추가] 이번 달 이슈 키워드 — 이슈 모니터링이 판정한 이슈별 주요 키워드와 AI 판정. 누르면 이슈 모니터링의 해당 구역으로 -->
+          <div class="panel voc-iss-panel" style="flex:1; min-height:0;">
+            <div class="panel-title">이번 달 이슈 키워드 <span class="tag" id="voc-iss-tag">이슈 모니터링 연결</span>
+              <span class="voc-iss-go" onclick="vocIssGo()">이슈 모니터링 →</span></div>
+            <div id="voc-iss-body" class="voc-iss-body"><div class="home-chart-empty">이슈 모니터링 판정을 불러오는 중입니다</div></div>
           </div>
 
           <!-- [v2] 많이 변한 키워드 · 채널별 키워드와 겹쳐 화면에서 내림(요소는 남김) -->

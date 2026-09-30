@@ -372,6 +372,49 @@
     sel.value=VOC_VIEW.key;
     el.querySelectorAll('[data-mode]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-mode')===VOC_VIEW.mode); });
   }
+  // ===== [v2 추가] 이번 달 이슈 키워드 — 이슈 모니터링이 판정한 이슈(급증·비중 확대)별 주요 키워드와 AI 판정 =====
+  // 이슈 모니터링이 저장하는 요약(voc_im_summary.issueList)을 읽는다. 기준 월은 두 화면이 함께 쓰므로 같은 달이다.
+  function vocIssRead(){ try{ return JSON.parse(localStorage.getItem(DEMO_PFX+'voc_im_summary')||'null'); }catch(e){ return null; } }
+  function renderVocIssues(){
+    var box=document.getElementById('voc-iss-body'); if(!box) return;
+    var s=vocIssRead();
+    if(!s || !VOC_VIEW || s.month!==VOC_VIEW.key || !s.issueList){
+      box.innerHTML='<div class="home-chart-empty">이슈 모니터링 판정을 불러오는 중입니다</div>';
+      try{ loadMonitorFrame(); }catch(e){}          // 아직 안 열렸으면 불러 둔다 → 요약이 저장되면 다시 그림
+      return;
+    }
+    var tag=document.getElementById('voc-iss-tag'); if(tag) tag.textContent=(VOC_VIEW.mi+1)+'월 · 뜬 이슈 '+s.issueList.length+'건';
+    if(!s.issueList.length){ box.innerHTML='<div class="home-chart-empty">이번 달 이슈로 판정된 테마가 없습니다</div>'; return; }
+    var esc=function(x){ return String(x==null?'':x).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+    box.innerHTML=s.issueList.map(function(it){
+      var off = it.ai && it.ai.verdict && it.ai.verdict!=='단일 사안';   // AI가 무관하다고 본 이슈는 흐리게(이슈 모니터링과 같게)
+      return '<div class="voc-iss-row'+(off?' off':'')+'" onclick="vocIssGo()" title="이슈 모니터링에서 자세히 보기">'
+        +'<div class="voc-iss-top"><span class="voc-iss-grade">'+esc(it.grade)+'</span><b>'+esc(it.subject)+'</b>'
+        +(it.streak>=2?'<span class="voc-iss-streak">'+it.streak+'개월 연속</span>':'')
+        +'<span class="voc-iss-n">'+numFmt(it.count)+'건 <em>'+(it.diff>=0?'+':'')+numFmt(it.diff)+'</em></span></div>'
+        +'<div class="voc-iss-kws">'+(it.kws||[]).map(function(k){ return '<span>'+esc(k.keyword)+' <b>'+numFmt(k.count)+'</b></span>'; }).join('')
+        +(it.ai?'<span class="voc-iss-ai">AI · '+esc(it.ai.verdict)+'</span>':'')+'</div></div>';
+    }).join('');
+    // 칸 높이에 들어가는 만큼만 — 넘치면 아래부터 줄이고 남은 건수를 알린다
+    var panel=box.closest('.panel'); if(!panel||!panel.clientHeight) return;
+    var rows=[].slice.call(box.querySelectorAll('.voc-iss-row')), cut=0;
+    for(var i=rows.length-1; i>0 && panel.scrollHeight>panel.clientHeight+1; i--){ rows[i].remove(); cut++; }
+    if(cut){ var more=document.createElement('div'); more.className='voc-iss-more'; more.textContent='그 밖에 '+cut+'건 · 이슈 모니터링에서 확인'; box.appendChild(more);
+      if(panel.scrollHeight>panel.clientHeight+1 && box.querySelectorAll('.voc-iss-row').length>1){ box.querySelectorAll('.voc-iss-row')[box.querySelectorAll('.voc-iss-row').length-1].remove(); more.textContent='그 밖에 '+(cut+1)+'건 · 이슈 모니터링에서 확인'; } }
+  }
+  // 이슈 모니터링 탭으로 가서 '이슈 감지' 구역을 보여준다
+  function vocIssGo(){
+    var b=document.querySelector('#page-voc [data-voc-tab="voc-monitor"]'); if(b){ showVocTab(b); loadMonitorFrame(); }
+    var tries=0; (function poll(){ try{ var w=document.getElementById('voc-monitor-frame').contentWindow; if(w.vocFocus&&w.vocFocus({sec:'themeAlerts'})) return; }catch(e){}
+      if(++tries<40) setTimeout(poll,150); })();
+  }
+  window.addEventListener('storage', function(e){ if(e.key===DEMO_PFX+'voc_im_summary') renderVocIssues(); });
+  if (window.ResizeObserver){
+    document.addEventListener('DOMContentLoaded', function(){
+      var p=document.querySelector('.voc-iss-panel'); if(p) new ResizeObserver(function(){ renderVocIssues(); }).observe(p);
+    });
+  }
+
   // 이슈 모니터링에서 바꾸면(다른 창·틀에서 저장) 민원통계도 다시 계산
   window.addEventListener('storage', function(e){
     if (e.key!==VOC_VIEW_KEY) return;
@@ -713,6 +756,7 @@
     VOC_VIEW = { key:selKey, y:y, mi:mi, mode:mode, auto:autoMode, cut:cutDay||dimCur, months:monthKeys.slice().reverse() };
     var partial = mode==='mid' && cutDay>0;
     renderVocViewCtl();
+    setTimeout(renderVocIssues, 0);   // 이번 달 이슈 키워드(이슈 모니터링 요약) — 기준 월이 바뀌면 다시
     var prevKeyK = moKey(py,pm);
     if (partial){
       prevN = 0;

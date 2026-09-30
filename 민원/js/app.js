@@ -55,7 +55,11 @@ function saveSummary(){
       unmapped:(sig.unmappedKeywords||[]).length,
       sites:(function(){const w=buildSiteWatch();const a=w.filter(o=>o.level==='alert');
         return a.length?`${a[0].site} ${a[0].count}건`:'';})(),
-      ai:summaryAi(dashMonthKey())   // [v2] 현황 화면의 'AI 인사이트' 카드용 — AI 결과의 첫 항목만
+      ai:summaryAi(dashMonthKey()),  // [v2] 현황 화면의 'AI 인사이트' 카드용 — AI 결과의 첫 항목만
+      // [v2] 대시보드 민원통계의 '이번 달 이슈 키워드' 칸용 — 뜬 이슈(감소 제외)별 주요 키워드와 AI 판정
+      issueList:issues.slice(0,5).map(t=>{const rv=aiReviewFor(dashMonthKey(),t.theme);
+        return{theme:t.theme,subject:t.subject,grade:t.grade,count:t.count,prev:t.prevCount,diff:t.diff,streak:t.streak,
+          kws:(t.keywords||[]).slice(0,3),ai:rv?{verdict:rv.verdict,title:rv.title||''}:null};})
     }));
   }catch(e){}
 }

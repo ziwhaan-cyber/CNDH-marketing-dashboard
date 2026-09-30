@@ -444,6 +444,29 @@ html,body{ background:#E7EBEF; }
 #voc-overview .voc-kwch-panel .kw-table th{ padding-top:0.4vw !important; padding-bottom:0.4vw !important; font-size:0.74vw; }
 #voc-overview .voc-kwch-panel .kpi-section-title{ font-size:0.86vw; margin-bottom:0.5vw; }
 #voc-sum-ch-note{ margin-top:0.5vw; }
+#voc-overview .voc-kwch-panel .kw-table td{ padding-top:0.4vw !important; padding-bottom:0.4vw !important; }
+
+/* 민원통계 — 이번 달 이슈 키워드 (이슈 모니터링 판정과 연결) */
+.voc-iss-panel{ overflow:hidden; }
+.voc-iss-panel .panel-title{ display:flex; align-items:center; }
+.voc-iss-go{ margin-left:auto; font-size:0.68vw; font-weight:600; color:var(--ui-accent); cursor:pointer; }
+.voc-iss-go:hover{ text-decoration:underline; }
+.voc-iss-row{ padding:0.5vw 0.2vw; border-top:1px solid var(--ui-line-soft); cursor:pointer; }
+.voc-iss-row:first-child{ border-top:0; }
+.voc-iss-row:hover{ background:var(--ui-zebra); }
+.voc-iss-row.off{ opacity:.5; }
+.voc-iss-top{ display:flex; align-items:center; gap:0.45vw; font-size:0.8vw; }
+.voc-iss-top b{ font-weight:700; color:var(--ui-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.voc-iss-grade{ font-size:0.62vw; font-weight:700; color:#B45309; background:#FBF1E6; border-radius:4px; padding:0.08vw 0.4vw; flex:0 0 auto; }
+.voc-iss-row.off .voc-iss-grade{ color:var(--ui-muted); background:var(--ui-sunken); }
+.voc-iss-streak{ font-size:0.64vw; font-weight:600; color:var(--ui-accent); flex:0 0 auto; }
+.voc-iss-n{ margin-left:auto; font-size:0.8vw; font-weight:800; color:var(--ui-ink); white-space:nowrap; }
+.voc-iss-n em{ font-style:normal; font-size:0.66vw; font-weight:700; color:#C4564A; margin-left:0.2vw; }
+.voc-iss-kws{ display:flex; flex-wrap:wrap; gap:0.3vw; margin-top:0.35vw; }
+.voc-iss-kws span{ font-size:0.64vw; color:var(--ui-muted); background:var(--ui-sunken); border-radius:4px; padding:0.1vw 0.4vw; }
+.voc-iss-kws span b{ color:var(--ui-ink); font-weight:700; }
+.voc-iss-kws .voc-iss-ai{ color:var(--ui-accent); background:var(--ui-accent-soft); font-weight:700; }
+.voc-iss-more{ font-size:0.64vw; color:var(--ui-muted); padding-top:0.3vw; }
 
 /* 민원통계 오른쪽 칸 — 민원접수 현황이 맨 위로 오면서 칸이 4개가 되어, 여백만 조금 줄여 한 화면에 들어가게 */
 #voc-overview > .col:nth-child(2){ gap:0.55vw !important; }
