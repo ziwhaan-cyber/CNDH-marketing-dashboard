@@ -276,3 +276,146 @@ body.embed #aiSection .dash-sec-l{ font-size:14px; }
 body.embed #aiSection .pa-box{ padding:10px 12px; }
 /* 이슈 카드의 '조치' 줄도 끼워 넣은 화면에서는 생략 — AI 분석 칸에서 원인과 함께 본다 */
 body.embed #themeAlerts .ai-line-a{ display:none; }
+
+
+/* =====================================================================
+   v2 다듬기 (2026-09)
+   위의 규칙·색·배치는 그대로 두고 여백·모서리·그림자·표 머리줄·배지 톤만 한 단계 정리한다.
+   남색 헤더 + 딥 티얼 강조 + 주황 포인트 줄은 유지.
+   이 블록을 통째로 지우면 이전 모습으로 돌아간다.
+   ===================================================================== */
+:root{
+  --ui-line-soft:#EAEEF2;
+  --ui-zebra:#F8FAFB;        /* 표 줄무늬 — 따뜻한 베이지 대신 배경과 같은 계열 */
+  --ui-sunken:#F5F7F9;       /* 카드 안의 옅은 칸 */
+  --ui-th:#E9F1F3;           /* 표 머리줄 — 진한 티얼 대신 같은 티얼의 옅은 톤 */
+  --ui-th-ink:#1D5763;
+  --ui-shadow:0 1px 2px rgba(16,32,48,.04),0 4px 14px rgba(16,32,48,.05);
+}
+
+/* ---------- 대시보드 뼈대 ---------- */
+html,body{ background:#E7EBEF; }
+.slide{ box-shadow:0 0.4vw 1.8vw rgba(16,32,48,.14); }
+.header{ padding:0.95vw 3vw; align-items:center; }
+.header h1{ font-size:1.5vw; font-weight:700; letter-spacing:-0.02em; }
+
+/* 페이지 전환: 위쪽만 둥근 탭 → 밑줄 탭. 아래 단계(연체 현황·미납안내…)의 알약 버튼과 층위를 나눈다 */
+.page-nav{ padding:0.35vw 3vw 0; gap:0.4vw; align-items:stretch; border-bottom:1px solid var(--ui-line); }
+.page-nav .page-btn{
+  background:transparent !important; border:0 !important; border-radius:0 !important;
+  color:var(--ui-muted); font-weight:600; font-size:0.86vw; padding:0.7vw 0.9vw 0.6vw;
+  box-shadow:inset 0 -2px 0 transparent; transition:color .15s, box-shadow .15s;
+}
+.page-nav .page-btn:hover{ color:var(--ui-ink); }
+.page-nav .page-btn.active{ color:var(--ui-ink) !important; font-weight:700; box-shadow:inset 0 -3px 0 var(--ui-accent); }
+.page-nav .btn-reset-data{ border-radius:6px; font-weight:600; }
+
+/* 카드 */
+.panel{ border:1px solid var(--ui-line-soft) !important; border-radius:12px !important; box-shadow:var(--ui-shadow); padding:0.95vw 1.4vw; }
+.panel-title{
+  font-size:0.98vw; letter-spacing:-0.01em; padding-bottom:0.55vw; margin-bottom:0.7vw;
+  border-bottom:1px solid var(--ui-line) !important;
+  /* 밑줄 전체 대신 제목 아래에만 짧게 강조색 */
+  background:linear-gradient(var(--ui-accent),var(--ui-accent)) left bottom / 2.4vw 2px no-repeat;
+}
+.panel-title .tag{
+  background:var(--ui-accent-soft); color:var(--ui-accent); font-weight:700; letter-spacing:0;
+  border-radius:999px; padding:0.12vw 0.62vw;
+}
+.subnav-btn{ background:#fff; border-color:var(--ui-line); font-weight:600; }
+.subnav-btn:hover{ background:var(--ui-sunken); }
+.subnav-btn.active{ box-shadow:0 1px 3px rgba(35,107,122,.25); }
+
+/* 표 머리줄 — 진한 칸 대신 옅은 티얼 + 진한 글자 */
+.perf-table th, .perf-table thead tr:first-child th, .contract-table th, .arr-table th, .hd-table th,
+.voc-sum-table th, .kw-table th, .share-table th, .nt-list th, .flow-header .fh-label{
+  background:var(--ui-th) !important; color:var(--ui-th-ink) !important; font-weight:700;
+}
+.flow-header .fh-label{ border-radius:8px; }
+.perf-table tbody tr:nth-child(even), .contract-table tbody tr:nth-child(even), .arr-table tbody tr:nth-child(even),
+.hd-table tbody tr:nth-child(even), .voc-sum-table tbody tr:nth-child(even), .kw-table tbody tr:nth-child(even),
+.mini-table tbody tr:nth-child(even){ background:var(--ui-zebra); }
+.perf-table tfoot td, .contract-table tfoot td, .arr-table tfoot td, .voc-sum-table tbody tr.total-row,
+.hd-table tbody tr.hd-total td, .arr-table tbody tr.hd-total{
+  background:var(--ui-sunken) !important; border-top:1px solid var(--ui-line) !important;
+}
+.arr-table tbody td{ border-bottom-color:var(--ui-line-soft); }
+
+/* 연체 현황 표가 카드 밖으로 넘치지 않게 — 넘치면 표 안에서만 스크롤, 머리줄·합계는 고정 */
+.arr-table-wrap{ overflow-y:auto; }
+.arr-table thead th{ position:sticky; top:0; z-index:1; }
+.arr-table tfoot td{ position:sticky; bottom:0; }
+
+/* 카드 안의 옅은 칸들 — 베이지 → 배경과 같은 쿨그레이 */
+.flow-box, .flow-count, .nt-step, .channel-box, .voc-summary-box, .voc-upload, .heat-upload-row, .sales-step{
+  background:var(--ui-sunken) !important; border-color:var(--ui-line-soft) !important; border-radius:10px !important;
+}
+.flow-md{ border-color:var(--ui-line-soft) !important; border-radius:10px !important; }
+.flow-count .fc-num{ font-size:1.25vw; }
+.nt-list-wrap{ border-color:var(--ui-line-soft); border-radius:8px; }
+.nt-list tbody tr:hover, .flow-md .md-preview:hover, .voc-item:hover{ background:var(--ui-zebra); }
+.nt-preview-wrap{ background:#E9EDF2; border-radius:10px; }
+.nt-gen-btn:disabled, .nt-gen-btn.nt-send:disabled{ background:#CBD2DA; }
+.nt-progress, .share-bar-track{ background:#E6EAEF; }
+.nt-row label.nt-btn, .nt-gen-btn, .upload-inline label, .voc-upload label, .heat-upload-row .hur-file label{ border-radius:6px; }
+
+/* 민원통계 상단 숫자 카드 */
+#voc-overview .kpi-card{ border:1px solid var(--ui-line-soft); border-left:3px solid var(--ui-accent) !important; box-shadow:var(--ui-shadow); border-radius:12px !important; padding:0.8vw 1.1vw !important; }
+#voc-overview .kpi-card .kpi-label{ font-size:0.78vw !important; color:var(--ui-muted); font-weight:600; }
+#voc-overview .kpi-card .kpi-value{ font-size:1.7vw !important; font-weight:800; letter-spacing:-0.02em; }
+#voc-overview .kpi-card .kpi-sub{ font-size:0.66vw !important; border-top-color:var(--ui-line-soft); }
+
+/* 현황(첫 화면) */
+.home-kpi, .home-todo{ border-color:var(--ui-line-soft); border-radius:12px; box-shadow:var(--ui-shadow); }
+.home-top h2{ letter-spacing:-0.03em; }
+.voc-monitor-frame, .embed-frame{ border-radius:12px; box-shadow:0 0 0 1px var(--ui-line-soft), var(--ui-shadow); }
+
+/* 현황 — AI 인사이트 카드 (데일리 체크 위) */
+.home-ai{
+  flex:0 0 auto; margin-bottom:min(1.1vw,1.6vh); padding:min(1.1vw,1.7vh) min(1.4vw,2vh);
+  background:linear-gradient(135deg,#EEF6F7 0%,#FFFFFF 75%); border:1px solid #CFE3E7; border-radius:12px;
+  box-shadow:var(--ui-shadow);
+}
+.home-ai-h{ display:flex; align-items:center; gap:0.5vw; font-size:0.95vw; font-weight:700; color:var(--ui-accent); }
+.home-ai-ic{ width:1.5vw; height:1.5vw; border-radius:0.45vw; display:grid; place-items:center; font-size:0.8vw;
+  color:#fff; background:linear-gradient(135deg,var(--ui-accent),#3E93A5); }
+.home-ai-meta{ margin-left:auto; font-size:0.64vw; font-weight:600; color:var(--ui-muted); }
+.home-ai-sub{ font-size:0.7vw; color:var(--ui-muted); margin-top:0.45vw; }
+.home-ai-sub b{ color:var(--ui-accent); }
+.home-ai-it{ margin-top:min(0.7vw,1.1vh); padding-top:min(0.7vw,1.1vh); border-top:1px solid #DCEAED; }
+.home-ai-lbl{ display:block; font-size:0.6vw; font-weight:700; color:var(--ui-accent); letter-spacing:.02em; margin-bottom:0.15vw; }
+.home-ai-it b{ display:block; font-size:min(0.82vw,1.3vh); line-height:1.5; color:var(--ui-ink); }
+.home-ai-it p{ font-size:min(0.68vw,1.05vh); line-height:1.5; color:var(--ui-muted); margin:0.2vw 0 0; }
+.home-ai-foot{ margin-top:min(0.7vw,1.1vh); }
+.home-ai .home-link{ color:var(--ui-accent); border-color:rgba(35,107,122,.35); }
+.home-ai-empty{ font-size:0.74vw; color:var(--ui-muted); margin-top:0.5vw; line-height:1.8; }
+
+/* 월별 민원 추이 차트 (민원통계에 추가) */
+.voc-trend-chart{ flex:1; min-height:6vw; position:relative; }
+.voc-trend-chart svg{ position:absolute; inset:0; display:block; }
+.voc-trend-legend{ display:flex; gap:1vw; font-size:0.64vw; color:var(--ui-muted); margin-left:auto; font-weight:500; }
+.voc-trend-legend i{ display:inline-block; width:0.9vw; height:2px; border-radius:2px; margin-right:0.3vw; vertical-align:middle; }
+
+/* 시연 모드 표시 */
+.demo-badge{
+  margin-left:0.8vw; font-size:0.7vw; font-weight:700; color:#fff; background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.28); border-radius:999px; padding:0.18vw 0.7vw; vertical-align:middle;
+}
+.demo-badge a{ color:#fff; opacity:.75; margin-left:0.5vw; text-decoration:underline; cursor:pointer; font-weight:500; }
+
+/* ---------- 민원 이슈 모니터링 ---------- */
+.card, .stat-cell, .empty-card{ border:1px solid var(--ui-line-soft) !important; border-radius:12px !important; box-shadow:var(--ui-shadow); }
+.stat-v{ font-weight:700; letter-spacing:-0.02em; }
+.dash-sec-l{
+  border-bottom:1px solid var(--ui-line) !important;
+  background:linear-gradient(var(--ui-accent),var(--ui-accent)) left bottom / 36px 2px no-repeat;
+}
+
+/* ---------- 미납관리 대시보드 ---------- */
+.chart-container, .kpi-row > *, .table-container, .search-section{
+  border-color:var(--ui-line-soft) !important; border-radius:12px !important; box-shadow:var(--ui-shadow) !important;
+}
+.section-title{
+  border-bottom:1px solid var(--ui-line) !important;
+  background:linear-gradient(var(--ui-accent),var(--ui-accent)) left bottom / 36px 2px no-repeat;
+}

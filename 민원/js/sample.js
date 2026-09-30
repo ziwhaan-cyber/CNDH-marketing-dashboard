@@ -172,5 +172,5 @@ function buildSampleData(){
 
 // ----- 샘플 모드 -----
 // 샘플은 저장하지 않는다(직접 올린 엑셀을 덮어쓰지 않기 위해). 출처가 sample이면 열 때마다 새로 만든다.
-function isSampleMode(){return getSource()==='sample';}
+function isSampleMode(){return getSource()==='sample'||DEMO;}   // [v2] 시연 모드도 샘플로 본다(기준일 고정·예시 AI 결과)
 function loadSample(){setSource('sample');toast('샘플 데이터를 불러왔습니다');}

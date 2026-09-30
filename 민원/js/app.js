@@ -33,7 +33,7 @@ function renderAll(){
 // 개요(첫 화면)에서 읽을 요약값만 저장한다. 접수 내용·고객명은 저장하지 않는다.
 function saveSummary(){
   try{
-    if(!DATA.length){localStorage.removeItem('voc_im_summary');return;}
+    if(!DATA.length){localStorage.removeItem(DEMO_PFX+'voc_im_summary');return;}
     const c=dashCtx();
     const {rows:prevRows}=dashPrevRows(c);
     const sig=paBuildThemeSignals(c.rows,prevRows,paScanPeriodRawRows(c.y-1,c.mi),
@@ -42,7 +42,7 @@ function saveSummary(){
     const issues=(sig.themes||[]).filter(t=>t.grade!=='감소');
     const open=c.rows.filter(paIsUnresolved);
     const last=latestDataDate();
-    localStorage.setItem('voc_im_summary',JSON.stringify({
+    localStorage.setItem(DEMO_PFX+'voc_im_summary',JSON.stringify({
       at:Date.now(), source:getSource(), month:dashMonthKey(), mode:c.mode,
       count:c.rows.length, prevCount:prevRows.length,
       pct:prevRows.length?Math.round((c.rows.length-prevRows.length)/prevRows.length*1000)/10:null,
@@ -53,9 +53,26 @@ function saveSummary(){
       lagging:(sig.laggingMissing||[]).join(' · '),
       unmapped:(sig.unmappedKeywords||[]).length,
       sites:(function(){const w=buildSiteWatch();const a=w.filter(o=>o.level==='alert');
-        return a.length?`${a[0].site} ${a[0].count}건`:'';})()
+        return a.length?`${a[0].site} ${a[0].count}건`:'';})(),
+      ai:summaryAi(dashMonthKey())   // [v2] 현황 화면의 'AI 인사이트' 카드용 — AI 결과의 첫 항목만
     }));
   }catch(e){}
+}
+
+// [v2] 현황 화면에 올릴 AI 요약 — 원인·리스크 첫 항목, '단일 사안'으로 확인된 이슈의 조치, 신뢰도.
+// 없으면 null. 샘플 예시인지 실제 호출 결과인지도 함께 넘겨 화면에 그대로 밝힌다.
+function summaryAi(monthKey){
+  try{
+    const r=aiResultFor(monthKey);if(!r||!r.res)return null;
+    const d=r.res.deepAnalysis||{},rv=Array.isArray(r.res.issueReview)?r.res.issueReview:[];
+    const first=a=>Array.isArray(a)&&a[0]?{point:a[0].point||'',evidence:a[0].evidence||''}:null;
+    const single=rv.filter(o=>o.verdict==='단일 사안');
+    return{sample:!!r.sample,model:r.model||'',at:r.at||0,
+      conf:(r.res.confidence&&r.res.confidence.level)||'',
+      cause:first(d.cause),risk:first(d.risk),
+      action:single[0]?{theme:single[0].theme,text:single[0].action||''}:null,
+      confirmed:single.length,unrelated:rv.filter(o=>o.verdict&&o.verdict!=='단일 사안').length};
+  }catch(e){return null;}
 }
 
 // ----- 월 선택 · 월중/월말 전환 -----
