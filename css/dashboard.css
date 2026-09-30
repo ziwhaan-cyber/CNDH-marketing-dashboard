@@ -539,13 +539,13 @@
     display:flex; flex-direction:column; justify-content:space-between; min-height:0;
     box-shadow:0 1px 3px rgba(15,23,42,.06); overflow:hidden; }
   .home-kpi::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:0.28vw; }
-  #home-minap::before{ background:#236B7A; }
+  #home-minap::before{ background:#2F6FED; }
   #home-voc::before{ background:#B45309; }
 
   .home-kpi-h{ display:flex; align-items:baseline; justify-content:space-between; gap:0.5vw; margin-bottom:min(0.9vw,1.4vh); flex:0 0 auto; }
   .home-kpi-t{ font-size:0.95vw; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
   .home-kpi-t::before{ content:'●'; font-size:0.5vw; margin-right:0.35vw; vertical-align:middle; }
-  #home-minap .home-kpi-t::before{ color:#236B7A; }
+  #home-minap .home-kpi-t::before{ color:#2F6FED; }
   #home-voc .home-kpi-t::before{ color:#B45309; }
   .home-kpi-s{ font-size:0.68vw; color:#6B7280; font-weight:500; }
 
@@ -554,9 +554,9 @@
   .home-num .v{ font-size:min(1.55vw,2.4vh); font-weight:800; color:var(--text); line-height:1.15; letter-spacing:-0.02em; }
   .home-num .v small{ font-size:0.7vw; font-weight:600; margin-left:0.1vw; color:#6B7280; }
   .home-num .k{ font-size:0.68vw; color:#6B7280; margin-top:0.25vw; }
-  .home-num .v.up{ color:#0F766E; } .home-num .v.dn{ color:#B45309; }
-  #home-minap .home-num .v.point{ color:#236B7A; }
-  #home-minap .home-num .v.point small{ color:#236B7A; opacity:.75; }
+  .home-num .v.up{ color:#2F6FED; } .home-num .v.dn{ color:#B45309; }
+  #home-minap .home-num .v.point{ color:#2F6FED; }
+  #home-minap .home-num .v.point small{ color:#2F6FED; opacity:.75; }
 
   .home-chart{ margin-top:min(0.8vw,1.2vh); padding-top:min(0.7vw,1vh); min-height:0; flex:1 1 auto;
     display:flex; flex-direction:column; justify-content:flex-end; }
@@ -570,7 +570,7 @@
   .home-link{ font-size:0.72vw; font-weight:700; cursor:pointer; border:1px solid var(--line);
     border-radius:1.2vw; padding:0.3vw 0.9vw; background:#fff; transition:background .12s; }
   .home-link:hover{ background:var(--bg); }
-  #home-minap .home-link{ color:#236B7A; border-color:rgba(35,107,122,.35); }
+  #home-minap .home-link{ color:#2F6FED; border-color:rgba(47,111,237,.35); }
   #home-voc .home-link{ color:#B45309; border-color:rgba(180,83,9,.32); }
   .home-empty{ font-size:0.76vw; color:#6B7280; line-height:1.75; }
   .home-kpi.stale .home-nums,.home-kpi.stale .home-chart{ opacity:.45; }
@@ -587,22 +587,22 @@
   .home-todo-row:last-child{ border-bottom:0; }
   .home-todo-row b{ font-weight:700; }
   .home-todo-row .mark{ flex:0 0 auto; width:0.6vw; height:0.6vw; border:1.5px solid #CBD5E1; border-radius:50%; }
-  #home-minap .home-kpi-t::before{ color:#236B7A; }
+  #home-minap .home-kpi-t::before{ color:#2F6FED; }
   .home-todo-row .tag{ flex:0 0 auto; font-size:0.66vw; font-weight:700; color:#fff;
     padding:0.16vw 0.6vw; border-radius:1vw; letter-spacing:-0.01em; }
-  .home-todo-row .tag.t-minap{ background:#0F766E; }
+  .home-todo-row .tag.t-minap{ background:#2F6FED; }
   .home-todo-row .tag.t-voc{ background:#B45309; }
   .home-todo-row .todo-text{ flex:1; min-width:0; }
   .home-todo-row .delta{ flex:0 0 auto; font-size:0.66vw; font-weight:600; }
   .home-todo-row .delta.up{ color:#B45309; }
-  .home-todo-row .delta.dn{ color:#0F766E; }
+  .home-todo-row .delta.dn{ color:#2F6FED; }
   .home-todo-row .delta.same{ color:#9AA3AE; font-weight:500; }
   .home-todo-row .go{ flex:0 0 auto; width:1.2vw; height:1.2vw; border-radius:50%; cursor:pointer;
     border:1px solid var(--line); background:#fff; color:#9AA3AE; font-size:0.66vw; font-weight:700;
     display:flex; align-items:center; justify-content:center; }
   .home-todo-row .go:hover{ background:var(--bg); color:var(--text); }
   .home-todo-row.done{ opacity:.5; }
-  .home-todo-row.done .mark{ background:#0F766E; border-color:#0F766E; position:relative; }
+  .home-todo-row.done .mark{ background:#2F6FED; border-color:#2F6FED; position:relative; }
   .home-todo-row.done .todo-text{ text-decoration:line-through; }
   .home-todo-row .mark{ display:inline-block; width:0.62vw; height:0.62vw; border:1.5px solid var(--line);
     border-radius:50%; margin-right:0.55vw; vertical-align:middle; }

@@ -85,7 +85,7 @@ window.vocFocus=function(o){
   const el=o&&document.getElementById(o.sec);
   if(!el||!DATA.length||!el.offsetHeight)return false;
   el.scrollIntoView({behavior:'smooth',block:'start'});
-  el.style.transition='box-shadow .3s';el.style.boxShadow='0 0 0 3px rgba(35,107,122,.35)';el.style.borderRadius='12px';
+  el.style.transition='box-shadow .3s';el.style.boxShadow='0 0 0 3px rgba(47,111,237,.35)';el.style.borderRadius='12px';
   setTimeout(()=>{el.style.boxShadow='';},1600);
   return true;
 };

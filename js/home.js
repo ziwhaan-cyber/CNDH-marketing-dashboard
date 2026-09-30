@@ -127,9 +127,9 @@ function renderHome(){
       +'</div>'
       +'<div class="home-chart">'
       +((amtSeries.length>2)
-        ? '<div class="home-chart-h"><span>미납 금액 추이</span><span>'+amtSeries.length+'일</span></div>'+homeSpark(amtSeries.slice(-7),'#236B7A')
+        ? '<div class="home-chart-h"><span>미납 금액 추이</span><span>'+amtSeries.length+'일</span></div>'+homeSpark(amtSeries.slice(-7),'#2F6FED')
         : '<div class="home-chart-h"><span>연체 개월 구간별 고객 수</span><span>단위: 개소</span></div>'
-          +homeBars((m.buckets||[]).map(function(b){return {k:b.k,v:b.v};}),'#236B7A',{gap:3.4,maxW:4.5}))
+          +homeBars((m.buckets||[]).map(function(b){return {k:b.k,v:b.v};}),'#2F6FED',{gap:3.4,maxW:4.5}))
       +'</div>'
       +'<div class="home-foot-row"><span></span><span class="home-link" onclick="goHome(\'page-arrears\',\'arr\',\'arr-tab-overdue\')">미납관리 열기 →</span></div>';
   }else{
