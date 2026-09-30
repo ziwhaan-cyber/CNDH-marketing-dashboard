@@ -456,6 +456,33 @@ html,body{ background:#E7EBEF; }
   border:1px solid var(--ui-line) !important; background:#fff !important; color:var(--ui-ink);
 }
 
+/* 탭별 '핵심 한 줄' — 소버튼 줄 오른쪽 (세로 공간을 더 쓰지 않게) */
+.page-top .subnav{ align-items:center; }
+.tab-hl{ margin-left:auto; display:flex; align-items:center; gap:0.4vw 1.3vw; flex-wrap:wrap; justify-content:flex-end; min-width:0; }
+.tab-hl .hl-lbl{ font-size:0.66vw; }
+.tab-hl .hl-it{ font-size:0.9vw; cursor:default; }
+.tab-hl .hl-it:hover{ text-decoration:none; }
+.tab-hl .hl-it b{ font-size:1.25vw; }
+.tab-hl .hl-it em{ font-style:normal; font-size:0.74vw; font-weight:600; color:var(--ui-muted); }
+.tab-hl .hl-it em.up{ color:#C4564A; } .tab-hl .hl-it em.dn{ color:#2F7FB8; }
+.tab-hl .hl-it.warn b{ color:#B45309; }
+.tab-hl .hl-it.muted{ color:var(--ui-muted); font-weight:500; }
+
+/* 연체 현황 — 연체 단계로 줄 색 (중기 주황 · 장기 빨강), 연체 관리의 해당 칸도 같은 색 */
+.arr-table tbody tr.stage-mid td{ background:#FDF6EC !important; }
+.arr-table tbody tr.stage-long td{ background:#FBECEA !important; }
+.arr-table tbody tr.stage-long td:first-child{ box-shadow:inset 3px 0 0 #C4564A; font-weight:700; color:#B1443A; }
+.arr-table tbody tr.stage-mid td:first-child{ box-shadow:inset 3px 0 0 #D08A3A; font-weight:700; color:#A8653A; }
+.flow-count.stage-long{ background:#FBECEA !important; border-color:#F0CFCA !important; }
+.flow-count.stage-long .fc-num{ color:#B1443A; }
+.flow-count.stage-mid{ background:#FDF6EC !important; border-color:#F2DEC2 !important; }
+.flow-count.stage-mid .fc-num{ color:#A8653A; }
+
+/* 추가사항 — 이번 달 열과 에너지바우처 최고치 */
+.voc-sum-table .cur-col{ background:var(--ui-accent-soft) !important; font-weight:700; }
+.voc-sum-table th.cur-col{ background:var(--ui-accent) !important; color:#fff !important; }
+.voc-sum-table td.peak{ color:#fff !important; background:#C4564A !important; font-weight:800; border-radius:4px; }
+
 /* 시연 모드 표시 */
 .demo-badge{
   margin-left:0.8vw; font-size:0.7vw; font-weight:700; color:#fff; background:rgba(255,255,255,.14);
