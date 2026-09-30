@@ -11,16 +11,33 @@
   var DEMO_ON = /[?&]demo=1(&|$)/.test(location.search);
   var ON = !!(CFG.url && CFG.anonKey) && !DEMO_ON;
   var ROLE_LABEL = { admin:'관리자', arrears:'연체 담당', voc:'민원 담당', viewer:'조회자' };
+  // [v2] 시연 모드에서 조회자 화면 미리보기 — 주소에 &view=viewer. 데이터는 그대로 시연용 가상 데이터
+  var DEMO_VIEWER = DEMO_ON && /[?&]view=viewer(&|$)/.test(location.search);
 
   // 다른 화면 코드가 권한을 물어볼 때 쓴다. 공유 기능이 꺼져 있으면 모든 권한이 있는 것으로 본다(지금과 같게).
   var CLOUD = window.CLOUD = {
     on: ON, role: null, name: '', meta: {},
-    can: function(domain){ return !ON || CLOUD.role === 'admin' || CLOUD.role === domain; }
+    can: function(domain){ if (DEMO_VIEWER) return false; return !ON || CLOUD.role === 'admin' || CLOUD.role === domain; }
   };
+  var html = document.documentElement;
+  if (DEMO_ON){
+    if (DEMO_VIEWER){ CLOUD.role = 'viewer'; html.classList.add('cloud-on', 'demo-viewer'); applyRole(); }
+    whenReady(demoViewSwitch);
+    return;
+  }
   if (!ON) return;
 
-  var html = document.documentElement;
   html.classList.add('cloud-on', 'cloud-wait');   // 로그인·자료 확인이 끝날 때까지 화면을 가린다
+
+  // 시연 모드 오른쪽 위 — 담당자 화면 ↔ 조회자 화면 전환
+  function demoViewSwitch(){
+    var nav = document.querySelector('.page-nav'); if (!nav || document.getElementById('cloud-user')) return;
+    var b = document.createElement('div'); b.id = 'cloud-user';
+    b.innerHTML = DEMO_VIEWER
+      ? '<span class="cu-dot"></span><b>시연</b><span class="cu-role">조회자 화면</span><a class="demo-view-btn" href="?demo=1">담당자 화면으로</a>'
+      : '<a class="demo-view-btn" href="?demo=1&amp;view=viewer" title="로그인한 조회자(전사)에게 보이는 화면 — 업로드 · 출력 버튼이 빠진다">조회자 화면으로 보기</a>';
+    nav.insertBefore(b, document.getElementById('btn-clear-uploaded-data') || null);
+  }
 
   // 공유하는 값 — 브라우저 저장 이름(ls) ↔ 서버 이름(key), 올릴 수 있는 업무(domain)
   var ITEMS = [
@@ -178,7 +195,8 @@
       if (!CLOUD.can('arrears')){
         var of = document.getElementById('overdue-frame');
         if (of){
-          of.setAttribute('data-src', 'about:blank');
+          if (ON) of.setAttribute('data-src', 'about:blank');   // 시연에서는 뒤에서 샘플을 올려야 하므로 불러 두고 가리기만
+
           if (!document.getElementById('cloud-overdue-note')){
             var n = document.createElement('div'); n.id = 'cloud-overdue-note'; n.className = 'cloud-note';
             n.innerHTML = '<b>미납관리는 연체 담당 전용 화면입니다</b><span>고객별 원본 엑셀이 필요해 담당자 PC에서만 열립니다. 미납 요약은 현황 · 연체 현황 탭에서 볼 수 있습니다.</span>';
@@ -193,7 +211,7 @@
           d.classList.add('cloud-on'); d.classList.toggle('no-voc', !CLOUD.can('voc')); d.classList.toggle('no-arrears', !CLOUD.can('arrears')); }catch(e){} };
         f.addEventListener('load', mark); mark();
       });
-      renderBadge();
+      if (ON) renderBadge();
     });
   }
   var BADGE_KEYS = [['arrearsRows','연체 현황'], ['minap_summary','미납관리'], ['vocRows','민원']];

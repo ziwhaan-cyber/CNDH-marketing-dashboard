@@ -688,3 +688,8 @@ html.cloud-on:not(.can-voc) [data-voc-tab=voc-data]{ display:none !important; }
 /* 끼워 넣은 이슈 모니터링 안: 엑셀 업로드 · 고객명 분류 · 데이터 삭제 · AI 키 · AI 실행 */
 html.no-voc [data-upload], html.no-voc #siteBtn, html.no-voc #clearBtn,
 html.no-voc #aiKeyBtn, html.no-voc #aiRunBtn{ display:none !important; }
+/* [v2] 시연 모드 — 조회자 화면 보기 버튼 */
+.demo-view-btn{ font-size:0.68vw; font-weight:700; color:var(--ui-accent); background:#fff; border:1px solid var(--ui-line); border-radius:999px;
+  padding:0.25vw 0.8vw; text-decoration:none; white-space:nowrap; }
+.demo-view-btn:hover{ background:var(--ui-accent-soft); }
+html.demo-viewer #cloud-user .cu-dot{ background:var(--ui-accent); }
