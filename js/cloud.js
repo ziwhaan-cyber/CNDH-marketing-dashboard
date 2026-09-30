@@ -60,6 +60,7 @@
 
   var STAMP_LS = 'cloud_stamp';          // 이 PC가 마지막으로 받은/올린 서버 시각(값마다)
   var OWN_VOC_LS = 'cloud_own_vocRows';  // 이 PC에서 올린 민원이면 원본을 그대로 둔다(가명본으로 덮지 않음)
+  var DIRTY_LS = 'cloud_dirty';          // 올리다 실패한 값 — 다음에 열 때 서버의 예전 값으로 덮지 않고 다시 올린다
 
   var sb = null, hydrating = false, timers = {}, lastSent = {};
 
@@ -136,8 +137,14 @@
     clearTimeout(timers[it.key]);
     timers[it.key] = setTimeout(function(){ push(it); }, 800);
   }
+  function dirty(){ try{ return JSON.parse(lsGet(DIRTY_LS) || '{}'); }catch(e){ return {}; } }
+  function setDirty(key, on){ var d = dirty(); if (on) d[key] = 1; else delete d[key]; lsSet(DIRTY_LS, JSON.stringify(d)); }
+  // 민원 기록에서 가장 최근 달(YYYY-MM)
+  function latestVocMonth(){ var m = ''; try{ (JSON.parse(lsGet('r9_vocRawRows') || '[]') || []).forEach(function(a){ var k = String((a && (a[13] || a[0])) || '').slice(0,7); if (/^\d{4}-\d{2}$/.test(k) && k > m) m = k; }); }catch(e){} return m; }
   function push(it){
     var d0 = localData(it); if (d0 === undefined) return;
+    // 이슈 모니터링 요약은 보고 있는 달 기준으로 저장된다 — 담당자가 지난달을 열어 봐도 모두의 현황이 지난달로 바뀌지 않게 최신 달일 때만 올린다
+    if (it.key === 'voc_im_summary'){ var lm = latestVocMonth(); if (d0 && d0.month && lm && d0.month !== lm) return; }
     var cmp = sameAs(JSON.stringify(d0));
     if (lastSent[it.key] === cmp) return;
     if (it.deid) toast('민원 자료를 가명 처리해서 공유하는 중…');
@@ -145,13 +152,14 @@
       return sb.from('shared_data').upsert({ key:it.key, domain:it.domain, data:d }).select('updated_at,updated_by_name').single();
     }).then(function(res){
       if (res.error) throw res.error;
-      lastSent[it.key] = cmp;
+      lastSent[it.key] = cmp; setDirty(it.key, false);
       var st = stamps(); st[it.key] = res.data.updated_at; saveStamps(st);
       if (it.deid) lsSet(OWN_VOC_LS, res.data.updated_at);
       CLOUD.meta[it.key] = { by:res.data.updated_by_name, at:res.data.updated_at };
       renderBadge();
       if (it.key === 'arrearsRows' || it.key === 'vocRows' || it.key === 'minap_summary') toast('공유했습니다 — 다른 사람 화면에도 반영됩니다');
     }).catch(function(e){
+      setDirty(it.key, true);
       toast('공유하지 못했습니다: ' + ((e && e.message) || '알 수 없는 오류') + ' — 이 PC에는 저장되어 있습니다', true);
     });
   }
@@ -174,6 +182,7 @@
         var it = byKey[row.key]; if (!it) return;
         seen[row.key] = true;
         CLOUD.meta[row.key] = { by:row.updated_by_name, at:row.updated_at };
+        if (dirty()[row.key] && CLOUD.can(it.domain) && lsGet(it.ls) !== null){ schedulePush(it); return; }       // 못 올린 새 값이 이 PC에 있음 — 덮지 않고 다시 올림
         if (st[row.key] === row.updated_at && lsGet(it.ls) !== null) return;           // 이미 받은 것
         if (it.deid && lsGet(OWN_VOC_LS) === row.updated_at && lsGet(it.ls) !== null){ st[row.key] = row.updated_at; return; } // 이 PC가 올린 원본 유지
         hydrating = true;
@@ -278,6 +287,10 @@
     });
   }
   function logout(){
+    if (Object.keys(dirty()).length && !confirm('아직 공유되지 않은 자료가 있습니다. 로그아웃하면 이 PC의 사본이 지워집니다.\n그래도 로그아웃할까요? (취소하면 다시 공유를 시도합니다)')){
+      ITEMS.forEach(function(it){ if (dirty()[it.key]) schedulePush(it); }); return;
+    }
+    lsDel(DIRTY_LS);
     sb.auth.signOut().finally(function(){
       // 이 PC에 남은 공유 자료 사본도 지운다(다음 사람이 로그인 없이 보지 못하게)
       ITEMS.forEach(function(it){ lsDel(it.ls); });

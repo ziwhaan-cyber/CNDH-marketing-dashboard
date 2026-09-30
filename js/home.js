@@ -1,6 +1,9 @@
 // 현황(첫 화면) · 시연 모드 — index.html 안에 있던 스크립트를 그대로 옮김
 /* [추가] 개요 화면 — 각 업무 화면이 저장해 둔 요약값을 읽어 보여준다.
    요약에는 집계 숫자만 들어 있고 고객명·접수 내용은 들어 있지 않다. */
+// [v2] 요약값은 공유 저장소에서도 오므로 화면에 넣을 때 숫자는 숫자로, 글자는 이스케이프해서 넣는다
+function hN(x){ var n=Number(x); return isFinite(n)?n:0; }
+function hE(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function homeRead(key){ try{ return JSON.parse(localStorage.getItem(DEMO_PFX+key)||'null'); }catch(e){ return null; } }
 function homeWon(n){
   if(n>=100000000) return (n/100000000).toFixed(1)+'억';
@@ -119,11 +122,11 @@ function renderHome(){
     mEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">연체 · 미납</span>'
       +'<span class="home-kpi-s">'+(mStale
           ? (mAgeDays+'일 전 업로드 기준 · 다시 올려주세요')
-          : ((m.asOf||'')+' 기준'))+'</span></div>'
+          : (hE(m.asOf)+' 기준'))+'</span></div>'
       +'<div class="home-nums">'
-      +'<div class="home-num"><div class="v">'+m.count+'<small>개소</small></div><div class="k">미납 고객</div></div>'
-      +'<div class="home-num"><div class="v">'+homeWon(m.amount)+'<small>원</small></div><div class="k">미납 금액</div></div>'
-      +'<div class="home-num"><div class="v point">'+m.longTerm+'<small>개소</small></div><div class="k">3개월 이상</div></div>'
+      +'<div class="home-num"><div class="v">'+hN(m.count)+'<small>개소</small></div><div class="k">미납 고객</div></div>'
+      +'<div class="home-num"><div class="v">'+homeWon(hN(m.amount))+'<small>원</small></div><div class="k">미납 금액</div></div>'
+      +'<div class="home-num"><div class="v point">'+hN(m.longTerm)+'<small>개소</small></div><div class="k">3개월 이상</div></div>'
       +'</div>'
       +'<div class="home-chart">'
       +((amtSeries.length>2)
@@ -142,16 +145,16 @@ function renderHome(){
   // ── 민원 카드
   var vocEl=document.getElementById('home-voc');
   if(v){
-    var pct=(v.pct==null)?'—':((v.pct>0?'+':'')+v.pct+'%');
+    var pct=(v.pct==null)?'—':((hN(v.pct)>0?'+':'')+hN(v.pct)+'%');
     var cls=(v.pct>0)?'up':(v.pct<0?'dn':'');
     var days7=homeVocWorkdays(7);
     vocEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">민원</span>'
-      +'<span class="home-kpi-s">'+(v.month||'')+(v.mode==='mid'?' 진행 중':' 확정')+'</span></div>'
+      +'<span class="home-kpi-s">'+hE(v.month)+(v.mode==='mid'?' 진행 중':' 확정')+'</span></div>'
       +'<div class="home-nums">'
-      +'<div class="home-num"><div class="v">'+v.count+'<small>건</small></div><div class="k">접수</div></div>'
+      +'<div class="home-num"><div class="v">'+hN(v.count)+'<small>건</small></div><div class="k">접수</div></div>'
       +'<div class="home-num"><div class="v '+cls+'">'+pct+'</div><div class="k">전월 대비</div></div>'
-      +'<div class="home-num"><div class="v">'+v.issues+'<small>건</small></div><div class="k">뜬 이슈</div></div>'
-      +'<div class="home-num"><div class="v">'+v.unresolved+'<small>건</small></div><div class="k">미처리</div></div>'
+      +'<div class="home-num"><div class="v">'+hN(v.issues)+'<small>건</small></div><div class="k">뜬 이슈</div></div>'
+      +'<div class="home-num"><div class="v">'+hN(v.unresolved)+'<small>건</small></div><div class="k">미처리</div></div>'
       +'</div>'
       +'<div class="home-chart"><div class="home-chart-h"><span>영업일 최근 7일 접수</span><span>'
       +(days7.length?days7[0].k+' ~ '+days7[days7.length-1].k:'')+'</span></div>'
@@ -192,8 +195,8 @@ function renderHome(){
       + (mai ? aiCol('미납','t-minap',!!(m&&!mStale),mai, esc(mai.headline),
           '미납관리',"'page-arrears','arr','arr-tab-overdue'") : '')
       + aiCol('민원','t-voc',!!v,vai,
-          vai?('이슈 '+(v.issues||0)+'건 중 <b>'+(vai.confirmed||0)+'건</b> 실제 사안'
-            +(vai.unrelated?' · '+vai.unrelated+'건 무관':'')):'',
+          vai?('이슈 '+hN(v.issues)+'건 중 <b>'+hN(vai.confirmed)+'건</b> 실제 사안'
+            +(vai.unrelated?' · '+hN(vai.unrelated)+'건 무관':'')):'',
           '이슈 모니터링',"'page-voc','voc','voc-monitor'")
       +'</div>';
   }
@@ -205,24 +208,25 @@ function renderHome(){
   var add=function(o){ items.push(o); };
   var GO_MINAP=['page-arrears','arr','arr-tab-overdue'], GO_VOC=['page-voc','voc','voc-monitor'], GO_ARR=['page-arrears','arr','arr-tab-status'];
   var mr=(m&&m.rules)||{midFrom:3,longFrom:6,bigAmount:10000000};
-  var bigTxt=(mr.bigAmount%10000===0)?(mr.bigAmount/10000).toLocaleString('ko-KR')+'만원':mr.bigAmount.toLocaleString('ko-KR')+'원';
+  var bigA=hN(mr.bigAmount);
+  var bigTxt=(bigA%10000===0)?(bigA/10000).toLocaleString('ko-KR')+'만원':bigA.toLocaleString('ko-KR')+'원';
   if(m&&!mStale){
     // [v2] 연체 현황 화면의 단계와 맞춘다: 중기 공급정지 안내 / 장기 법적조치 검토
     if(m.long!=null){
       if(m.long) add({tag:'미납',key:'long',stage:'장기',v:m.long,unit:'개소',w:100,go:GO_MINAP,
-        text:'장기('+mr.longFrom+'개월 이상) 미납 <b>'+m.long+'개소</b> · 법적조치 검토 대상'});
+        text:'장기('+hN(mr.longFrom)+'개월 이상) 미납 <b>'+hN(m.long)+'개소</b> · 법적조치 검토 대상'});
       if(m.mid) add({tag:'미납',key:'mid',stage:'중기',v:m.mid,unit:'개소',w:88,go:GO_MINAP,
-        text:'중기('+mr.midFrom+'~'+(mr.longFrom-1)+'개월) 미납 <b>'+m.mid+'개소</b> · 공급정지 안내 대상'});
+        text:'중기('+hN(mr.midFrom)+'~'+(hN(mr.longFrom)-1)+'개월) 미납 <b>'+hN(m.mid)+'개소</b> · 공급정지 안내 대상'});
     }else if(m.longTerm) add({tag:'미납',key:'longTerm',v:m.longTerm,unit:'개소',w:100,go:GO_MINAP,
-      text:'3개월 이상 미납 <b>'+m.longTerm+'개소</b>'});      // 예전 형식 요약(단계 값 없음)
+      text:'3개월 이상 미납 <b>'+hN(m.longTerm)+'개소</b>'});      // 예전 형식 요약(단계 값 없음)
     if(m.big) add({tag:'미납',key:'big',v:m.big,unit:'개소',w:90,go:GO_MINAP,
-      text:'미납 '+bigTxt+' 이상 <b>'+m.big+'개소</b> · 개별 안내 필요'});
+      text:'미납 '+bigTxt+' 이상 <b>'+hN(m.big)+'개소</b> · 개별 안내 필요'});
     // [v2] '새로 밀린 곳'은 전월 파일이 있을 때만 정확히 셀 수 있다. 없으면 '연체 1개월'로 사실대로 쓴다
     if(m.fresh!=null){
       if(m.fresh) add({tag:'미납',key:'fresh',stage:'단기',v:m.fresh,unit:'개소',w:60,go:GO_MINAP,
-        text:'전월엔 없던 연체 <b>'+m.fresh+'개소</b> · 1차 안내 대상'});
+        text:'전월엔 없던 연체 <b>'+hN(m.fresh)+'개소</b> · 1차 안내 대상'});
     }else if(m.newly) add({tag:'미납',key:'newly',stage:'단기',v:m.newly,unit:'개소',w:60,go:GO_MINAP,
-      text:'연체 1개월 <b>'+m.newly+'개소</b> · 1차 안내 대상'});
+      text:'연체 1개월 <b>'+hN(m.newly)+'개소</b> · 1차 안내 대상'});
   }else if(m&&mStale){
     // [v2] 미납 데이터는 저장하지 않으므로 하루가 지나면 미납 항목을 빼되, 빠졌다는 사실은 알린다
     add({tag:'미납',key:'minapStale',v:0,unit:'',w:70,go:GO_MINAP,
@@ -242,17 +246,17 @@ function renderHome(){
   if(v){
     var agedD=v.agedDays||7;
     if(v.topIssue) add({tag:'민원',key:'issues',v:v.issues,unit:'건',w:95,go:GO_VOC,focus:{sec:'themeAlerts'},
-      text:'뜬 이슈 <b>'+v.issues+'건</b> · '+esc(v.topIssue)});      // 테마·단지 이름은 엑셀에서 온 글자라 감싼다
+      text:'뜬 이슈 <b>'+hN(v.issues)+'건</b> · '+esc(v.topIssue)});      // 테마·단지 이름은 엑셀에서 온 글자라 감싼다
     if(v.sites) add({tag:'민원',key:'sites',v:1,unit:'',w:80,go:GO_VOC,focus:{sec:'siteWatch'},
       text:'다발 단지 · <b>'+esc(v.sites)+'</b>'});
     if(v.aged) add({tag:'민원',key:'aged',v:v.aged,unit:'건',w:85,go:GO_VOC,
-      text:'처리내용 미입력 중 <b>'+v.aged+'건</b>이 '+agedD+'일 이상 경과'});
+      text:'처리내용 미입력 중 <b>'+hN(v.aged)+'건</b>이 '+hN(agedD)+'일 이상 경과'});
     else if(v.unresolved) add({tag:'민원',key:'unresolved',v:v.unresolved,unit:'건',w:50,go:GO_VOC,
-      text:'처리내용 미입력 <b>'+v.unresolved+'건</b>'});
+      text:'처리내용 미입력 <b>'+hN(v.unresolved)+'건</b>'});
     if(v.lagging) add({tag:'민원',key:'lagging',v:1,unit:'',w:45,go:GO_VOC,
       text:'<b>'+esc(v.lagging)+'</b> 자료 미유입 · 0건을 감소로 보지 말 것'});
     if(v.unmapped) add({tag:'민원',key:'unmapped',v:v.unmapped,unit:'건',w:30,go:GO_VOC,
-      text:'테마에 없는 새 키워드 <b>'+v.unmapped+'건</b> · 분류 확인'});
+      text:'테마에 없는 새 키워드 <b>'+hN(v.unmapped)+'건</b> · 분류 확인'});
   }
   // [v2] AI가 제안한 조치를 데일리 체크에 합친다. 같은 사안의 줄이 이미 있으면 그 줄에 붙이고, 없으면 새 줄로.
   if(vai&&vai.action&&vai.action.text){

@@ -55,6 +55,14 @@ create table if not exists public.shared_data (
   updated_at      timestamptz not null default now()
 );
 
+-- 자료 이름(key)마다 올릴 수 있는 업무를 고정한다.
+-- 이게 없으면 민원 담당이 domain만 'voc'로 적어 연체 자료(arrearsRows 등)를 덮거나 먼저 선점할 수 있다.
+alter table public.shared_data drop constraint if exists shared_data_key_domain;
+alter table public.shared_data add constraint shared_data_key_domain check (
+  (domain = 'arrears' and key in ('arrearsRows','arrearsYmd','minap_summary','md_arrears')) or
+  (domain = 'voc'     and key in ('vocRows','voc_im_summary','voc_im_aiResult','md_voc'))
+);
+
 -- 올린 사람·시각은 서버가 채운다(화면에서 남의 이름으로 올릴 수 없게)
 create or replace function public.stamp_shared_data() returns trigger
 language plpgsql security definer set search_path = public as $$
