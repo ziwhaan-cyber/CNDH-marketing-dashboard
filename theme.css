@@ -265,7 +265,8 @@ body.embed .card{ padding:9px 11px; margin-bottom:8px; }
 body.embed .stat-line{ padding:4px 0; }
 
 /* 끼워 넣은 화면에서는 이슈 카드를 요약만 — 판정 기준·근거 줄은 접어둔다.
-   상세는 '새 탭에서 크게 보기'로 확인. 조치 필요 사항은 현황 화면의 데일리 체크와 겹쳐서 내린다. */
+   조치 필요 사항은 현황 화면의 데일리 체크와 겹쳐서 내린다.
+   [v2] '새 탭에서 크게 보기' 버튼을 없애면서 판정 기준·근거 줄은 다시 보이게 함(아래 v2 블록) */
 body.embed #dashTodo{ display:none; }
 body.embed #themeAlerts .stat-line-b{ display:none; }
 body.embed #themeAlerts .stat-line{ padding:6px 0; }
@@ -488,6 +489,8 @@ body.embed .stat-line-nm, body.embed .chg-nm, body.embed .site-row{ font-size:14
 body.embed .stat-line-v{ font-size:14px; }
 body.embed .stat-line-b, body.embed .chg-kw, body.embed .site-head{ font-size:12px; }
 body.embed .ai-item-t{ font-size:14.5px; } body.embed .ai-item-e{ font-size:12.5px; }
+/* '새 탭에서 크게 보기'를 없앴으므로, 거기서만 보이던 이슈별 판정 기준·근거 줄을 대시보드 안에서도 보여준다 */
+body.embed #themeAlerts .stat-line-b{ display:block; }
 
 /* 미납관리 */
 html.in-dash .dashboard-container{ padding:2px 2px 20px !important; }
