@@ -24,6 +24,8 @@ function linkRows(){
     const d=parseDate(a[0]);if(!d)return;
     const r={};LINK_COLS.forEach((f,i)=>r[f]=String(a[i]==null?'':a[i]).trim());
     r.date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    // [v2] 공유 저장소에서 받은 행은 16번째 칸에 단지명이 미리 들어 있다(고객명은 가명이라 거기서 단지를 못 뽑음)
+    if(a[15])r.site=String(a[15]).trim();
     rows.push(r);
   });
   return rows.sort((x,y)=>x.date<y.date?-1:x.date>y.date?1:0);

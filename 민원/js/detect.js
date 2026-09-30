@@ -157,6 +157,7 @@ function guessNameKind(name){
 // 확정값 우선 → 없으면 추정. 별칭(alias)이 지정돼 있으면 대표 단지명으로 통일.
 function siteOfRow(r){
   if(!r||r.route==='챗봇')return null; // 고객명이 채널 표시라 단지를 뽑을 수 없음
+  if(r.site)return r.site;             // [v2] 담당자 PC에서 미리 뽑아 공유한 단지명
   const n=String(r.name||'').trim();
   if(!n)return null;
   const m=siteMapLoad()[n];
