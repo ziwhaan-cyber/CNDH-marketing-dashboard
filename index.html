@@ -330,6 +330,22 @@
             </div>
           </div>
 
+          <!-- 유선 · 챗봇 채널 현황 — [v2] 왼쪽 숫자 카드 아래로 옮김 -->
+          <div class="panel" style="flex-shrink:0;">
+            <div class="panel-title">유선 · 챗봇 채널 현황 <span class="tag">유선 vs 챗봇만 비교</span></div>
+            <div class="channel-compare">
+              <div class="channel-box">
+                <div class="cb-title" id="voc-ch-cur-title">당월</div>
+                <div id="voc-ch-cur-body"></div>
+              </div>
+              <div class="channel-box">
+                <div class="cb-title" id="voc-ch-ly-title">전년동월</div>
+                <div id="voc-ch-ly-body"></div>
+              </div>
+            </div>
+            <div class="channel-note" id="voc-ch-note"></div>
+          </div>
+
           <!-- [v2 추가] 월별 민원 추이 — 표 아래 빈 공간에 12개월 흐름을 전년 같은 달과 겹쳐 보여준다 -->
           <div class="panel" style="flex:1; min-height:0;">
             <div class="panel-title">월별 민원 추이 <span class="tag" id="voc-trend-chart-tag">최근 12개월</span>
@@ -360,24 +376,9 @@
               <thead><tr><th>접수방법</th><th>당월</th><th id="voc-sum-prev-h">전월</th><th>증감</th><th>당월 중 비중</th></tr></thead>
               <tbody id="voc-sum-channel-body"></tbody>
             </table>
-            <div class="channel-note" id="voc-sum-ch-note"></div>
           </div>
 
-          <!-- [v2] 민원접수 현황(접수방법별)과 같은 기준이라 화면에서 내림 — 챗봇 전년 동월 비교는 접수현황 아래 한 줄로. 요소는 계산 코드가 참조해 남김 -->
-          <div class="panel" style="flex-shrink:0; display:none;">
-            <div class="panel-title">유선 · 챗봇 채널 현황 <span class="tag">유선 vs 챗봇만 비교</span></div>
-            <div class="channel-compare">
-              <div class="channel-box">
-                <div class="cb-title" id="voc-ch-cur-title">당월</div>
-                <div id="voc-ch-cur-body"></div>
-              </div>
-              <div class="channel-box">
-                <div class="cb-title" id="voc-ch-ly-title">전년동월</div>
-                <div id="voc-ch-ly-body"></div>
-              </div>
-            </div>
-            <div class="channel-note" id="voc-ch-note"></div>
-          </div>
+
 
           <div class="panel voc-kwch-panel" style="flex:1; min-height:0;">
             <div class="panel-title">채널별 키워드 TOP 5 <span class="tag" id="voc-kw-channel-tag">-</span></div>
