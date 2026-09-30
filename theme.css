@@ -554,3 +554,19 @@ html.in-dash .ai-item-t{ font-size:14.5px; } html.in-dash .ai-item-e{ font-size:
   border-bottom:1px solid var(--ui-line) !important;
   background:linear-gradient(var(--ui-accent),var(--ui-accent)) left bottom / 36px 2px no-repeat;
 }
+
+/* 현황은 강조가 겹쳐 눈이 피로했다 — '오늘 먼저 볼 것' 한 줄만 강조점으로 두고 나머지는 차분하게 되돌린다 */
+.home-headline .hl-it{ font-size:0.95vw; font-weight:500; }
+.home-headline .hl-it b{ font-size:1.1vw; color:var(--ui-ink); }
+.home-headline .hl-it i{ color:var(--ui-muted); border-color:var(--ui-line); }
+.home-headline .hl-lbl{ background:var(--ui-accent); }
+.home-todo-row.top1{ background:none; box-shadow:none; margin:0; padding-left:0; padding-right:0; }
+.home-todo-row.top1 .todo-text::before{ content:none; }
+.home-todo-row.top1 .todo-text b{ color:inherit; }
+.home-todo-row.sev-hi .mark, .home-todo-row.sev-mid .mark{ background:none; }
+.home-todo-row.sev-mid .mark{ border-color:#CBD5E1; }          /* 중요도 표시는 가장 높은 것만 */
+.home-num .v{ font-size:min(1.55vw,2.4vh) !important; }          /* 숫자 크기 원래대로 */
+#home-voc .home-num .v.up{ color:var(--ui-ink); }                /* 증가율은 색 대신 그대로 */
+.home-todo-row.resolved{ background:none; margin:0; padding-left:0; padding-right:0; color:var(--ui-muted); }
+.home-todo-row.resolved b{ color:var(--ui-muted); font-weight:600; }
+.ok-mark{ background:none; color:#2F9E6A; border:1.5px solid #9FD3B8; }
