@@ -36,9 +36,10 @@
         +(noMail?'<span class="hl-it warn">이메일 없음 <b>'+noMail+'</b></span>':'');
     }
     if(tab==='arr-tab-overdue'){
-      var m=homeRead('minap_summary'); if(!m) return '';
-      var big=(m.long?'장기 <b>'+n(m.long)+'개소</b> · 법적조치 검토':'중기(3~5개월) <b>'+n(m.mid||0)+'개소</b> · 공급정지 안내');
-      return '<span class="hl-it">미납 '+n(m.count)+'개소 · '+eok(m.amount)+'</span><span class="hl-it">'+big+'</span>';
+      // 미납관리 화면이 저장하는 요약(count·amount·longTerm)만 읽는다
+      var m=homeRead('minap_summary'); if(!m) return '<span class="hl-it muted">엑셀을 올리면 미납 현황이 채워집니다</span>';
+      return '<span class="hl-it">미납 금액 <b>'+eok(m.amount)+'</b></span>'
+        +(m.longTerm?'<span class="hl-it">3개월 이상 <b>'+n(m.longTerm)+'개소</b></span>':'');
     }
     return '';
   }

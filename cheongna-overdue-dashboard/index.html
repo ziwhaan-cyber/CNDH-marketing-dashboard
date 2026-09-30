@@ -247,7 +247,7 @@ body{
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:6px;">
         <h3 style="margin-bottom:0;">전월 대비 연체 현황 비교</h3>
       </div>
-      <div id="prev-compare-status" style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">엑셀을 올리면 전월_미납내역/전월_납부이력 시트를 읽어 자동으로 비교합니다.</div>
+      <div id="prev-compare-status" style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">Google 계정으로 로그인하면 전월_미납내역/전월_납부이력 시트를 불러와 자동으로 비교합니다.</div>
       <div id="prev-compare-summary" class="compare-summary" style="display:none;"></div>
       <div id="prev-compare-bucket-wrap" style="display:none;">
         <h3 style="font-size:12.5px;font-weight:600;color:var(--text-secondary);margin-bottom:10px;">연체개월 구간별 고객 수 변화</h3>
@@ -311,12 +311,6 @@ body{
           <option value="2-3">2~3개월</option>
           <option value="4-6">4~6개월</option>
           <option value="7+">7개월 이상</option>
-          <!-- [v2] 대시보드 '연체 현황'·데일리 체크와 같은 단계 -->
-          <optgroup label="연체 단계">
-            <option value="s1-2">단기 (1~2개월)</option>
-            <option value="s3-5">중기 (3~5개월)</option>
-            <option value="s6+">장기 (6개월 이상)</option>
-          </optgroup>
         </select>
       </div>
     </div>
@@ -512,10 +506,6 @@ function monthsMatch(m, bucket){
   if(bucket==='2-3') return m>=2 && m<=3;
   if(bucket==='4-6') return m>=4 && m<=6;
   if(bucket==='7+') return m>=7;
-  // [v2] 연체 단계(연체 현황과 같은 기준)
-  if(bucket==='s1-2') return m>=1 && m<=2;
-  if(bucket==='s3-5') return m>=3 && m<=5;
-  if(bucket==='s6+') return m>=6;
   return true;
 }
 
@@ -637,7 +627,7 @@ function loadData(rawData, asofDateObj){
       datasets:[{
         label:'고객 수',
         data: chartBuckets.map(b=>custByBucket[b]),
-        backgroundColor: '#236B7ACC',   // [v2] 공통 테마(딥 티얼)에 맞춤 — 원래 #2f6fedCC
+        backgroundColor: '#2f6fedCC',
         borderRadius:4,
       }]
     },
@@ -659,7 +649,7 @@ function loadData(rawData, asofDateObj){
       datasets:[{
         label:'연체 규모',
         data: chartBuckets.map(b=>amtByBucket[b]),
-        backgroundColor: '#236B7ACC',   // [v2] 공통 테마(딥 티얼)에 맞춤 — 원래 #2f6fedCC
+        backgroundColor: '#2f6fedCC',
         borderRadius:4,
       }]
     },
@@ -682,8 +672,8 @@ function loadData(rawData, asofDateObj){
         {
           label:'기존 연체 규모',
           data: chartBuckets.map(b=>origAmtByBucket[b]),
-          borderColor:'#A9B4C0',          // [v2] 비교 기준(기존)은 회색 — 원래 #8a63d2
-          backgroundColor:'#A9B4C033',
+          borderColor:'#8a63d2',
+          backgroundColor:'#8a63d233',
           borderWidth:2,
           fill:true,
           tension:0.3,
@@ -693,8 +683,8 @@ function loadData(rawData, asofDateObj){
         {
           label:'현재 잔여 연체 규모',
           data: chartBuckets.map(b=>amtByBucket[b]),
-          borderColor:'#236B7A',          // [v2] 원래 #2f6fed
-          backgroundColor:'#236B7A33',
+          borderColor:'#2f6fed',
+          backgroundColor:'#2f6fed33',
           borderWidth:2,
           fill:true,
           tension:0.3,
@@ -1462,53 +1452,33 @@ document.getElementById('overdue-export-btn').addEventListener('click', function
   }
 
   var btn=document.getElementById('sample-btn');   // 실데이터 운영 전환으로 버튼은 제거됨(코드는 보존)
-  // [v2] 시연 모드(주소에 ?demo=1)일 때만 보존된 샘플을 자동으로 띄운다. 요약은 'demo_' 이름으로 저장.
-  var DEMO=/[?&]demo=1(&|$)/.test(location.search);
-  function runSample(){
+  if(btn) btn.addEventListener('click', function(){
     var S=buildSampleSheets();
     var PREV=buildDashboardFromSheets(S.prevOverdue,S.prevPayment);
     previousSnapshot = PREV.customers.length>0 ? bucketAmounts(PREV.customers) : null;
     var RAW=buildDashboardFromSheets(S.currOverdue,S.currPayment);
     try{ loadData(RAW,new Date(2026,8,18)); }catch(e){ console.warn(e); }
     document.getElementById('refresh-btn').style.display='';
-    setGsheetStatus((DEMO?'시연 데이터':'샘플 데이터')+' · 가상 고객 142명 (실제 정보 아님)','');
+    setGsheetStatus('샘플 데이터 · 가상 고객 142명 (실제 정보 아님)','');
     saveSummary();
-  }
-  if(btn) btn.addEventListener('click', runSample);
-
-  /* [v2] 현황 데일리 체크에 쓰는 기준값 — 바꿀 때는 여기만 고친다.
-     단계는 대시보드 '연체 현황'과 같게: 단기 1~2개월 / 중기 3~5개월(공급정지 안내) / 장기 6개월 이상(법적조치) */
-  window.MINAP_RULES={ midFrom:3, longFrom:6, bigAmount:10000000 };
-  var R=window.MINAP_RULES;
+  });
 
   /* 집계값만 저장 — 개요 화면에서 읽는다 */
   window.saveSummary=function(){
     try{
       if(typeof customers==='undefined'||!customers.length)return;
-      // [v2] 현황의 '미납 고객'은 남은 금액이 있는 고객만 센다(금액도 남은 금액 기준이라 맞춘다). 원래 customers.length
-      var cnt=customers.filter(function(c){return (c.remainingTotal||0)>0;}).length;
+      var cnt=customers.length;
       var amount=customers.reduce(function(s,c){return s+(c.remainingTotal||0);},0);
-      var longTerm=customers.filter(function(c){return (c.remainingOverdueMonths||0)>=R.midFrom;}).length;
-      var big=customers.filter(function(c){return (c.remainingTotal||0)>=R.bigAmount;}).length;   // 1,000만원 이상
+      var longTerm=customers.filter(function(c){return (c.remainingOverdueMonths||0)>=3;}).length;
+      var big=customers.filter(function(c){return (c.remainingTotal||0)>=10000000;}).length;   // 1,000만원 이상
       var newly=customers.filter(function(c){return (c.remainingOverdueMonths||0)===1;}).length;
-      // [v2] 연체 현황 화면과 같은 단계로 나눈다 — 3~5개월(공급정지 안내) / 6개월 이상(법적조치)
-      var mid=customers.filter(function(c){var m=c.remainingOverdueMonths||0; return m>=R.midFrom&&m<R.longFrom;}).length;
-      var longN=customers.filter(function(c){return (c.remainingOverdueMonths||0)>=R.longFrom;}).length;
-      // [v2] 전월 파일이 있으면 '전월엔 없던 연체'를 센다(전월에 없었거나 전월엔 완납이었던 고객). 없으면 null
-      var fresh=null;
-      if(typeof previousSnapshot!=='undefined'&&previousSnapshot&&previousSnapshot.custMap){
-        var pm=previousSnapshot.custMap;
-        fresh=customers.filter(function(c){ if((c.remainingTotal||0)<=0) return false;
-          var p=pm[String(c.custNo)]; return !p||(p.remainingTotal||0)<=0; }).length;
-      }
       // 연체 개월 구간별 고객 수 — 개요 화면의 미니 차트에 쓴다
       var buckets=[1,2,3,4,5].map(function(n){
         return { k:(n===5?'5+':String(n)),
           v:customers.filter(function(c){var m=c.remainingOverdueMonths||0; return n===5?m>=5:m===n;}).length };
       });
-      localStorage.setItem((DEMO?'demo_':'')+'minap_summary',JSON.stringify({
+      localStorage.setItem('minap_summary',JSON.stringify({
         at:Date.now(), count:cnt, amount:amount, longTerm:longTerm, big:big, newly:newly, buckets:buckets,
-        mid:mid, long:longN, fresh:fresh, rules:R,
         asOf:(document.getElementById('asof-date')||{}).textContent||''
       }));
     }catch(e){}
@@ -1523,7 +1493,6 @@ document.getElementById('overdue-export-btn').addEventListener('click', function
       }
     };
   }
-  if(DEMO){ if(document.readyState==='complete') runSample(); else window.addEventListener('load', runSample); }
 })();
 </script>
 
@@ -1651,8 +1620,5 @@ document.getElementById('overdue-export-btn').addEventListener('click', function
   };
 })();
 </script>
-<!-- [v2 추가] 미납 AI 분석 — 집계만 AI에 보내 원인·리스크·우선 조치를 정리 (시연 모드는 미리 쓴 예시) -->
-<script src="sample-ai.js"></script>
-<script src="ai-insight.js"></script>
 </body>
 </html>

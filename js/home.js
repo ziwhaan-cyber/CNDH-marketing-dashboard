@@ -185,13 +185,14 @@ function renderHome(){
     aiEl.hidden=false;
     aiEl.innerHTML='<div class="home-ai-h"><span class="home-ai-ic">✦</span>AI 인사이트'
       +'<span class="home-ai-meta">규칙이 계산 · AI가 해석 · 할 일은 데일리 체크에</span></div>'
-      +'<div class="home-ai-cols">'
+      // 미납 칸은 미납관리 화면이 AI 요약(ai)을 넘겨줄 때만 보인다 — 지금 미납관리 화면에는 AI 분석이 없으므로 민원만 한 칸으로
+      +'<div class="home-ai-cols'+(mai?'':' one')+'">'
       + aiCol('민원','t-voc',!!v,vai,
           vai?('규칙이 찾은 이슈 '+(v.issues||0)+'건 중 <b>'+(vai.confirmed||0)+'건</b>을 실제 사안으로 확인'
             +(vai.unrelated?' · '+vai.unrelated+'건은 무관한 문의 겹침':'')):'',
           '이슈 모니터링',"'page-voc','voc','voc-monitor'")
-      + aiCol('미납','t-minap',!!(m&&!mStale),mai, mai?esc(mai.headline):'',
-          '미납관리',"'page-arrears','arr','arr-tab-overdue'")
+      + (mai ? aiCol('미납','t-minap',!!(m&&!mStale),mai, esc(mai.headline),
+          '미납관리',"'page-arrears','arr','arr-tab-overdue'") : '')
       +'</div>';
   }
 
@@ -206,19 +207,19 @@ function renderHome(){
   if(m&&!mStale){
     // [v2] 연체 현황 화면의 단계와 맞춘다: 중기 공급정지 안내 / 장기 법적조치 검토
     if(m.long!=null){
-      if(m.long) add({tag:'미납',key:'long',stage:'장기',v:m.long,unit:'개소',w:100,go:GO_MINAP,focus:{months:'s6+'},
+      if(m.long) add({tag:'미납',key:'long',stage:'장기',v:m.long,unit:'개소',w:100,go:GO_MINAP,
         text:'장기('+mr.longFrom+'개월 이상) 미납 <b>'+m.long+'개소</b> · 법적조치 검토 대상'});
-      if(m.mid) add({tag:'미납',key:'mid',stage:'중기',v:m.mid,unit:'개소',w:88,go:GO_MINAP,focus:{months:'s3-5'},
+      if(m.mid) add({tag:'미납',key:'mid',stage:'중기',v:m.mid,unit:'개소',w:88,go:GO_MINAP,
         text:'중기('+mr.midFrom+'~'+(mr.longFrom-1)+'개월) 미납 <b>'+m.mid+'개소</b> · 공급정지 안내 대상'});
     }else if(m.longTerm) add({tag:'미납',key:'longTerm',v:m.longTerm,unit:'개소',w:100,go:GO_MINAP,
       text:'3개월 이상 미납 <b>'+m.longTerm+'개소</b>'});      // 예전 형식 요약(단계 값 없음)
-    if(m.big) add({tag:'미납',key:'big',v:m.big,unit:'개소',w:90,go:GO_MINAP,focus:{months:'all',big:true},
+    if(m.big) add({tag:'미납',key:'big',v:m.big,unit:'개소',w:90,go:GO_MINAP,
       text:'미납 '+bigTxt+' 이상 <b>'+m.big+'개소</b> · 개별 안내 필요'});
     // [v2] '새로 밀린 곳'은 전월 파일이 있을 때만 정확히 셀 수 있다. 없으면 '연체 1개월'로 사실대로 쓴다
     if(m.fresh!=null){
-      if(m.fresh) add({tag:'미납',key:'fresh',stage:'단기',v:m.fresh,unit:'개소',w:60,go:GO_MINAP,focus:{months:'s1-2'},
+      if(m.fresh) add({tag:'미납',key:'fresh',stage:'단기',v:m.fresh,unit:'개소',w:60,go:GO_MINAP,
         text:'전월엔 없던 연체 <b>'+m.fresh+'개소</b> · 1차 안내 대상'});
-    }else if(m.newly) add({tag:'미납',key:'newly',stage:'단기',v:m.newly,unit:'개소',w:60,go:GO_MINAP,focus:{months:'1'},
+    }else if(m.newly) add({tag:'미납',key:'newly',stage:'단기',v:m.newly,unit:'개소',w:60,go:GO_MINAP,
       text:'연체 1개월 <b>'+m.newly+'개소</b> · 1차 안내 대상'});
   }else if(m&&mStale){
     // [v2] 미납 데이터는 저장하지 않으므로 하루가 지나면 미납 항목을 빼되, 빠졌다는 사실은 알린다
@@ -381,46 +382,35 @@ function demoExit(){
     .forEach(function(k){ localStorage.removeItem(k); }); }catch(e){}
   location.href=location.pathname;
 }
-// 연체 현황 시연 데이터는 미납관리 샘플의 요약(연체 개월 구간별 고객 수·남은 금액)에서 만든다.
-// 두 화면의 개소 수와 금액 합계가 서로 맞게 하기 위함. 요약이 아직 없으면 도착할 때 다시 불린다.
-function demoArrearsFromMinap(){
-  var m=homeRead('minap_summary');
-  if(!m||!m.buckets||!m.amount||lsLoad('arrearsRows',null)) return;
+// 연체 현황 시연 데이터 — 대시보드 쪽에서 가상 연체 파일을 만든다.
+// (미납관리 화면은 다른 분이 만든 화면이라 시연 모드를 넣지 않았다. 미납관리 탭은 엑셀을 올려야 채워진다)
+function demoArrearsRows(){
   var seed=11, rnd=function(){ seed=(seed*48271)%2147483647; return seed/2147483647; };
-  var rows=[], w=0;
-  m.buckets.forEach(function(b){
-    for(var i=0;i<b.v;i++){
-      var mo = (b.k==='5+') ? 5+(i%5) : Number(b.k);      // 5개월 이상은 5~9개월로 나눠 장기 연체 칸도 보이게
-      var x = mo*(0.6+rnd()*0.8); w+=x; rows.push({'연체개월':mo, _w:x});
-    }
-  });
-  var left=m.amount;
-  rows.forEach(function(r,i){
-    var a = (i===rows.length-1) ? left : Math.round(m.amount*r._w/w/10)*10;
-    left-=a; r['합계']=a; delete r._w;
-  });
-  var ymd=m.asOf||'2026. 9. 18.';
-  lsSave('arrearsRows',rows); lsSave('arrearsYmd',ymd);
-  try{ renderArrearsFromRows(rows,ymd); }catch(e){}   // 저장값 복원은 이미 지나갔으므로 바로 그린다
+  var rows=[];
+  for(var i=0;i<148;i++){
+    var mo = rnd()<.6 ? 1+Math.floor(rnd()*2) : (rnd()<.7 ? 3+Math.floor(rnd()*3) : 6+Math.floor(rnd()*13));
+    rows.push({'연체개월':mo, '합계':Math.round((60000+rnd()*240000)*mo/10)*10});
+  }
+  return rows;
 }
 if(DEMO){
-  // 시연용 '어제 기록' — 데일리 체크의 어제 대비 변화와 '해결' 표시를 첫 화면에서 볼 수 있게 한다(가상 값, demo_ 저장 이름에만)
+  // 페이지가 저장값을 복원하기 전에 넣어 두면 연체 현황·데일리 체크가 평소처럼 읽는다
   try{
+    if(!lsLoad('arrearsRows',null)){ lsSave('arrearsRows',demoArrearsRows()); lsSave('arrearsYmd','2026. 8. 31.'); }
+    // 시연용 '어제 기록' — 데일리 체크의 어제 대비 변화와 '해결' 표시를 보여주기 위한 가상 값(demo_ 저장 이름에만)
     if(!localStorage.getItem('demo_home_daily')){
+      var ar=lsLoad('arrearsRows',[]), arM=0, arL=0;
+      ar.forEach(function(r){ var mo=Number(r['연체개월'])||0; if(mo>=6) arL++; else if(mo>=3) arM++; });
       var yd=new Date(Date.now()-86400000), yk=yd.getFullYear()+'-'+String(yd.getMonth()+1).padStart(2,'0')+'-'+String(yd.getDate()).padStart(2,'0');
-      var hist0={}; hist0[yk]={mid:49,issues:3,aged:6,lagging:1,unmapped:2,amount:44870000};
+      var hist0={}; hist0[yk]={arrLong:arL+2,arrMid:arM,issues:3,aged:6,lagging:1,unmapped:2};
       localStorage.setItem('demo_home_daily',JSON.stringify(hist0));
     }
   }catch(e){}
-  window.addEventListener('storage',function(e){ if(e.key==='demo_minap_summary') demoArrearsFromMinap(); });
   document.addEventListener('DOMContentLoaded',function(){
     var h=document.querySelector('.header h1');
     if(h){ var b=document.createElement('span'); b.className='demo-badge';
       b.innerHTML='시연 데이터 · 가상 고객<a onclick="demoExit()" title="시연 데이터를 지우고 일반 화면으로">종료</a>'; h.appendChild(b); }
-    demoArrearsFromMinap();
-    // 두 화면을 미리 불러 두면 각 화면의 요약이 저장되어 현황 카드가 바로 채워진다
-    ['voc-monitor-frame','overdue-frame'].forEach(function(id){
-      var f=document.getElementById(id); if(f){ f.removeAttribute('loading'); loadEmbedFrame(id); }
-    });
+    // 이슈 모니터링을 미리 불러 두면 민원 요약이 저장되어 현황 카드가 바로 채워진다
+    var f=document.getElementById('voc-monitor-frame'); if(f){ f.removeAttribute('loading'); loadEmbedFrame('voc-monitor-frame'); }
   });
 }

@@ -277,7 +277,7 @@
     var f=document.getElementById(id);
     if(f&&f.getAttribute('src')==='about:blank'){
       var src=f.getAttribute('data-src');
-      if(DEMO) src+=(src.indexOf('?')<0?'?':'&')+'demo=1';   // [v2] 시연 모드는 끼워 넣은 화면에도 넘긴다
+      if(DEMO && id==='voc-monitor-frame') src+=(src.indexOf('?')<0?'?':'&')+'demo=1';   // [v2] 시연 모드는 이슈 모니터링에만 넘긴다
       f.setAttribute('src',src);
     }
     fitEmbed(id);
@@ -291,9 +291,7 @@
       try{
         var d=f.contentDocument; if(!d||!d.documentElement)return;
         var z=Math.min(1.45,Math.max(0.85,f.clientWidth/1600));
-        d.documentElement.style.zoom=z;
-        d.documentElement.classList.add('in-dash');   // [v2] 끼워 넣은 화면 표시 — theme.css에서 제목줄·글자 크기를 대시보드에 맞춘다
-        // 공통 테마를 끼워 넣은 화면에도 적용한다(그쪽 파일은 수정하지 않는다)
+        d.documentElement.style.zoom=z;        // 공통 테마를 끼워 넣은 화면에도 적용한다(그쪽 파일은 수정하지 않는다)
         if(d.head&&!d.getElementById('sharedTheme')){
           var l=d.createElement('link');
           l.id='sharedTheme'; l.rel='stylesheet';

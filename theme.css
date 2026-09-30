@@ -369,7 +369,6 @@ html,body{ background:#E7EBEF; }
 /* 현황(첫 화면) */
 .home-kpi, .home-todo{ border-color:var(--ui-line-soft); border-radius:12px; box-shadow:var(--ui-shadow); }
 .home-top h2{ letter-spacing:-0.03em; }
-.voc-monitor-frame, .embed-frame{ border-radius:12px; box-shadow:0 0 0 1px var(--ui-line-soft), var(--ui-shadow); }
 
 /* 현황 — AI 인사이트 카드 (데일리 체크 위) */
 .home-ai{
@@ -383,6 +382,7 @@ html,body{ background:#E7EBEF; }
 .home-ai-meta{ margin-left:auto; font-size:0.64vw; font-weight:600; color:var(--ui-muted); }
 .home-ai-cols{ display:grid; grid-template-columns:1fr 1fr; gap:1.2vw; margin-top:min(0.7vw,1.1vh); }
 .home-ai-col{ min-width:0; }
+.home-ai-cols.one{ grid-template-columns:1fr; }
 .home-ai-dom{ display:flex; align-items:center; gap:0.5vw; }
 .home-ai-dom .tag{ font-size:0.62vw; font-weight:700; color:#fff; padding:0.12vw 0.55vw; border-radius:1vw; }
 .home-ai-dom .tag.t-voc{ background:#B45309; } .home-ai-dom .tag.t-minap{ background:#0F766E; }
@@ -490,12 +490,13 @@ html,body{ background:#E7EBEF; }
 }
 .demo-badge a{ color:#fff; opacity:.75; margin-left:0.5vw; text-decoration:underline; cursor:pointer; font-weight:500; }
 
-/* ---------- 대시보드 안에 끼워 넣은 화면(이슈 모니터링·미납관리)을 대시보드와 한 몸처럼 ----------
+/* ---------- 대시보드 안에 끼워 넣은 이슈 모니터링을 대시보드와 한 몸처럼 ----------
+   (미납관리는 다른 분이 만든 화면이라 손대지 않는다)
    - 틀의 흰 상자·테두리를 없애 대시보드 배경 위에 카드가 바로 놓이게
    - 탭 이름과 겹치는 자체 제목줄은 숨기고 버튼 줄만 남김
    - 글자·숫자 크기를 대시보드 패널과 같은 비율로 (끼워 넣은 화면은 약 1.1배 확대되어 보이므로 그만큼 뺀 값) */
-.voc-monitor-frame, .embed-frame{ background:transparent !important; box-shadow:none !important; border-radius:0 !important; }
-html.in-dash body, body.embed{ background:var(--ui-bg) !important; }
+.voc-monitor-frame{ background:transparent !important; box-shadow:none !important; border-radius:0 !important; }
+body.embed{ background:var(--ui-bg) !important; }
 
 /* 이슈 모니터링 */
 body.embed .wrap{ padding:2px 2px 20px !important; max-width:none; }
@@ -519,38 +520,10 @@ body.embed .ai-item-t{ font-size:14.5px; } body.embed .ai-item-e{ font-size:12.5
 /* '새 탭에서 크게 보기'를 없앴으므로, 거기서만 보이던 이슈별 판정 기준·근거 줄을 대시보드 안에서도 보여준다 */
 body.embed #themeAlerts .stat-line-b{ display:block; }
 
-/* 미납관리 */
-html.in-dash .dashboard-container{ padding:2px 2px 20px !important; }
-html.in-dash .dashboard-header{ border-bottom:0 !important; padding:0 !important; margin-bottom:6px !important; }
-html.in-dash .dashboard-header > div:first-child{ display:none; }            /* '청라에너지 미납관리 대시보드' 제목·설명 */
-html.in-dash .header-meta{ font-size:12px !important; }
-html.in-dash .header-meta #asof-date{ font-size:13px !important; }
-html.in-dash .upload-btn, html.in-dash .refresh-btn, html.in-dash .export-btn{ font-size:12px !important; padding:4px 11px !important; border-radius:6px !important; }
-html.in-dash .section-title{ font-size:16.5px !important; margin:18px 0 9px !important; padding-bottom:7px; }
-html.in-dash .kpi-row{ gap:12px !important; }
-html.in-dash .kpi-card{ padding:14px 16px !important; }
-html.in-dash .kpi-label{ font-size:13px !important; font-weight:600; }
-html.in-dash .kpi-value{ font-size:29px !important; font-weight:800; }
-html.in-dash .kpi-sub, html.in-dash .kpi-note{ font-size:12px !important; }
-html.in-dash .chart-container{ padding:14px 16px !important; }
-html.in-dash .chart-container h3{ font-size:14px !important; font-weight:700; }
-html.in-dash .chart-wrap{ height:220px !important; } html.in-dash .chart-wrap canvas{ max-height:220px !important; }
-html.in-dash .data-table{ font-size:12.5px !important; } html.in-dash .data-table th{ font-size:11.5px !important; }
-html.in-dash .ai-item-t{ font-size:14.5px; } html.in-dash .ai-item-e{ font-size:12.5px; }
-
 /* ---------- 민원 이슈 모니터링 ---------- */
 .card, .stat-cell, .empty-card{ border:1px solid var(--ui-line-soft) !important; border-radius:12px !important; box-shadow:var(--ui-shadow); }
 .stat-v{ font-weight:700; letter-spacing:-0.02em; }
 .dash-sec-l{
-  border-bottom:1px solid var(--ui-line) !important;
-  background:linear-gradient(var(--ui-accent),var(--ui-accent)) left bottom / 36px 2px no-repeat;
-}
-
-/* ---------- 미납관리 대시보드 ---------- */
-.chart-container, .kpi-row > *, .table-container, .search-section{
-  border-color:var(--ui-line-soft) !important; border-radius:12px !important; box-shadow:var(--ui-shadow) !important;
-}
-.section-title{
   border-bottom:1px solid var(--ui-line) !important;
   background:linear-gradient(var(--ui-accent),var(--ui-accent)) left bottom / 36px 2px no-repeat;
 }
