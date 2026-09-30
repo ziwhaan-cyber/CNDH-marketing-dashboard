@@ -242,15 +242,15 @@ function renderHome(){
   if(v){
     var agedD=v.agedDays||7;
     if(v.topIssue) add({tag:'민원',key:'issues',v:v.issues,unit:'건',w:95,go:GO_VOC,focus:{sec:'themeAlerts'},
-      text:'뜬 이슈 <b>'+v.issues+'건</b> · '+v.topIssue});
+      text:'뜬 이슈 <b>'+v.issues+'건</b> · '+esc(v.topIssue)});      // 테마·단지 이름은 엑셀에서 온 글자라 감싼다
     if(v.sites) add({tag:'민원',key:'sites',v:1,unit:'',w:80,go:GO_VOC,focus:{sec:'siteWatch'},
-      text:'다발 단지 · <b>'+v.sites+'</b>'});
+      text:'다발 단지 · <b>'+esc(v.sites)+'</b>'});
     if(v.aged) add({tag:'민원',key:'aged',v:v.aged,unit:'건',w:85,go:GO_VOC,
       text:'처리내용 미입력 중 <b>'+v.aged+'건</b>이 '+agedD+'일 이상 경과'});
     else if(v.unresolved) add({tag:'민원',key:'unresolved',v:v.unresolved,unit:'건',w:50,go:GO_VOC,
       text:'처리내용 미입력 <b>'+v.unresolved+'건</b>'});
     if(v.lagging) add({tag:'민원',key:'lagging',v:1,unit:'',w:45,go:GO_VOC,
-      text:'<b>'+v.lagging+'</b> 자료 미유입 · 0건을 감소로 보지 말 것'});
+      text:'<b>'+esc(v.lagging)+'</b> 자료 미유입 · 0건을 감소로 보지 말 것'});
     if(v.unmapped) add({tag:'민원',key:'unmapped',v:v.unmapped,unit:'건',w:30,go:GO_VOC,
       text:'테마에 없는 새 키워드 <b>'+v.unmapped+'건</b> · 분류 확인'});
   }

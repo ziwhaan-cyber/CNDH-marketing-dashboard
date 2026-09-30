@@ -368,7 +368,7 @@
     el.hidden = !VOC_VIEW || (tabNow!=='voc-overview' && tabNow!=='voc-monitor');
     if(!VOC_VIEW) return;
     var sel=el.querySelector('select');
-    sel.innerHTML=VOC_VIEW.months.map(function(k){ return '<option value="'+k+'">'+k.slice(0,4)+'년 '+parseInt(k.slice(5,7),10)+'월</option>'; }).join('');
+    sel.innerHTML=VOC_VIEW.months.map(function(k){ return '<option value="'+escHtml(k)+'">'+escHtml(k.slice(0,4))+'년 '+parseInt(k.slice(5,7),10)+'월</option>'; }).join('');
     sel.value=VOC_VIEW.key;
     el.querySelectorAll('[data-mode]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-mode')===VOC_VIEW.mode); });
   }
@@ -428,6 +428,8 @@
   function parseDate(s){ var d = new Date(s+'T00:00:00'); return isNaN(d) ? null : d; }
   // [신규] 숫자 천단위 콤마 포맷 (민원 페이지 전체 숫자 표시에 사용)
   function numFmt(n){ var x = Number(n); return isNaN(x) ? n : x.toLocaleString('ko-KR'); }
+  // [v2] 엑셀에서 온 글자(고객명·접수내용·키워드 등)를 화면에 넣을 때는 꼭 이걸로 감싼다 — '<' 같은 글자가 태그로 해석되지 않게
+  function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function matchFilter(r,F){ return !F || Object.keys(F).every(function(a){ return !F[a] || r[a]===F[a]; }); }
   function topN(byKw,n,prevKw){
     var arr = Object.entries(byKw).map(function(kv){ return {k:kv[0], v:kv[1]}; });
@@ -540,7 +542,7 @@
       // 민원접수 현황과 같은 표 형식: 키워드 | 당월 | 전월(같은 기간) | 증감 | 증감률
       kcBox.innerHTML = ch.length ? ch.map(function(o){
         var rate = o.p ? ((o.d>0?'+':'')+Math.round(o.d/o.p*100)+'%') : '신규';
-        return '<tr><td>'+o.k+'</td><td class="num">'+numFmt(o.c)+'</td><td class="num">'+numFmt(o.p)+'</td>'
+        return '<tr><td>'+escHtml(o.k)+'</td><td class="num">'+numFmt(o.c)+'</td><td class="num">'+numFmt(o.p)+'</td>'
           +dCell(o.c,o.p)+'<td class="num'+(o.d>0?' diff-bad':' diff-good')+'">'+rate+'</td></tr>';
       }).join('') : '<tr><td colspan="5" style="color:var(--text-soft);">전월 같은 기간과 달라진 키워드가 없습니다</td></tr>';
     }
@@ -563,7 +565,7 @@
       {k:'기타', cur:Math.max(0,totCur-incheonN-gimpoN), prev:Math.max(0,totPrev-incheonP-gimpoP), cum:Math.max(0,totalCum-incheonC-gimpoC)}
     ];
     document.getElementById('voc-sum-region-body').innerHTML = regionRows.map(function(o){
-      return '<tr><td>'+o.k+'</td><td class="num">'+numFmt(o.cur)+'</td><td class="num">'+numFmt(o.prev)+'</td><td class="num">'+numFmt(o.cum)+'</td></tr>';
+      return '<tr><td>'+escHtml(o.k)+'</td><td class="num">'+numFmt(o.cur)+'</td><td class="num">'+numFmt(o.prev)+'</td><td class="num">'+numFmt(o.cum)+'</td></tr>';
     }).join('') + '<tr class="total-row"><td>합계</td><td class="num">'+numFmt(totCur)+'</td><td class="num">'+numFmt(totPrev)+'</td><td class="num">'+numFmt(totalCum)+'</td></tr>';
 
     // ---- 2-c. 고객유형별 (당월/전월/누적, 계약종별은 당월 기준 소단위 보조텍스트로 표기) ----
@@ -593,7 +595,7 @@
     var curKwAll = monthByKw(y,mi,null), prevKwAll = monthByKw(py,pm,null);
     var topKwList = topN(curKwAll,8);
     document.getElementById('voc-sum-kw-body').innerHTML = topKwList.map(function(o){
-      return '<tr><td>'+o.k+'</td><td class="num">'+numFmt(o.v)+'</td><td class="num">'+numFmt(prevKwAll[o.k]||0)+'</td><td class="num">'+numFmt(cumFieldCount('kw',o.k))+'</td></tr>';
+      return '<tr><td>'+escHtml(o.k)+'</td><td class="num">'+numFmt(o.v)+'</td><td class="num">'+numFmt(prevKwAll[o.k]||0)+'</td><td class="num">'+numFmt(cumFieldCount('kw',o.k))+'</td></tr>';
     }).join('') || '<tr><td colspan="4" style="color:var(--text-soft);">데이터 없음</td></tr>';
 
     // ---- 3-a. 월별 에너지바우처 민원 추이 (최근 12개월, 전체 vs 에너지바우처 키워드) ----
@@ -704,7 +706,7 @@
       if (!sel) return;
       var cur = sel.value;
       sel.innerHTML = '<option value="">'+defaultLabel+'</option>' +
-        values.map(function(v){ return '<option value="'+v+'">'+v+'</option>'; }).join('');
+        values.map(function(v){ return '<option value="'+escHtml(v)+'">'+escHtml(v)+'</option>'; }).join('');
       if (values.indexOf(cur)!==-1) sel.value = cur;
     }
     fill('voc-f-channel', '접수경로: 전체', distinct('route'));
@@ -784,7 +786,7 @@
     document.getElementById('voc-kw-wire-title').textContent = '유선 ('+numFmt(wireN)+'건)';
     document.getElementById('voc-kw-bot-title').textContent = '챗봇 ('+numFmt(botN)+'건)';
     function kwRowsHtml(byKw){
-      return topN(byKw,5).map(function(o,i){ return '<tr><td><span class="kw-rank">'+(i+1)+'</span>'+o.k+'</td><td class="num">'+numFmt(o.v)+'</td></tr>'; }).join('')
+      return topN(byKw,5).map(function(o,i){ return '<tr><td><span class="kw-rank">'+(i+1)+'</span>'+escHtml(o.k)+'</td><td class="num">'+numFmt(o.v)+'</td></tr>'; }).join('')
         || '<tr><td colspan="2" style="color:var(--text-soft);">데이터 없음</td></tr>';
     }
     document.getElementById('voc-kw-wire-body').innerHTML = kwRowsHtml(wireByKw);
@@ -822,7 +824,7 @@
     var curByKw = monthByKw(y,mi,null);
     document.getElementById('voc-top5-body').innerHTML = topN(curByKw,5).map(function(o,i){
       var pct = curN? (o.v/curN*100).toFixed(1) : '0.0';
-      return '<tr><td><span class="kw-rank">'+(i+1)+'</span>'+o.k+'</td><td class="num">'+numFmt(o.v)+'</td><td class="num">'+pct+'%</td></tr>';
+      return '<tr><td><span class="kw-rank">'+(i+1)+'</span>'+escHtml(o.k)+'</td><td class="num">'+numFmt(o.v)+'</td><td class="num">'+pct+'%</td></tr>';
     }).join('');
 
     // ---- 키워드 이슈 분석: 전월 대비 변동폭 TOP5 (monthByKw 그대로 사용) ----
@@ -831,7 +833,7 @@
     var diffs = Object.keys(allK).map(function(k){ var c=curByKw[k]||0,p=prevByKw[k]||0; return {k:k,c:c,p:p,d:c-p}; })
       .sort(function(a,b){ return Math.abs(b.d)-Math.abs(a.d); }).slice(0,5);
     document.getElementById('voc-issue-body').innerHTML = diffs.map(function(item,i){
-      return '<div class="issue-row"><span class="issue-rank">'+(i+1)+'</span><span class="issue-name">'+item.k+'</span>'+
+      return '<div class="issue-row"><span class="issue-rank">'+(i+1)+'</span><span class="issue-name">'+escHtml(item.k)+'</span>'+
         '<span class="issue-delta '+(item.d>=0?'up':'down')+'">'+numFmt(item.p)+' → '+numFmt(item.c)+' ('+(item.d >= 0 ? '▲' : '▼') + numFmt(Math.abs(item.d))+')</span></div>';
     }).join('') || '<div style="color:var(--text-soft); font-size:0.78vw;">비교할 데이터가 없습니다</div>';
 
@@ -839,7 +841,7 @@
     var kwYear = {};
     trendPts.forEach(function(p){ var mByKw = monthByKw(p.y,p.m,null); Object.keys(mByKw).forEach(function(k){ kwYear[k]=(kwYear[k]||0)+mByKw[k]; }); });
     document.getElementById('voc-annual-body').innerHTML = topN(kwYear,6).map(function(o,i){
-      return '<tr><td><span class="kw-rank">'+(i+1)+'</span>'+o.k+'</td><td class="num">'+numFmt(o.v)+'</td></tr>';
+      return '<tr><td><span class="kw-rank">'+(i+1)+'</span>'+escHtml(o.k)+'</td><td class="num">'+numFmt(o.v)+'</td></tr>';
     }).join('');
 
     // ---- 민원통계 탭 ----
@@ -861,9 +863,9 @@
     } else {
       body.innerHTML = rows.map(function(r){
         return '<div class="voc-item" onclick="this.classList.toggle(\'open\')">' +
-          '<div class="vi-meta">' + r.date + ' · ' + r.name + ' · ' + r.type + ' · ' + r.route + '</div>' +
-          '<div class="vi-q"><span class="voc-tag q">' + r.gubun + '</span>' + r.memo + '</div>' +
-          '<div class="vi-a"><span class="voc-tag a">처리</span>' + r.done + '</div>' +
+          '<div class="vi-meta">' + escHtml(r.date) + ' · ' + escHtml(r.name) + ' · ' + escHtml(r.type) + ' · ' + escHtml(r.route) + '</div>' +
+          '<div class="vi-q"><span class="voc-tag q">' + escHtml(r.gubun) + '</span>' + escHtml(r.memo) + '</div>' +
+          '<div class="vi-a"><span class="voc-tag a">처리</span>' + escHtml(r.done) + '</div>' +
         '</div>';
       }).join('');
     }
@@ -876,8 +878,8 @@
     var channelCount = {}; rows.forEach(function(r){ channelCount[r.route]=(channelCount[r.route]||0)+1; });
     var byKw = {}; rows.forEach(function(r){ byKw[r.kw]=(byKw[r.kw]||0)+1; });
     var channelStr = Object.keys(channelCount).sort(function(a,b){return channelCount[b]-channelCount[a];})
-      .map(function(k){ return k+' '+numFmt(channelCount[k])+'건'; }).join(' · ');
-    var topKw = topN(byKw,3).map(function(o){ return o.k+'('+numFmt(o.v)+')'; }).join(', ');
+      .map(function(k){ return escHtml(k)+' '+numFmt(channelCount[k])+'건'; }).join(' · ');
+    var topKw = topN(byKw,3).map(function(o){ return escHtml(o.k)+'('+numFmt(o.v)+')'; }).join(', ');
     el.innerHTML = '자동 요약: 총 <b>' + numFmt(rows.length) + '건</b> · 채널 ' + channelStr + ' · 주요 키워드 ' + topKw;
   }
 
@@ -915,7 +917,7 @@
 
   function vocRenderDataTab(rows){
     document.getElementById('voc-data-body').innerHTML = rows.map(function(r){
-      return '<tr><td>'+r.date+'</td><td>'+r.name+'</td><td>'+r.memo+'</td><td>'+r.route+'</td><td>'+r.method+'</td><td>'+r.kw+'</td></tr>';
+      return '<tr><td>'+escHtml(r.date)+'</td><td>'+escHtml(r.name)+'</td><td>'+escHtml(r.memo)+'</td><td>'+escHtml(r.route)+'</td><td>'+escHtml(r.method)+'</td><td>'+escHtml(r.kw)+'</td></tr>';
     }).join('');
   }
 
