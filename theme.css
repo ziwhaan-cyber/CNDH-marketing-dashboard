@@ -639,3 +639,15 @@ html.in-dash .chart-container h3[style*="font-size:12.5px"]{ font-size:13px !imp
 .home-todo-row.resolved{ background:none; margin:0; padding-left:0; padding-right:0; color:var(--ui-muted); }
 .home-todo-row.resolved b{ color:var(--ui-muted); font-weight:600; }
 .ok-mark{ background:none; color:#2F9E6A; border:1.5px solid #9FD3B8; }
+
+/* ---------- [v2] 고객관리 두 탭 구분 — 현황 화면의 색 약속(미납 = 청록빛 블루, 민원 = 주황)을 그대로 이어 쓴다 ---------- */
+/* 상단 탭 앞 작은 점 · 선택된 탭 밑줄 · 오른쪽 '핵심' 표시만 바꾼다(화면 안 색은 그대로) */
+.page-nav .page-btn[data-target=page-arrears]::before,
+.page-nav .page-btn[data-target=page-voc]::before{ content:'●'; font-size:0.5vw; margin-right:0.35vw; vertical-align:middle; opacity:.45; }
+.page-nav .page-btn[data-target=page-arrears]::before{ color:#2D6886; }
+.page-nav .page-btn[data-target=page-voc]::before{ color:#B45309; }
+.page-nav .page-btn.active::before{ opacity:1; }
+.page-nav .page-btn[data-target=page-arrears].active{ box-shadow:inset 0 -3px 0 #2D6886; }
+.page-nav .page-btn[data-target=page-voc].active{ box-shadow:inset 0 -3px 0 #B45309; }
+#page-arrears .tab-hl .hl-lbl{ background:#2D6886; }
+#page-voc .tab-hl .hl-lbl{ background:#B45309; }
