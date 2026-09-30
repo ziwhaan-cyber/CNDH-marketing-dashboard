@@ -51,6 +51,7 @@ function applySource(){
   else if(s==='sample')DATA=buildSampleData();
   else DATA=load(LS.data,[]);
   DASH_MONTH=null;DASH_MODE_OVERRIDE=null;IMPORT_NOTE='';
+  if(typeof viewLoad==='function')viewLoad();   // [v2] 대시보드 민원통계와 함께 쓰는 기준 월·월중/월말
   if(typeof renderAll==='function')renderAll();
 }
 function sourceLabel(){

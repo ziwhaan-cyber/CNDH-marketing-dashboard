@@ -50,7 +50,8 @@
   function vocLine(){
     var tab=active('page-voc','data-voc-tab');
     if(typeof DATA==='undefined'||!DATA.length) return '';
-    var months=allDataMonths(), key=months[months.length-1];
+    // 민원통계·이슈 모니터링이 함께 쓰는 기준 월·월중/월말(VOC_VIEW)을 따른다
+    var months=allDataMonths(), key=(typeof VOC_VIEW!=='undefined'&&VOC_VIEW)?VOC_VIEW.key:months[months.length-1];
     var y=+key.slice(0,4), mi=+key.slice(5,7)-1, py=mi?y:y-1, pm=mi?mi-1:11, pk=moKey(py,pm);
     var cut=(typeof vocTrendPartialDay!=='undefined')?vocTrendPartialDay:0;
     var inCut=function(r){ return !cut||parseInt(String(r.date).slice(8,10),10)<=cut; };
@@ -61,7 +62,7 @@
         else if(r.haedangwol===pk&&inCut(r)){ prv++; pkw[r.kw]=(pkw[r.kw]||0)+1; }
       });
       var d=cur-prv, top=Object.keys(ck).map(function(k){ return {k:k,d:ck[k]-(pkw[k]||0)}; }).sort(function(a,b){ return b.d-a.d; })[0];
-      return '<span class="hl-it">'+(mi+1)+'월'+(cut?' 1~'+cut+'일':'')+' <b>'+n(cur)+'건</b> <em class="'+(d>0?'up':'dn')+'">전월 같은 기간 '+(d>0?'+':'')+n(d)+'건 ('+(d>0?'▲':'▼')+Math.abs(pct(d,prv))+'%)</em></span>'
+      return '<span class="hl-it">'+(mi+1)+'월'+(cut?' 1~'+cut+'일':'')+' <b>'+n(cur)+'건</b> <em class="'+(d>0?'up':'dn')+'">'+(cut?'전월 같은 기간 ':'전월 ')+(d>0?'+':'')+n(d)+'건 ('+(d>0?'▲':'▼')+Math.abs(pct(d,prv))+'%)</em></span>'
         +(top&&top.d>0?'<span class="hl-it">가장 늘어난 키워드 <b>'+esc(top.k)+'</b> <em class="up">+'+top.d+'</em></span>':'');
     }
     if(tab==='voc-voucher'){

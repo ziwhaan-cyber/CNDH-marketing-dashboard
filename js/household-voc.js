@@ -316,7 +316,47 @@
     btn.classList.add('active');
     document.querySelectorAll('#page-voc .voc-tab').forEach(function(t){ t.classList.remove('active'); });
     document.getElementById(target).classList.add('active');
+    renderVocViewCtl();
   }
+
+  // ===== [v2 추가] 기준 월 · 월 중간/월말 확정 — 민원통계와 이슈 모니터링이 같은 값을 쓴다 =====
+  // 저장 이름 voc_view = {month:'YYYY-MM'|null(최신 달), override:'mid'|'end'|null(자동)}
+  // 이슈 모니터링(민원/js/app.js)도 같은 이름을 읽고 쓰므로, 한쪽에서 바꾸면 다른 쪽도 바로 따라간다.
+  var VOC_VIEW_KEY = DEMO_PFX + 'voc_view';
+  var VOC_SAMPLE_TODAY = '2026-09-19';   // 민원/js/sample.js의 SAMPLE_TODAY와 같은 값(시연 모드 기준일)
+  var VOC_VIEW = null;
+  function vocViewGet(){ try{ var v=JSON.parse(localStorage.getItem(VOC_VIEW_KEY)||'null'); return v||{}; }catch(e){ return {}; } }
+  function vocViewSet(v){
+    try{ localStorage.setItem(VOC_VIEW_KEY, JSON.stringify({month:v.month||null, override:v.override||null, at:Date.now()})); }catch(e){}
+    try{ var rows=lsLoad('vocRawRows',null); if(rows&&rows.length) vocRunAll(rows); }catch(e){}
+    if (typeof renderTabHighlights==='function') renderTabHighlights();
+  }
+  // 민원통계 탭에서만 소버튼 줄에 보인다(이슈 모니터링 탭은 그 화면 안에 같은 버튼이 있다)
+  function renderVocViewCtl(){
+    var sub=document.querySelector('#page-voc .page-top .subnav'); if(!sub) return;
+    var el=document.getElementById('voc-view-ctl');
+    if(!el){
+      el=document.createElement('div'); el.id='voc-view-ctl'; el.className='voc-view-ctl';
+      el.innerHTML='<span class="vv-lbl">기준 월</span><select id="voc-view-month"></select>'
+        +'<span class="vv-sw"><button type="button" data-mode="mid">월 중간</button><button type="button" data-mode="end">월말 확정</button></span>';
+      var hl=sub.querySelector('.tab-hl'); sub.insertBefore(el, hl||null);
+      el.querySelector('select').onchange=function(e){ vocViewSet({month:e.target.value, override:null}); };   // 달을 바꾸면 자동 판정부터(모니터링과 같게)
+      el.querySelectorAll('[data-mode]').forEach(function(b){ b.onclick=function(){ vocViewSet({month:VOC_VIEW&&VOC_VIEW.key, override:b.getAttribute('data-mode')}); }; });
+    }
+    var active=document.querySelector('#page-voc .subnav-btn.active');
+    el.hidden = !VOC_VIEW || !active || active.getAttribute('data-voc-tab')!=='voc-overview';
+    if(!VOC_VIEW) return;
+    var sel=el.querySelector('select');
+    sel.innerHTML=VOC_VIEW.months.map(function(k){ return '<option value="'+k+'">'+k.slice(0,4)+'년 '+parseInt(k.slice(5,7),10)+'월</option>'; }).join('');
+    sel.value=VOC_VIEW.key;
+    el.querySelectorAll('[data-mode]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-mode')===VOC_VIEW.mode); });
+  }
+  // 이슈 모니터링에서 바꾸면(다른 창·틀에서 저장) 민원통계도 다시 계산
+  window.addEventListener('storage', function(e){
+    if (e.key!==VOC_VIEW_KEY) return;
+    try{ var rows=lsLoad('vocRawRows',null); if(rows&&rows.length) vocRunAll(rows); }catch(err){}
+    if (typeof renderTabHighlights==='function') renderTabHighlights();
+  });
 
   // ===== 아래 함수들은 VOC_최종본.html의 실제 로직을 그대로 이식한 것 (재구현 아님) =====
   // 필드 매핑은 VOC_최종본의 COL_ORDER/PASTE_MAP과 동일: date,name,memo,done,gubun,type,route,kw
@@ -631,18 +671,27 @@
 
     var monthKeys = allDataMonths();
     var latestKey = monthKeys[monthKeys.length-1];
-    var y = parseInt(latestKey.slice(0,4),10), mi = parseInt(latestKey.slice(5,7),10)-1;
+    // [v2] 기준 월·월 중간/월말 확정은 이슈 모니터링과 함께 쓴다(한쪽에서 바꾸면 다른 쪽도 따라감)
+    var view = vocViewGet();
+    var selKey = (view.month && monthKeys.indexOf(view.month)>=0) ? view.month : latestKey;
+    var y = parseInt(selKey.slice(0,4),10), mi = parseInt(selKey.slice(5,7),10)-1;
     var py=y, pm=mi-1; if (pm<0){ pm=11; py--; }
     var lyKey = (y-1)+'-'+String(mi+1).padStart(2,'0');
 
     // ---- KPI (monthTotal 그대로 사용) ----
     var curN = monthTotal(y,mi,null), prevN = monthTotal(py,pm,null);
-    // [v2] 최신월이 아직 진행 중이면(말일 2일 전까지 안 찼으면) 전월도 같은 날짜까지만 세어 비교한다.
-    //      이슈 모니터링 화면과 같은 기준 — 월 중간 값을 전월 전체와 비교해 '감소'로 보이는 것을 막는다.
+    // [v2] 월 중간이면 전월도 같은 날짜까지만 세어 비교한다 — 월 중간 값을 전월 전체와 비교해 '감소'로 보이는 것을 막는다.
+    //      자동 판정은 이슈 모니터링과 같은 규칙: 달력상 이번 달이고 말일 2일 전까지 안 찼으면 월 중간, 아니면 월말 확정
     var cutDay = 0;
-    DATA.forEach(function(r){ if(r.haedangwol!==latestKey) return; var dd=parseInt(String(r.date).slice(8,10),10); if(dd>cutDay) cutDay=dd; });
+    DATA.forEach(function(r){ if(r.haedangwol!==selKey) return; var dd=parseInt(String(r.date).slice(8,10),10); if(dd>cutDay) cutDay=dd; });
     var dimCur = new Date(y, mi+1, 0).getDate();
-    var partial = cutDay>0 && cutDay < dimCur-2;
+    var today = DEMO ? new Date(VOC_SAMPLE_TODAY+'T00:00:00') : new Date();   // 시연 모드는 샘플 기준일로(이슈 모니터링과 같게)
+    var isCurMonth = today.getFullYear()===y && today.getMonth()===mi;
+    var autoMode = (!isCurMonth || cutDay>=dimCur-2) ? 'end' : 'mid';
+    var mode = view.override || autoMode;
+    VOC_VIEW = { key:selKey, y:y, mi:mi, mode:mode, auto:autoMode, cut:cutDay||dimCur, months:monthKeys.slice().reverse() };
+    var partial = mode==='mid' && cutDay>0;
+    renderVocViewCtl();
     var prevKeyK = moKey(py,pm);
     if (partial){
       prevN = 0;

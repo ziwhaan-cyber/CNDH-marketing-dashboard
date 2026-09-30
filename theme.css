@@ -472,6 +472,16 @@ html,body{ background:#E7EBEF; }
   border:1px solid var(--ui-line) !important; background:#fff !important; color:var(--ui-ink);
 }
 
+/* 민원통계 — 기준 월 · 월 중간/월말 확정 (이슈 모니터링과 같은 값을 함께 씀) */
+.voc-view-ctl{ display:flex; align-items:center; gap:0.45vw; margin-left:1.2vw; }
+.voc-view-ctl[hidden]{ display:none; }
+.voc-view-ctl .vv-lbl{ font-size:0.68vw; color:var(--ui-muted); font-weight:600; }
+.voc-view-ctl select{ font-size:0.72vw !important; padding:0.18vw 0.4vw !important; }
+.voc-view-ctl .vv-sw{ display:inline-flex; gap:0.2vw; }
+.voc-view-ctl .vv-sw button{ font-family:inherit; font-size:0.68vw; font-weight:600; padding:0.2vw 0.7vw; border-radius:999px;
+  border:1px solid var(--ui-line); background:#fff; color:var(--ui-muted); cursor:pointer; }
+.voc-view-ctl .vv-sw button.on{ background:var(--ui-accent); border-color:var(--ui-accent); color:#fff; }
+
 /* 탭별 '핵심 한 줄' — 소버튼 줄 오른쪽 (세로 공간을 더 쓰지 않게) */
 .page-top .subnav{ align-items:center; }
 .tab-hl{ margin-left:auto; display:flex; align-items:center; gap:0.4vw 1.3vw; flex-wrap:wrap; justify-content:flex-end; min-width:0; }

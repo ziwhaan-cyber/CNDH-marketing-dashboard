@@ -87,8 +87,14 @@ window.vocFocus=function(o){
 };
 
 // ----- 월 선택 · 월중/월말 전환 -----
-document.getElementById('dashMonthPick').onchange=e=>{DASH_MONTH=e.target.value;DASH_MODE_OVERRIDE=null;renderAll();};
-document.querySelectorAll('#dashModeSw [data-mode]').forEach(b=>b.onclick=()=>{DASH_MODE_OVERRIDE=b.dataset.mode;renderAll();});
+document.getElementById('dashMonthPick').onchange=e=>{DASH_MONTH=e.target.value;DASH_MODE_OVERRIDE=null;viewSave();renderAll();};
+document.querySelectorAll('#dashModeSw [data-mode]').forEach(b=>b.onclick=()=>{DASH_MODE_OVERRIDE=b.dataset.mode;viewSave();renderAll();});
+
+// [v2] 기준 월·월 중간/월말 확정을 대시보드 '민원통계'와 함께 쓴다 (저장 이름 voc_view — js/household-voc.js와 같음)
+const VIEW_KEY=DEMO_PFX+'voc_view';
+function viewSave(){try{localStorage.setItem(VIEW_KEY,JSON.stringify({month:DASH_MONTH,override:DASH_MODE_OVERRIDE,at:Date.now()}));}catch(e){}}
+function viewLoad(){try{const v=JSON.parse(localStorage.getItem(VIEW_KEY)||'null');if(v){DASH_MONTH=v.month||null;DASH_MODE_OVERRIDE=v.override||null;}}catch(e){}}
+window.addEventListener('storage',e=>{if(e.key===VIEW_KEY&&DATA.length){viewLoad();renderAll();}});
 
 // ----- 엑셀 업로드 -----
 const fileInp=document.getElementById('xlFile');
