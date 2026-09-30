@@ -38,6 +38,8 @@ const THEME_RULES={
   shareDiff:5,     // 전체 대비 비중이 +Np 이상 커지면 '비중 확대'
   dropPct:40       // 전월 대비 -N% 이상 줄면 '감소'로 표시
 };
+// [v2] 처리내용 미입력이 N일 넘으면 '오래된 미처리'로 본다 (조치 필요 사항 · 현황 데일리 체크 공통)
+const UNRESOLVED_AGED_DAYS=7;
 
 const KW2THEME=(()=>{const m={};THEMES.forEach(t=>t.kws.forEach(k=>m[k]=t.name));return m;})();
 

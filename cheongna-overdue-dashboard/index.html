@@ -311,6 +311,12 @@ body{
           <option value="2-3">2~3개월</option>
           <option value="4-6">4~6개월</option>
           <option value="7+">7개월 이상</option>
+          <!-- [v2] 대시보드 '연체 현황'·데일리 체크와 같은 단계 -->
+          <optgroup label="연체 단계">
+            <option value="s1-2">단기 (1~2개월)</option>
+            <option value="s3-5">중기 (3~5개월)</option>
+            <option value="s6+">장기 (6개월 이상)</option>
+          </optgroup>
         </select>
       </div>
     </div>
@@ -506,6 +512,10 @@ function monthsMatch(m, bucket){
   if(bucket==='2-3') return m>=2 && m<=3;
   if(bucket==='4-6') return m>=4 && m<=6;
   if(bucket==='7+') return m>=7;
+  // [v2] 연체 단계(연체 현황과 같은 기준)
+  if(bucket==='s1-2') return m>=1 && m<=2;
+  if(bucket==='s3-5') return m>=3 && m<=5;
+  if(bucket==='s6+') return m>=6;
   return true;
 }
 
@@ -1466,6 +1476,11 @@ document.getElementById('overdue-export-btn').addEventListener('click', function
   }
   if(btn) btn.addEventListener('click', runSample);
 
+  /* [v2] 현황 데일리 체크에 쓰는 기준값 — 바꿀 때는 여기만 고친다.
+     단계는 대시보드 '연체 현황'과 같게: 단기 1~2개월 / 중기 3~5개월(공급정지 안내) / 장기 6개월 이상(법적조치) */
+  window.MINAP_RULES={ midFrom:3, longFrom:6, bigAmount:10000000 };
+  var R=window.MINAP_RULES;
+
   /* 집계값만 저장 — 개요 화면에서 읽는다 */
   window.saveSummary=function(){
     try{
@@ -1473,12 +1488,12 @@ document.getElementById('overdue-export-btn').addEventListener('click', function
       // [v2] 현황의 '미납 고객'은 남은 금액이 있는 고객만 센다(금액도 남은 금액 기준이라 맞춘다). 원래 customers.length
       var cnt=customers.filter(function(c){return (c.remainingTotal||0)>0;}).length;
       var amount=customers.reduce(function(s,c){return s+(c.remainingTotal||0);},0);
-      var longTerm=customers.filter(function(c){return (c.remainingOverdueMonths||0)>=3;}).length;
-      var big=customers.filter(function(c){return (c.remainingTotal||0)>=10000000;}).length;   // 1,000만원 이상
+      var longTerm=customers.filter(function(c){return (c.remainingOverdueMonths||0)>=R.midFrom;}).length;
+      var big=customers.filter(function(c){return (c.remainingTotal||0)>=R.bigAmount;}).length;   // 1,000만원 이상
       var newly=customers.filter(function(c){return (c.remainingOverdueMonths||0)===1;}).length;
       // [v2] 연체 현황 화면과 같은 단계로 나눈다 — 3~5개월(공급정지 안내) / 6개월 이상(법적조치)
-      var mid=customers.filter(function(c){var m=c.remainingOverdueMonths||0; return m>=3&&m<=5;}).length;
-      var longN=customers.filter(function(c){return (c.remainingOverdueMonths||0)>=6;}).length;
+      var mid=customers.filter(function(c){var m=c.remainingOverdueMonths||0; return m>=R.midFrom&&m<R.longFrom;}).length;
+      var longN=customers.filter(function(c){return (c.remainingOverdueMonths||0)>=R.longFrom;}).length;
       // [v2] 전월 파일이 있으면 '전월엔 없던 연체'를 센다(전월에 없었거나 전월엔 완납이었던 고객). 없으면 null
       var fresh=null;
       if(typeof previousSnapshot!=='undefined'&&previousSnapshot&&previousSnapshot.custMap){
@@ -1493,7 +1508,7 @@ document.getElementById('overdue-export-btn').addEventListener('click', function
       });
       localStorage.setItem((DEMO?'demo_':'')+'minap_summary',JSON.stringify({
         at:Date.now(), count:cnt, amount:amount, longTerm:longTerm, big:big, newly:newly, buckets:buckets,
-        mid:mid, long:longN, fresh:fresh,
+        mid:mid, long:longN, fresh:fresh, rules:R,
         asOf:(document.getElementById('asof-date')||{}).textContent||''
       }));
     }catch(e){}

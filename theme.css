@@ -393,6 +393,11 @@ html,body{ background:#E7EBEF; }
   border-radius:4px; padding:0.04vw 0.35vw; margin-right:0.4vw; vertical-align:0.08vw; }
 .todo-ai{ display:block; font-size:min(0.7vw,1.1vh); color:var(--ui-muted); line-height:1.5; margin-top:0.15vw; }
 .todo-ev{ color:var(--ui-muted); font-size:min(0.68vw,1.05vh); margin-left:0.3vw; }
+/* 어제 대비 해결된 항목 */
+.home-todo-row.resolved{ background:#F1F8F4; margin:0 -1.2vw; padding-left:1.2vw; padding-right:1.2vw; color:#2F6B4F; cursor:default; }
+.home-todo-row.resolved b{ color:#1F7A4D; }
+.ok-mark{ flex:0 0 auto; width:1.2vw; height:1.2vw; border-radius:50%; background:#2F9E6A; color:#fff; font-size:0.62vw; font-weight:700;
+  display:flex; align-items:center; justify-content:center; }
 .home-ai-lbl{ display:block; font-size:0.6vw; font-weight:700; color:var(--ui-accent); letter-spacing:.02em; margin-bottom:0.15vw; }
 .home-ai-it b{ display:block; font-size:min(0.82vw,1.3vh); line-height:1.5; color:var(--ui-ink); }
 .home-ai-it p{ font-size:min(0.68vw,1.05vh); line-height:1.5; color:var(--ui-muted); margin:0.2vw 0 0; }

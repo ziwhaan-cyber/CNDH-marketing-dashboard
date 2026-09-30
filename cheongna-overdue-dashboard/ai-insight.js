@@ -24,8 +24,10 @@
   function won(n){ return Math.round(n).toLocaleString('ko-KR')+'원'; }
 
   /* ---------- 코드가 계산하는 집계값 (AI에게는 이것만 넘긴다) ---------- */
-  var BUCKETS=['1개월','2-3개월','4-6개월','7-12개월','13개월+'];
-  function bucketOf(m){ return m<=0?'완납':m===1?'1개월':m<=3?'2-3개월':m<=6?'4-6개월':m<=12?'7-12개월':'13개월+'; }
+  // 단계는 대시보드 '연체 현황'·데일리 체크와 같게 (MINAP_RULES) — AI 문장과 할 일 목록의 구간이 서로 맞도록
+  function rules(){ return window.MINAP_RULES||{midFrom:3,longFrom:6,bigAmount:10000000}; }
+  var BUCKETS=['단기(1~2개월)','중기(3~5개월)','장기(6개월 이상)'];
+  function bucketOf(m){ var R=rules(); return m<=0?'완납':m<R.midFrom?BUCKETS[0]:m<R.longFrom?BUCKETS[1]:BUCKETS[2]; }
   function buildStats(){
     if(typeof customers==='undefined'||!customers.length) return null;
     var unpaid=customers.filter(function(c){ return (c.remainingTotal||0)>0; });
@@ -42,9 +44,9 @@
       customers:customers.length, unpaidCount:unpaid.length, paidFullCount:paidFull, partialPayCount:partial,
       originalAmount:orig, remainingAmount:remain,
       recoveryRatePct: orig? Math.round((orig-remain)/orig*1000)/10 : 0,
-      buckets:BUCKETS.map(function(b){ return {bucket:b,count:byB[b].count,amount:byB[b].amount}; }),
-      longTerm3plus:unpaid.filter(function(c){ return c.remainingOverdueMonths>=3; }).length,
-      over10m:unpaid.filter(function(c){ return c.remainingTotal>=10000000; }).length,
+      buckets:BUCKETS.map(function(b){ return {stage:b,count:byB[b].count,amount:byB[b].amount}; }),
+      stageActions:{'단기':'연체 안내','중기':'공급정지 안내','장기':'법적조치 검토'},   // 연체 현황 화면의 관리 단계
+      over10m:unpaid.filter(function(c){ return c.remainingTotal>=rules().bigAmount; }).length,
       top10SharePct: remain? Math.round(top10/remain*1000)/10 : 0,
       prev:null
     };
@@ -66,6 +68,25 @@
   }
   window.minapAiStats=buildStats;   // 확인용
 
+  /* [v2] 현황 데일리 체크의 'i' 버튼에서 부른다 — 고객 목록을 해당 단계로 걸러 보여준다.
+     opt: {months:'s1-2'|'s3-5'|'s6+'|'all', big:true(금액 큰 순)} */
+  window.minapFocus=function(opt){
+    opt=opt||{};
+    try{
+      var fm=document.getElementById('filter-months'), fs=document.getElementById('filter-status'), ft=document.getElementById('table-filter');
+      currentMonthsBucket=opt.months||'all'; if(fm) fm.value=currentMonthsBucket;
+      currentStatus='unpaid'; if(fs) fs.value='unpaid';
+      currentFilterText=''; if(ft) ft.value='';
+      if(opt.big){ sortField='remainingTotal'; sortDir='desc'; }
+      renderTable();
+      var sec=document.querySelector('.table-section');
+      if(sec){ sec.scrollIntoView({behavior:'smooth',block:'start'});
+        sec.style.transition='box-shadow .3s'; sec.style.boxShadow='0 0 0 3px rgba(35,107,122,.35)';
+        setTimeout(function(){ sec.style.boxShadow=''; },1600); }
+      return true;
+    }catch(e){ return false; }
+  };
+
   /* ---------- AI 호출 ---------- */
   function prompt(st){
     return '당신은 지역난방 공급사의 미납 관리 분석가입니다.\n'
@@ -76,7 +97,8 @@
       +'- 개별 고객 사정은 알 수 없습니다. 원인(cause)은 집계에서 읽히는 추정임을 문장에 드러내세요.\n'
       +'- headline: 지금 상황을 한 문장으로.\n'
       +'- cause 최대 2개, risk 최대 2개, action 최대 2개. 각 항목은 point(한 문장)와 evidence(근거 숫자).\n'
-      +'- action은 구간(1개월, 2-3개월 등)을 지정해 구체적으로. 없는 제도나 조항을 지어내지 마세요.\n'
+      +'- 구간은 반드시 단기(1~2개월)·중기(3~5개월)·장기(6개월 이상) 세 단계 이름으로만 말하세요. 다른 구간(4~6개월 등)을 만들지 마세요.\n'
+      +'- action은 단계를 지정해 구체적으로. stageActions의 단계별 관리 방식을 따르고, 없는 제도나 조항을 지어내지 마세요.\n'
       +'- confidence.level은 높음/보통/낮음 중 하나, reason에 한계(예: 전월 파일 없음, 집계만 봄)를 쓰세요.\n\n'
       +'지정된 JSON 스키마로만 응답하세요.';
   }
@@ -161,6 +183,21 @@
     catch(e){ alert('AI 분석 실패: '+(e.message||e)+'\n잠시 뒤 다시 시도하거나, 사내망에서 googleapis.com 접속이 막혀 있는지 확인하세요.'); }
     BUSY=false; render(); try{ saveSummary(); }catch(e){}
   }
+
+  /* [v2] 고객 목록 제목의 '총 N명'은 업로드 때 한 번만 정해져 필터를 걸어도 그대로다.
+     필터가 걸려 있으면 옆에 '조건에 맞는 N명'을 덧붙인다(원래 renderTable은 그대로 두고 뒤에서만 보탠다). */
+  var _rt=window.renderTable;
+  if(typeof _rt==='function') window.renderTable=function(){
+    var r=_rt.apply(this,arguments);
+    try{
+      var n=getFilteredSortedCustomers().length, el=document.getElementById('table-count-shown');
+      if(!el){ el=document.createElement('span'); el.id='table-count-shown';
+        el.style.cssText='font-size:12px;font-weight:600;color:var(--ui-accent,#236B7A);margin-left:8px;';
+        document.getElementById('table-count').parentNode.appendChild(el); }
+      el.textContent=(n===customers.length)?'':'· 조건에 맞는 '+n+'명';
+    }catch(e){}
+    return r;
+  };
 
   /* ---------- 현황 카드로 요약 넘기기 ----------
      기존 saveSummary(집계 저장) 뒤에 AI 요약만 덧붙인다. 원래 함수는 그대로 둔다. */

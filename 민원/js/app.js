@@ -49,7 +49,8 @@ function saveSummary(){
       issues:issues.length, topIssue:issues.length?`${issues[0].subject} ${issues[0].count}건`:'',
       unresolved:open.length, asOf:last?fmt(last):'',
       aged:(function(){const d=paDayNum(`${c.y}-${String(c.mi+1).padStart(2,'0')}-${String(c.cut).padStart(2,'0')}`);
-        return open.filter(r=>{const x=paDayNum(r.date);return x!=null&&d!=null&&(d-x)>=7;}).length;})(),
+        return open.filter(r=>{const x=paDayNum(r.date);return x!=null&&d!=null&&(d-x)>=UNRESOLVED_AGED_DAYS;}).length;})(),
+      agedDays:UNRESOLVED_AGED_DAYS,
       lagging:(sig.laggingMissing||[]).join(' · '),
       unmapped:(sig.unmappedKeywords||[]).length,
       sites:(function(){const w=buildSiteWatch();const a=w.filter(o=>o.level==='alert');
@@ -74,6 +75,16 @@ function summaryAi(monthKey){
       confirmed:single.length,unrelated:rv.filter(o=>o.verdict&&o.verdict!=='단일 사안').length};
   }catch(e){return null;}
 }
+
+// [v2] 대시보드 현황의 데일리 체크에서 부른다 — 해당 구역(이슈 감지·다발 단지·AI 분석)으로 스크롤해 잠깐 강조
+window.vocFocus=function(o){
+  const el=o&&document.getElementById(o.sec);
+  if(!el||!DATA.length||!el.offsetHeight)return false;
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+  el.style.transition='box-shadow .3s';el.style.boxShadow='0 0 0 3px rgba(35,107,122,.35)';el.style.borderRadius='12px';
+  setTimeout(()=>{el.style.boxShadow='';},1600);
+  return true;
+};
 
 // ----- 월 선택 · 월중/월말 전환 -----
 document.getElementById('dashMonthPick').onchange=e=>{DASH_MONTH=e.target.value;DASH_MODE_OVERRIDE=null;renderAll();};

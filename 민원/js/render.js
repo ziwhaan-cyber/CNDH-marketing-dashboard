@@ -179,9 +179,9 @@ function renderDashTodo(){
   if(rows.length){
     const open=rows.filter(paIsUnresolved);
     const asOfDay=paDayNum(`${c.y}-${String(c.mi+1).padStart(2,'0')}-${String(c.cut).padStart(2,'0')}`);
-    const aged=open.filter(r=>{const d=paDayNum(r.date);return d!=null&&asOfDay!=null&&(asOfDay-d)>=7;});
+    const aged=open.filter(r=>{const d=paDayNum(r.date);return d!=null&&asOfDay!=null&&(asOfDay-d)>=UNRESOLVED_AGED_DAYS;});
     if(open.length)items.push(`처리내용 미입력 <b>${open.length}건</b> / 당월 ${rows.length}건`
-      +(aged.length?` · 그중 <b>${aged.length}건</b>은 7일 이상 경과`:''));
+      +(aged.length?` · 그중 <b>${aged.length}건</b>은 ${UNRESOLVED_AGED_DAYS}일 이상 경과`:''));
   }
   const setup=setupReminders();
   host.innerHTML=`<div class="dash-sec-l">조치 필요 사항</div>`

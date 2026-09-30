@@ -112,7 +112,8 @@ function renderHome(){
   var mAgeDays = m&&m.at ? Math.floor((Date.now()-m.at)/86400000) : null;
   var mStale = (mAgeDays!=null && mAgeDays>=1);
   if(m){
-    var amtSeries=days.map(function(d){ return hist[d] && hist[d].amount; }).filter(function(x){ return typeof x==='number'; });
+    // [v2] 오늘 값은 아래에서 현재 값으로 붙이므로 기록에서는 뺀다(오늘이 두 번 세어지던 문제)
+    var amtSeries=prevDays.map(function(d){ return hist[d] && hist[d].amount; }).filter(function(x){ return typeof x==='number'; });
     if(typeof m.amount==='number') amtSeries=amtSeries.concat([m.amount]);
     mEl.className='home-kpi'+(mStale?' stale':'');
     mEl.innerHTML='<div class="home-kpi-h"><span class="home-kpi-t">연체 · 미납</span>'
@@ -195,55 +196,94 @@ function renderHome(){
   }
 
   // ── 데일리 체크 (중요도 정렬 + 어제 대비)
+  // 기준값: 미납 단계·금액은 미납관리의 MINAP_RULES, 민원 경과일은 민원/js/config.js의 UNRESOLVED_AGED_DAYS,
+  //         이 화면 쪽은 HOME_RULES(맨 위). 중요도(w)는 클수록 위로 간다.
   var items=[];
   var add=function(o){ items.push(o); };
+  var GO_MINAP=['page-arrears','arr','arr-tab-overdue'], GO_VOC=['page-voc','voc','voc-monitor'], GO_ARR=['page-arrears','arr','arr-tab-status'];
+  var mr=(m&&m.rules)||{midFrom:3,longFrom:6,bigAmount:10000000};
+  var bigTxt=(mr.bigAmount%10000===0)?(mr.bigAmount/10000).toLocaleString('ko-KR')+'만원':mr.bigAmount.toLocaleString('ko-KR')+'원';
   if(m&&!mStale){
-    // [v2] 연체 현황 화면의 단계와 맞춘다: 3~5개월 공급정지 안내 / 6개월 이상 법적조치 검토
+    // [v2] 연체 현황 화면의 단계와 맞춘다: 중기 공급정지 안내 / 장기 법적조치 검토
     if(m.long!=null){
-      if(m.long) add({tag:'미납',key:'long',v:m.long,unit:'개소',w:100,go:['page-arrears','arr','arr-tab-overdue'],
-        text:'6개월 이상 장기 미납 <b>'+m.long+'개소</b> · 법적조치 검토 대상'});
-      if(m.mid) add({tag:'미납',key:'mid',v:m.mid,unit:'개소',w:88,go:['page-arrears','arr','arr-tab-overdue'],
-        text:'3~5개월 미납 <b>'+m.mid+'개소</b> · 공급정지 안내 대상'});
-    }else if(m.longTerm) add({tag:'미납',key:'longTerm',v:m.longTerm,unit:'개소',w:100,go:['page-arrears','arr','arr-tab-overdue'],
+      if(m.long) add({tag:'미납',key:'long',stage:'장기',v:m.long,unit:'개소',w:100,go:GO_MINAP,focus:{months:'s6+'},
+        text:'장기('+mr.longFrom+'개월 이상) 미납 <b>'+m.long+'개소</b> · 법적조치 검토 대상'});
+      if(m.mid) add({tag:'미납',key:'mid',stage:'중기',v:m.mid,unit:'개소',w:88,go:GO_MINAP,focus:{months:'s3-5'},
+        text:'중기('+mr.midFrom+'~'+(mr.longFrom-1)+'개월) 미납 <b>'+m.mid+'개소</b> · 공급정지 안내 대상'});
+    }else if(m.longTerm) add({tag:'미납',key:'longTerm',v:m.longTerm,unit:'개소',w:100,go:GO_MINAP,
       text:'3개월 이상 미납 <b>'+m.longTerm+'개소</b>'});      // 예전 형식 요약(단계 값 없음)
-    if(m.big) add({tag:'미납',key:'big',v:m.big,unit:'개소',w:90,go:['page-arrears','arr','arr-tab-overdue'],
-      text:'미납 1,000만원 이상 <b>'+m.big+'개소</b> · 개별 안내 필요'});
+    if(m.big) add({tag:'미납',key:'big',v:m.big,unit:'개소',w:90,go:GO_MINAP,focus:{months:'all',big:true},
+      text:'미납 '+bigTxt+' 이상 <b>'+m.big+'개소</b> · 개별 안내 필요'});
     // [v2] '새로 밀린 곳'은 전월 파일이 있을 때만 정확히 셀 수 있다. 없으면 '연체 1개월'로 사실대로 쓴다
     if(m.fresh!=null){
-      if(m.fresh) add({tag:'미납',key:'fresh',v:m.fresh,unit:'개소',w:60,go:['page-arrears','arr','arr-tab-overdue'],
+      if(m.fresh) add({tag:'미납',key:'fresh',stage:'단기',v:m.fresh,unit:'개소',w:60,go:GO_MINAP,focus:{months:'s1-2'},
         text:'전월엔 없던 연체 <b>'+m.fresh+'개소</b> · 1차 안내 대상'});
-    }else if(m.newly) add({tag:'미납',key:'newly',v:m.newly,unit:'개소',w:60,go:['page-arrears','arr','arr-tab-overdue'],
+    }else if(m.newly) add({tag:'미납',key:'newly',stage:'단기',v:m.newly,unit:'개소',w:60,go:GO_MINAP,focus:{months:'1'},
       text:'연체 1개월 <b>'+m.newly+'개소</b> · 1차 안내 대상'});
+  }else if(m&&mStale){
+    // [v2] 미납 데이터는 저장하지 않으므로 하루가 지나면 미납 항목을 빼되, 빠졌다는 사실은 알린다
+    add({tag:'미납',key:'minapStale',v:0,unit:'',w:70,go:GO_MINAP,
+      text:'미납 데이터가 <b>'+mAgeDays+'일 전</b> 업로드 기준 · 미납 할 일을 보려면 미납관리에 다시 올려주세요'});
+  }
+  // [v2] 미납관리 요약이 없거나 오래됐으면, 저장되어 있는 연체 현황(연체 탭) 파일로 장기·중기만 보여준다
+  if(!m||mStale){
+    var arRows=lsLoad('arrearsRows',null), arYmd=lsLoad('arrearsYmd',null);
+    if(arRows&&arRows.length){
+      var arL=0, arM=0;
+      arRows.forEach(function(r){ var mo=Number(r['연체개월'])||0; if(mo>=6) arL++; else if(mo>=3) arM++; });
+      var arTag=arYmd?' <span class="todo-ev">연체 현황 '+esc(arYmd)+' 기준</span>':'';
+      if(arL) add({tag:'연체',key:'arrLong',v:arL,unit:'개소',w:99,go:GO_ARR,text:'장기(6개월 이상) 연체 <b>'+arL+'개소</b> · 법적조치 검토 대상'+arTag});
+      if(arM) add({tag:'연체',key:'arrMid',v:arM,unit:'개소',w:87,go:GO_ARR,text:'중기(3~5개월) 연체 <b>'+arM+'개소</b> · 공급정지 안내 대상'+arTag});
+    }
   }
   if(v){
-    if(v.topIssue) add({tag:'민원',key:'issues',v:v.issues,unit:'건',w:95,go:['page-voc','voc','voc-monitor'],
+    var agedD=v.agedDays||7;
+    if(v.topIssue) add({tag:'민원',key:'issues',v:v.issues,unit:'건',w:95,go:GO_VOC,focus:{sec:'themeAlerts'},
       text:'뜬 이슈 <b>'+v.issues+'건</b> · '+v.topIssue});
-    if(v.sites) add({tag:'민원',key:'sites',v:1,unit:'',w:80,go:['page-voc','voc','voc-monitor'],
+    if(v.sites) add({tag:'민원',key:'sites',v:1,unit:'',w:80,go:GO_VOC,focus:{sec:'siteWatch'},
       text:'다발 단지 · <b>'+v.sites+'</b>'});
-    if(v.aged) add({tag:'민원',key:'aged',v:v.aged,unit:'건',w:85,go:['page-voc','voc','voc-monitor'],
-      text:'처리내용 미입력 중 <b>'+v.aged+'건</b>이 7일 이상 경과'});
-    else if(v.unresolved) add({tag:'민원',key:'unresolved',v:v.unresolved,unit:'건',w:50,go:['page-voc','voc','voc-monitor'],
+    if(v.aged) add({tag:'민원',key:'aged',v:v.aged,unit:'건',w:85,go:GO_VOC,
+      text:'처리내용 미입력 중 <b>'+v.aged+'건</b>이 '+agedD+'일 이상 경과'});
+    else if(v.unresolved) add({tag:'민원',key:'unresolved',v:v.unresolved,unit:'건',w:50,go:GO_VOC,
       text:'처리내용 미입력 <b>'+v.unresolved+'건</b>'});
-    if(v.lagging) add({tag:'민원',key:'lagging',v:1,unit:'',w:45,go:['page-voc','voc','voc-monitor'],
+    if(v.lagging) add({tag:'민원',key:'lagging',v:1,unit:'',w:45,go:GO_VOC,
       text:'<b>'+v.lagging+'</b> 자료 미유입 · 0건을 감소로 보지 말 것'});
-    if(v.unmapped) add({tag:'민원',key:'unmapped',v:v.unmapped,unit:'건',w:30,go:['page-voc','voc','voc-monitor'],
+    if(v.unmapped) add({tag:'민원',key:'unmapped',v:v.unmapped,unit:'건',w:30,go:GO_VOC,
       text:'테마에 없는 새 키워드 <b>'+v.unmapped+'건</b> · 분류 확인'});
   }
   // [v2] AI가 제안한 조치를 데일리 체크에 합친다. 같은 사안의 줄이 이미 있으면 그 줄에 붙이고, 없으면 새 줄로.
   if(vai&&vai.action&&vai.action.text){
     var hit=items.filter(function(it){ return it.key==='issues' && v.topIssue && v.topIssue.indexOf(vai.action.theme)>=0; })[0];
     if(hit) hit.ai=vai.action.text;
-    else add({tag:'민원',key:'ai-voc',v:0,unit:'',w:92,go:['page-voc','voc','voc-monitor'],aiRow:true,
+    else add({tag:'민원',key:'ai-voc',v:0,unit:'',w:92,go:GO_VOC,focus:{sec:'aiSection'},aiRow:true,
       text:esc(vai.action.theme)+' · '+esc(vai.action.text)});
   }
   if(mai&&mai.action&&mai.action.point){
-    add({tag:'미납',key:'ai-minap',v:0,unit:'',w:97,go:['page-arrears','arr','arr-tab-overdue'],aiRow:true,
+    // 미납 AI도 단기·중기·장기로 말하므로, 같은 단계의 줄이 있으면 그 줄에 붙인다
+    var st=['장기','중기','단기'].filter(function(s){ return mai.action.point.indexOf(s)>=0; })[0];
+    var mhit=st&&items.filter(function(it){ return it.tag==='미납'&&it.stage===st; })[0];
+    if(mhit) mhit.ai=mai.action.point;
+    else add({tag:'미납',key:'ai-minap',v:0,unit:'',w:97,go:GO_MINAP,aiRow:true,
       text:esc(mai.action.point)+(mai.action.evidence?' <span class="todo-ev">'+esc(mai.action.evidence)+'</span>':'')});
   }
   items.sort(function(a,b){ return (b.w+Math.min(20,b.v))-(a.w+Math.min(20,a.v)); });
+  window.__homeItems=items;   // 'i' 버튼이 항목별 이동 정보를 찾을 때 쓴다
+
+  // [v2] 어제 있던 항목이 오늘 없어졌으면 '해결'로 보여준다. 그 영역 데이터가 오늘도 있을 때만(데이터가 없어서 빠진 건 해결이 아님)
+  var RESOLVED_LABEL={long:'장기 미납',mid:'중기 미납',big:'고액 미납',fresh:'전월엔 없던 연체',newly:'연체 1개월',longTerm:'3개월 이상 미납',
+    arrLong:'장기 연체',arrMid:'중기 연체',issues:'뜬 이슈',sites:'다발 단지',aged:'오래된 미처리',unresolved:'처리내용 미입력',lagging:'자료 미유입',unmapped:'새 키워드'};
+  var MINAP_KEYS=['long','mid','big','fresh','newly','longTerm'], ARR_KEYS=['arrLong','arrMid'];
+  var todayKeys=items.map(function(it){ return it.key; });
+  var resolved=!prev?[]:Object.keys(prev).filter(function(k){
+    if(!RESOLVED_LABEL[k]||!(prev[k]>0)||todayKeys.indexOf(k)>=0) return false;
+    if(MINAP_KEYS.indexOf(k)>=0) return !!(m&&!mStale);
+    if(ARR_KEYS.indexOf(k)>=0) return !m||mStale;
+    return !!v;
+  }).map(function(k){ return RESOLVED_LABEL[k]+(RESOLVED_UNIT(k)?' '+prev[k]+RESOLVED_UNIT(k):''); });
+  function RESOLVED_UNIT(k){ return {sites:'',lagging:''}.hasOwnProperty(k)?'':(MINAP_KEYS.concat(ARR_KEYS).indexOf(k)>=0?'개소':'건'); }
 
   var doneKeys=[]; try{ var dn=JSON.parse(localStorage.getItem('home_done')||'{}'); if(dn.date===ymd) doneKeys=dn.keys||[]; }catch(e){}
-  var rows=items.map(function(it){
+  var rows=items.map(function(it,idx){
     var delta='';
     if(prev&&prev[it.key]!=null&&it.unit){
       var d=it.v-prev[it.key];
@@ -251,14 +291,17 @@ function renderHome(){
       else if(d<0) delta='<span class="delta dn">'+prevLabel+' 대비 '+d+it.unit+'</span>';
       else delta='<span class="delta same">'+prevLabel+'과 같음</span>';
     }
-    var cls=(it.tag==='미납')?'t-minap':'t-voc';
+    var cls=(it.tag==='민원')?'t-voc':'t-minap';
     return '<div class="home-todo-row'+(doneKeys.indexOf(it.key)>=0?' done':'')+'" data-key="'+it.key+'" onclick="homeToggleDone(this)">'
       +'<span class="mark"></span><span class="tag '+cls+'">'+it.tag+'</span>'
       +'<span class="todo-text">'+(it.aiRow?'<span class="ai-mark">AI 제안</span>':'')+it.text
       +(it.ai?'<small class="todo-ai"><span class="ai-mark">AI 제안</span>'+esc(it.ai)+'</small>':'')+'</span>'+delta
-      +'<span class="go" title="해당 화면 열기" onclick="event.stopPropagation();goHome(\''+it.go[0]+'\',\''+it.go[1]+'\',\''+it.go[2]+'\')">i</span></div>';
+      +'<span class="go" title="'+(it.focus?'해당 목록으로 바로 이동':'해당 화면 열기')+'" onclick="event.stopPropagation();homeGo('+idx+')">'+(it.focus?'→':'i')+'</span></div>';
   });
   if(!rows.length) rows.push('<div class="home-todo-row"><span class="todo-text">각 화면에서 데이터를 올리면 조치할 항목이 여기에 모입니다.</span></div>');
+  // [v2] 어제 대비 해결된 항목 — 맨 위에 한 줄로(칸이 모자라 잘려도 보이게)
+  if(resolved.length) rows.unshift('<div class="home-todo-row resolved"><span class="ok-mark">✓</span>'
+    +'<span class="todo-text"><b>'+prevLabel+' 대비 해결</b> · '+resolved.map(esc).join(' · ')+'</span></div>');
   var todoEl=document.getElementById('home-todo');
   todoEl.innerHTML=rows.join('');
   // 스크롤 없이 보이도록, 칸에 들어가는 만큼만 남기고 나머지는 건수로 알린다
@@ -289,6 +332,24 @@ function renderHome(){
     keep.forEach(function(d){ trimmed[d]=hist[d]; });
     try{ localStorage.setItem(DEMO_PFX+'home_daily',JSON.stringify(trimmed)); }catch(e){}
   }
+}
+// [v2] 데일리 체크 → 해당 화면으로 가서, 가능하면 그 항목의 목록·구역까지 바로 연다
+// (미납관리: 연체 단계로 걸러진 고객 목록 / 이슈 모니터링: 이슈·다발 단지·AI 분석 구역)
+function homeGo(i){
+  var it=(window.__homeItems||[])[i]; if(!it) return;
+  goHome(it.go[0],it.go[1],it.go[2]);
+  if(!it.focus) return;
+  var fid=(it.go[2]==='arr-tab-overdue')?'overdue-frame':(it.go[2]==='voc-monitor')?'voc-monitor-frame':null;
+  if(!fid) return;
+  var tries=0;
+  (function poll(){
+    try{
+      var w=document.getElementById(fid).contentWindow;
+      if(it.focus.sec){ if(w.vocFocus&&w.vocFocus(it.focus)) return; }
+      else if(w.minapFocus&&w.minapAiStats&&w.minapAiStats()){ w.minapFocus(it.focus); return; }
+    }catch(e){}
+    if(++tries<40) setTimeout(poll,150);   // 끼워 넣은 화면이 아직 뜨는 중이면 잠시 기다린다(최대 6초)
+  })();
 }
 document.addEventListener('DOMContentLoaded',renderHome);
 window.addEventListener('storage',function(e){
@@ -330,6 +391,14 @@ function demoArrearsFromMinap(){
   try{ renderArrearsFromRows(rows,ymd); }catch(e){}   // 저장값 복원은 이미 지나갔으므로 바로 그린다
 }
 if(DEMO){
+  // 시연용 '어제 기록' — 데일리 체크의 어제 대비 변화와 '해결' 표시를 첫 화면에서 볼 수 있게 한다(가상 값, demo_ 저장 이름에만)
+  try{
+    if(!localStorage.getItem('demo_home_daily')){
+      var yd=new Date(Date.now()-86400000), yk=yd.getFullYear()+'-'+String(yd.getMonth()+1).padStart(2,'0')+'-'+String(yd.getDate()).padStart(2,'0');
+      var hist0={}; hist0[yk]={mid:49,issues:3,aged:6,lagging:1,unmapped:2,amount:44870000};
+      localStorage.setItem('demo_home_daily',JSON.stringify(hist0));
+    }
+  }catch(e){}
   window.addEventListener('storage',function(e){ if(e.key==='demo_minap_summary') demoArrearsFromMinap(); });
   document.addEventListener('DOMContentLoaded',function(){
     var h=document.querySelector('.header h1');
