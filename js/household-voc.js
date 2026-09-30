@@ -307,7 +307,7 @@
         if(cw && cw.Chart && !cw.__dashChartTheme){
           cw.__dashChartTheme=true;
           try{ cw.Chart.defaults.font.family="'Pretendard','Pretendard Variable','Noto Sans KR',sans-serif"; }catch(e){}
-          var MAP={'#2f6fed':'#3E6E9C','#8a63d2':'#A6BFD6'};   // 파랑 → 스틸 블루, 보라 → 같은 계열의 옅은 톤(톤온톤)
+          var MAP={'#2f6fed':'#2D6886','#8a63d2':'#A9C3D1'};   // 파랑 → 대시보드 강조색, 보라 → 같은 계열의 옅은 톤(톤온톤)
           var fix=function(v){ if(typeof v!=='string') return v; var k=v.slice(0,7).toLowerCase(); return MAP[k]? MAP[k]+v.slice(7) : v; };
           cw.Chart.register({ id:'dashTheme', beforeUpdate:function(ch){
             (ch.data.datasets||[]).forEach(function(ds){ ['backgroundColor','borderColor','pointBackgroundColor','pointBorderColor','hoverBackgroundColor'].forEach(function(p){ if(p in ds) ds[p]=fix(ds[p]); }); });
@@ -646,7 +646,7 @@
     var W = box.clientWidth, H = box.clientHeight;
     if (W < 50 || H < 50) return;                     // 숨겨진 탭 — 보일 때 다시 그린다
     var cs = getComputedStyle(document.documentElement);
-    var acc = (cs.getPropertyValue('--ui-accent')||'#3E6E9C').trim();
+    var acc = (cs.getPropertyValue('--ui-accent')||'#2D6886').trim();
     var line = (cs.getPropertyValue('--ui-line')||'#DDE2E8').trim();
     var muted = (cs.getPropertyValue('--ui-muted')||'#6B7787').trim();
     var fs = Math.max(12, Math.round(W/66));          // 칸 너비에 맞춘 글자 크기

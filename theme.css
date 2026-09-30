@@ -8,8 +8,8 @@
   --ui-bg:#F4F6F8;          /* 배경 */
   --ui-card:#FFFFFF;        /* 카드·패널 */
   --ui-header:#1E2F45;      /* 상단 헤더 — 헤더·상단 탭·하위 탭 버튼은 화면이 바뀌어도 이 한 색 */
-  --ui-accent:#236B7A;      /* 강조(주요 버튼·표·차트) — 딥 티얼. 현황·미납관리·이슈 모니터링은 아래 [data-tone=steel]에서 스틸 블루 */
-  --ui-accent-soft:#E4EFF1; /* 강조의 옅은 톤 */
+  --ui-accent:#2D6886;      /* 강조(주요 버튼·표·차트) — 청록빛 블루. 티얼과 미납관리 파랑 사이 톤으로 모든 화면 공통 */
+  --ui-accent-soft:#E5EEF2; /* 강조의 옅은 톤 */
   --ui-line:#DDE2E8;        /* 테두리 */
   --ui-ink:#1B2430;         /* 본문 글자 */
   --ui-muted:#6B7787;       /* 보조 글자 */
@@ -45,7 +45,7 @@ body{ background:var(--ui-bg) !important; }
   --up:var(--ui-up); --down:var(--ui-down);
 }
 /* 끼워 넣은 미납관리 화면의 버튼·카드 강조색도 같은 색으로(그 화면 파일은 그대로, 따로 열면 원래 파랑) */
-html.in-dash{ --accent:var(--ui-accent); --c1:var(--ui-accent); --c5:#A6BFD6; }
+html.in-dash{ --accent:var(--ui-accent); --c1:var(--ui-accent); --c5:#A9C3D1; }
 .card,.empty-card,.ai-card,.setup-card{ border:1px solid var(--ui-line); border-radius:var(--ui-radius); }
 .modal{ border-radius:var(--ui-radius); }
 .dash-sec-l{
@@ -139,7 +139,7 @@ html.in-dash{ --accent:var(--ui-accent); --c1:var(--ui-accent); --c5:#A6BFD6; }
 
 /* 데이터 출처 줄 — 붉은 기 대신 차분한 톤으로 */
 .source-bar.src-sample{ background:#F6EEE6 !important; color:#8A5A2B !important; }
-.source-bar.src-link{ background:var(--ui-accent-soft) !important; color:#2F5780 !important; }
+.source-bar.src-link{ background:var(--ui-accent-soft) !important; color:#22546C !important; }
 
 /* 끼워 넣었을 때 제목 크기를 서로 맞춘다 */
 body.embed .brand h1{ font-size:17px; }
@@ -291,13 +291,9 @@ body.embed #themeAlerts .ai-line-a{ display:none; }
   --ui-line-soft:#EAEEF2;
   --ui-zebra:#F8FAFB;        /* 표 줄무늬 — 따뜻한 베이지 대신 배경과 같은 계열 */
   --ui-sunken:#F5F7F9;       /* 카드 안의 옅은 칸 */
-  --ui-th:#E9F1F3;           /* 표 머리줄 — 강조색의 옅은 톤 */
-  --ui-th-ink:#1D5763;
-  --ui-accent-hover:#1B5460;
-}
-/* 현황·미납관리·이슈 모니터링 화면(과 그 안에 끼워 넣은 화면)은 스틸 블루 — js/nav.js의 applyTone()이 표시 */
-html[data-tone=steel], html.in-dash{
-  --ui-accent:#3E6E9C; --ui-accent-soft:#E7EEF5; --ui-th:#EEF3F8; --ui-th-ink:#2F5780; --ui-accent-hover:#335D85;
+  --ui-th:#EBF2F5;           /* 표 머리줄 — 강조색의 옅은 톤 */
+  --ui-th-ink:#22546C;
+  --ui-accent-hover:#245670;
   --ui-shadow:0 1px 2px rgba(16,32,48,.04),0 4px 14px rgba(16,32,48,.05);
 }
 
@@ -382,22 +378,22 @@ html,body{ background:#E7EBEF; }
 /* 현황 — AI 인사이트 카드 (데일리 체크 위) */
 .home-ai{
   flex:0 0 auto; margin-bottom:min(1.1vw,1.6vh); padding:min(1.1vw,1.7vh) min(1.4vw,2vh);
-  background:linear-gradient(135deg,#EFF3F7 0%,#FFFFFF 75%); border:1px solid #D4DFEA; border-radius:12px;
+  background:linear-gradient(135deg,#EEF4F6 0%,#FFFFFF 75%); border:1px solid #D2E1E8; border-radius:12px;
   box-shadow:var(--ui-shadow);
 }
 .home-ai-h{ display:flex; align-items:center; gap:0.5vw; font-size:0.95vw; font-weight:700; color:var(--ui-accent); }
 .home-ai-ic{ width:1.5vw; height:1.5vw; border-radius:0.45vw; display:grid; place-items:center; font-size:0.8vw;
-  color:#fff; background:linear-gradient(135deg,var(--ui-accent),#6A8FB4); }
+  color:#fff; background:linear-gradient(135deg,var(--ui-accent),#5E8FA8); }
 .home-ai-meta{ margin-left:auto; font-size:0.64vw; font-weight:600; color:var(--ui-muted); }
 .home-ai-cols{ display:grid; grid-template-columns:1fr 1fr; gap:1.2vw; margin-top:min(0.7vw,1.1vh); }
 .home-ai-col{ min-width:0; }
 .home-ai-cols.one{ grid-template-columns:1fr; }
 .home-ai-dom{ display:flex; align-items:center; gap:0.5vw; }
 .home-ai-dom .tag{ font-size:0.62vw; font-weight:700; color:#fff; padding:0.12vw 0.55vw; border-radius:1vw; }
-.home-ai-dom .tag.t-voc{ background:#B45309; } .home-ai-dom .tag.t-minap{ background:#3E6E9C; }
+.home-ai-dom .tag.t-voc{ background:#B45309; } .home-ai-dom .tag.t-minap{ background:#2D6886; }
 .home-ai-head{ font-size:min(0.8vw,1.25vh); color:var(--ui-ink); line-height:1.5; margin-top:min(0.5vw,0.8vh); }
 .home-ai-head b{ color:var(--ui-accent); }
-.home-ai-it{ margin-top:min(0.55vw,0.9vh); padding-top:min(0.55vw,0.9vh); border-top:1px solid #DDE5EE; }
+.home-ai-it{ margin-top:min(0.55vw,0.9vh); padding-top:min(0.55vw,0.9vh); border-top:1px solid #DCE8ED; }
 /* 데일리 체크 안의 AI 제안 */
 .ai-mark{ display:inline-block; font-size:0.58vw; font-weight:700; color:var(--ui-accent); background:var(--ui-accent-soft);
   border-radius:4px; padding:0.04vw 0.35vw; margin-right:0.4vw; vertical-align:0.08vw; }
@@ -436,7 +432,7 @@ html,body{ background:#E7EBEF; }
 .home-ai-it b{ display:block; font-size:min(0.82vw,1.3vh); line-height:1.5; color:var(--ui-ink); }
 .home-ai-it p{ font-size:min(0.68vw,1.05vh); line-height:1.5; color:var(--ui-muted); margin:0.2vw 0 0; }
 .home-ai-foot{ margin-top:min(0.7vw,1.1vh); }
-.home-ai .home-link{ color:var(--ui-accent); border-color:rgba(62,110,156,.35); }
+.home-ai .home-link{ color:var(--ui-accent); border-color:rgba(45,104,134,.35); }
 .home-ai-empty{ font-size:0.74vw; color:var(--ui-muted); margin-top:0.5vw; line-height:1.8; }
 
 /* 월별 민원 추이 차트 (민원통계에 추가) */

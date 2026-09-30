@@ -26,21 +26,6 @@
     });
   });
 
-  // [v2] 화면별 강조색 — 현황·미납관리·이슈 모니터링은 스틸 블루, 나머지 화면은 딥 티얼(theme.css의 [data-tone=steel]).
-  // 탭을 바꾸는 방법이 여러 곳(버튼·현황 카드·데일리 체크)이라 함수마다 넣지 않고, 화면 표시가 바뀌는 것을 지켜본다.
-  function applyTone(){
-    var on=function(id){ var e=document.getElementById(id); return !!(e&&e.classList.contains('active')); };
-    var steel = on('page-home') || (on('page-arrears')&&on('arr-tab-overdue')) || (on('page-voc')&&on('voc-monitor'));
-    var tone = steel ? 'steel' : '';
-    if ((document.documentElement.getAttribute('data-tone')||'') === tone) return;
-    if (tone) document.documentElement.setAttribute('data-tone', tone); else document.documentElement.removeAttribute('data-tone');
-    if (typeof drawVocTrendChart === 'function') { try{ drawVocTrendChart(); }catch(e){} }   // 그림으로 그린 추이 차트는 색을 다시 칠함
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    applyTone();
-    new MutationObserver(applyTone).observe(document.body, {subtree:true, attributes:true, attributeFilter:['class']});
-  });
-
   // [신규] 페이지 전환 로직: 클릭한 버튼의 data-target에 해당하는 .page만 보이게 전환
   // [추가] 홈 카드 → 해당 페이지와 탭으로 이동
   function goHome(pageId,kind,tabId){
