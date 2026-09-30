@@ -46,10 +46,17 @@
     { ls:'minap_summary',   key:'minap_summary',   domain:'arrears' },   // 미납관리 요약(건수·금액·구간) — 그 화면이 저장
     { ls:'r9_vocRawRows',   key:'vocRows',         domain:'voc', deid:true }, // 민원 접수 기록 — 가명 처리해서 올림
     { ls:'voc_im_summary',  key:'voc_im_summary',  domain:'voc' },       // 이슈 모니터링 요약 — 그 화면이 저장
-    { ls:'voc_im_aiResult', key:'voc_im_aiResult', domain:'voc' }        // AI 분석 결과(월별)
+    { ls:'voc_im_aiResult', key:'voc_im_aiResult', domain:'voc' },       // AI 분석 결과(월별)
+    // 메모 칸 — 한 저장값(mdData)에 연체 · 민원 메모가 같이 있어, 업무별로 나눠 올리고 받을 때 합친다
+    { ls:'r9_mdData', key:'md_arrears', domain:'arrears', part:['short','mid','long'] },            // 연체 관리 현황 메모
+    { ls:'r9_mdData', key:'md_voc',     domain:'voc',     part:['voc-note-a','voc-note-b','voc-note-c'] } // 민원 메모
   ];
   var byLs = {}, byKey = {};
-  ITEMS.forEach(function(it){ byLs[it.ls] = it; byKey[it.key] = it; });
+  ITEMS.forEach(function(it){ (byLs[it.ls] = byLs[it.ls] || []).push(it); byKey[it.key] = it; });
+  function pick(obj, part){ var o = {}; part.forEach(function(k){ if (obj && obj[k] != null) o[k] = obj[k]; }); return o; }
+  // 이 PC에 있는 값(나눠 올리는 값은 그 부분만). 없으면 undefined
+  function localData(it){ var raw = lsGet(it.ls); if (raw === null) return undefined;
+    try{ var d = JSON.parse(raw); return it.part ? pick(d, it.part) : d; }catch(e){ return undefined; } }
 
   var STAMP_LS = 'cloud_stamp';          // 이 PC가 마지막으로 받은/올린 서버 시각(값마다)
   var OWN_VOC_LS = 'cloud_own_vocRows';  // 이 PC에서 올린 민원이면 원본을 그대로 둔다(가명본으로 덮지 않음)
@@ -130,15 +137,15 @@
     timers[it.key] = setTimeout(function(){ push(it); }, 800);
   }
   function push(it){
-    var raw = lsGet(it.ls); if (raw === null) return;
-    if (lastSent[it.ls] === sameAs(raw)) return;
-    var data; try{ data = JSON.parse(raw); }catch(e){ return; }
+    var d0 = localData(it); if (d0 === undefined) return;
+    var cmp = sameAs(JSON.stringify(d0));
+    if (lastSent[it.key] === cmp) return;
     if (it.deid) toast('민원 자료를 가명 처리해서 공유하는 중…');
-    (it.deid ? deidVoc(data) : Promise.resolve(data)).then(function(d){
+    (it.deid ? deidVoc(d0) : Promise.resolve(d0)).then(function(d){
       return sb.from('shared_data').upsert({ key:it.key, domain:it.domain, data:d }).select('updated_at,updated_by_name').single();
     }).then(function(res){
       if (res.error) throw res.error;
-      lastSent[it.ls] = sameAs(raw);
+      lastSent[it.key] = cmp;
       var st = stamps(); st[it.key] = res.data.updated_at; saveStamps(st);
       if (it.deid) lsSet(OWN_VOC_LS, res.data.updated_at);
       CLOUD.meta[it.key] = { by:res.data.updated_by_name, at:res.data.updated_at };
@@ -148,14 +155,14 @@
       toast('공유하지 못했습니다: ' + ((e && e.message) || '알 수 없는 오류') + ' — 이 PC에는 저장되어 있습니다', true);
     });
   }
-  // 이 창에서 저장하면(연체·민원 엑셀 업로드) 바로 올린다
+  // 이 창에서 저장하면(연체·민원 엑셀 업로드, 메모 입력) 바로 올린다
   Storage.prototype.setItem = function(k, v){
     origSet.apply(this, arguments);
     if (hydrating || this !== window.localStorage) return;
-    var it = byLs[k]; if (it) schedulePush(it);
+    (byLs[k] || []).forEach(schedulePush);
   };
   // 끼워 넣은 화면(미납관리 · 이슈 모니터링)이 저장하면 이 창에는 storage 알림이 온다
-  window.addEventListener('storage', function(e){ var it = byLs[e.key]; if (it) schedulePush(it); });
+  window.addEventListener('storage', function(e){ (byLs[e.key] || []).forEach(schedulePush); });
 
   // ---------- 받기 ----------
   // 바뀐 값이 있으면 true — 화면을 다시 그려야 한다
@@ -170,14 +177,20 @@
         if (st[row.key] === row.updated_at && lsGet(it.ls) !== null) return;           // 이미 받은 것
         if (it.deid && lsGet(OWN_VOC_LS) === row.updated_at && lsGet(it.ls) !== null){ st[row.key] = row.updated_at; return; } // 이 PC가 올린 원본 유지
         hydrating = true;
-        try{ lsSet(it.ls, JSON.stringify(row.data)); } finally { hydrating = false; }
-        lastSent[it.ls] = sameAs(lsGet(it.ls));
+        try{
+          if (it.part){   // 나눠 올린 값은 이 PC의 나머지 부분과 합친다
+            var cur = {}; try{ cur = JSON.parse(lsGet(it.ls) || '{}') || {}; }catch(e){}
+            var add = pick(row.data || {}, it.part); Object.keys(add).forEach(function(k){ cur[k] = add[k]; });
+            lsSet(it.ls, JSON.stringify(cur));
+          } else lsSet(it.ls, JSON.stringify(row.data));
+        } finally { hydrating = false; }
+        lastSent[it.key] = sameAs(JSON.stringify(localData(it)));
         st[row.key] = row.updated_at; changed = true;
       });
       // 서버에 없는 값 — 올릴 권한이 없는 사람의 PC에 남은 예전 사본은 지운다(옛 자료가 공유 자료처럼 보이지 않게)
       ITEMS.forEach(function(it){
         if (seen[it.key]) return;
-        if (lsGet(it.ls) !== null && !CLOUD.can(it.domain)){ lsDel(it.ls); changed = true; }
+        if (!it.part && lsGet(it.ls) !== null && !CLOUD.can(it.domain)){ lsDel(it.ls); changed = true; }
         delete st[it.key];
       });
       saveStamps(st);
@@ -211,6 +224,8 @@
           d.classList.add('cloud-on'); d.classList.toggle('no-voc', !CLOUD.can('voc')); d.classList.toggle('no-arrears', !CLOUD.can('arrears')); }catch(e){} };
         f.addEventListener('load', mark); mark();
       });
+      // 메모 칸 — 역할이 정해졌으니 편집 가능 여부를 다시 그린다(js/household-voc.js)
+      if (typeof renderAllMd === 'function') renderAllMd();
       if (ON) renderBadge();
     });
   }

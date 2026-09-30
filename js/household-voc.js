@@ -167,7 +167,8 @@
     let html = '';
     lines.forEach(function(line){
       if (!line.trim()) return;
-      const bold = function(s){ return s.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); };
+      // [v2] 메모는 공유 저장소로 다른 사람 화면에도 나가므로 글자를 먼저 이스케이프하고 **굵게**만 살린다
+      const bold = function(s){ return escHtml(s).replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); };
       const subMatch = line.match(/^\s{2,}-\s+(.*)/);
       const topMatch = line.match(/^-\s+(.*)/);
       if (subMatch){
@@ -180,11 +181,20 @@
     });
     return html;
   }
+  // [v2] 메모 칸은 그 업무 담당(과 관리자)만 고친다 — 연체 관리 현황은 연체 담당, 민원 메모는 민원 담당.
+  // 권한은 js/cloud.js(로그인 역할 · 시연의 조회자 화면)가 정하고, 공유 기능이 꺼져 있으면 누구나 고칠 수 있다(지금과 같음)
+  function mdDomain(key){ return key.indexOf('voc')===0 ? 'voc' : 'arrears'; }
+  function mdCanEdit(key){ return !window.CLOUD || window.CLOUD.can(mdDomain(key)); }
   function renderMd(key){
     const ta = document.getElementById('md-'+key);
     const preview = document.getElementById('md-'+key+'-preview');
-    preview.innerHTML = mdToHtml(ta.value) || '<div style="color:var(--text-soft);">클릭해서 입력하세요</div>';
+    preview.innerHTML = mdToHtml(ta.value) || (mdCanEdit(key) ? '<div style="color:var(--text-soft);">클릭해서 입력하세요</div>' : '<div style="color:var(--text-soft);">—</div>');
+    var ok = mdCanEdit(key);
+    preview.classList.toggle('md-locked', !ok);
+    if (ok) preview.setAttribute('title','클릭하면 편집할 수 있어요'); else preview.removeAttribute('title');
   }
+  // 로그인 역할이 정해진 뒤 한 번 더 그린다(js/cloud.js에서 부름)
+  function renderAllMd(){ ['short','mid','long','voc-note-a','voc-note-b','voc-note-c'].forEach(function(k){ if (document.getElementById('md-'+k)) renderMd(k); }); }
   // [신규] textarea가 입력 내용에 맞춰 세로로 자동으로 늘어나도록
   function autoGrowMd(key){
     var ta = document.getElementById('md-'+key);
@@ -194,6 +204,7 @@
   }
   // [신규] 미리보기 클릭 -> 편집모드(textarea 표시), textarea 벗어나면 -> 미리보기로 전환
   function showEdit(key){
+    if (!mdCanEdit(key)) return;   // 조회자 · 다른 업무 담당은 보기만
     document.getElementById('md-'+key).style.display = 'block';
     document.getElementById('md-'+key+'-preview').style.display = 'none';
     document.getElementById('md-'+key).focus();
