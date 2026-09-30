@@ -360,9 +360,11 @@
               <thead><tr><th>접수방법</th><th>당월</th><th id="voc-sum-prev-h">전월</th><th>증감</th><th>당월 중 비중</th></tr></thead>
               <tbody id="voc-sum-channel-body"></tbody>
             </table>
+            <div class="channel-note" id="voc-sum-ch-note"></div>
           </div>
 
-          <div class="panel" style="flex-shrink:0;">
+          <!-- [v2] 민원접수 현황(접수방법별)과 같은 기준이라 화면에서 내림 — 챗봇 전년 동월 비교는 접수현황 아래 한 줄로. 요소는 계산 코드가 참조해 남김 -->
+          <div class="panel" style="flex-shrink:0; display:none;">
             <div class="panel-title">유선 · 챗봇 채널 현황 <span class="tag">유선 vs 챗봇만 비교</span></div>
             <div class="channel-compare">
               <div class="channel-box">
@@ -377,8 +379,8 @@
             <div class="channel-note" id="voc-ch-note"></div>
           </div>
 
-          <div class="panel" style="flex-shrink:0;">
-            <div class="panel-title">채널별 키워드 TOP 3 <span class="tag" id="voc-kw-channel-tag">-</span></div>
+          <div class="panel voc-kwch-panel" style="flex:1; min-height:0;">
+            <div class="panel-title">채널별 키워드 TOP 5 <span class="tag" id="voc-kw-channel-tag">-</span></div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8vw;">
               <div>
                 <div class="kpi-section-title" id="voc-kw-wire-title">유선</div>
@@ -391,7 +393,8 @@
             </div>
           </div>
 
-          <div class="panel" style="flex-shrink:0;">
+          <!-- [v2] 많이 변한 키워드 · 채널별 키워드와 겹쳐 화면에서 내림(요소는 남김) -->
+          <div class="panel" style="flex-shrink:0; display:none;">
             <div class="panel-title">상위 키워드 5 <span class="tag">건수·비율</span></div>
             <table class="kw-table">
               <thead><tr><th>키워드</th><th>건수</th><th>비율</th></tr></thead>

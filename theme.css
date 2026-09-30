@@ -438,6 +438,11 @@ html,body{ background:#E7EBEF; }
 .voc-trend-legend{ display:flex; gap:1vw; font-size:0.64vw; color:var(--ui-muted); margin-left:auto; font-weight:500; }
 .voc-trend-legend i{ display:inline-block; width:0.9vw; height:2px; border-radius:2px; margin-right:0.3vw; vertical-align:middle; }
 
+/* 민원통계 — 칸을 5개로 줄이면서 오른쪽에 자리가 생겨, 채널별 키워드를 3개 → 5개로(원래 3개로 자르던 규칙을 이 칸에서만 풂) */
+#voc-overview #voc-kw-wire-body tr:nth-child(n+4), #voc-overview #voc-kw-bot-body tr:nth-child(n+4){ display:table-row; }
+#voc-overview .voc-kwch-panel .kw-table td{ padding-top:0.35vw !important; padding-bottom:0.35vw !important; font-size:0.78vw; }
+#voc-sum-ch-note{ margin-top:0.5vw; }
+
 /* 민원통계 오른쪽 칸 — 민원접수 현황이 맨 위로 오면서 칸이 4개가 되어, 여백만 조금 줄여 한 화면에 들어가게 */
 #voc-overview > .col:nth-child(2){ gap:0.55vw !important; }
 #voc-overview > .col:nth-child(2) .panel{ padding-top:0.7vw; padding-bottom:0.7vw; }

@@ -774,6 +774,8 @@
       var bd = fmtChangeDisplay(botN, lyBotN);
       noteEl.textContent = '※ 챗봇 접수 '+bd.txt+' (전년동월 대비)';
     }
+    // [v2] 채널 현황 칸을 내리면서, 챗봇 전년 동월 비교 한 줄만 민원접수 현황 아래에 옮겨 보여준다
+    var sumNote = document.getElementById('voc-sum-ch-note'); if (sumNote) sumNote.textContent = noteEl.textContent;
 
     // ---- 상위 키워드 5: monthByKw + topN (키워드/건수/비율만 표시) ----
     var curByKw = monthByKw(y,mi,null);
