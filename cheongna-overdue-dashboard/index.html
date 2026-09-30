@@ -247,7 +247,7 @@ body{
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:6px;">
         <h3 style="margin-bottom:0;">전월 대비 연체 현황 비교</h3>
       </div>
-      <div id="prev-compare-status" style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">Google 계정으로 로그인하면 전월_미납내역/전월_납부이력 시트를 불러와 자동으로 비교합니다.</div>
+      <div id="prev-compare-status" style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">엑셀을 올리면 전월_미납내역/전월_납부이력 시트를 읽어 자동으로 비교합니다.</div>
       <div id="prev-compare-summary" class="compare-summary" style="display:none;"></div>
       <div id="prev-compare-bucket-wrap" style="display:none;">
         <h3 style="font-size:12.5px;font-weight:600;color:var(--text-secondary);margin-bottom:10px;">연체개월 구간별 고객 수 변화</h3>
@@ -1467,7 +1467,7 @@ document.getElementById('overdue-export-btn').addEventListener('click', function
   window.saveSummary=function(){
     try{
       if(typeof customers==='undefined'||!customers.length)return;
-      var cnt=customers.length;
+      var cnt=customers.filter(function(c){return (c.remainingTotal||0)>0;}).length;   // [수정] 완납 고객 제외(금액도 남은 금액 기준)
       var amount=customers.reduce(function(s,c){return s+(c.remainingTotal||0);},0);
       var longTerm=customers.filter(function(c){return (c.remainingOverdueMonths||0)>=3;}).length;
       var big=customers.filter(function(c){return (c.remainingTotal||0)>=10000000;}).length;   // 1,000만원 이상
