@@ -297,6 +297,8 @@ body.embed #themeAlerts .ai-line-a{ display:none; }
 /* ---------- 대시보드 뼈대 ---------- */
 html,body{ background:#E7EBEF; }
 .slide{ box-shadow:0 0.4vw 1.8vw rgba(16,32,48,.14); }
+/* 틀은 항상 창 너비로 그리고, js/nav.js의 fitSlide()가 통째로 줄여 16:9에 맞춘다 */
+.slide{ width:100vw !important; max-width:none !important; flex-shrink:0; }
 .header{ padding:0.95vw 3vw; align-items:center; }
 .header h1{ font-size:1.5vw; font-weight:700; letter-spacing:-0.02em; }
 
@@ -443,8 +445,13 @@ html,body{ background:#E7EBEF; }
 .kwchg-track{ height:0.45vw; background:var(--ui-sunken); border-radius:0.3vw; overflow:hidden; }
 .kwchg-track i{ display:block; height:100%; border-radius:0.3vw; }
 .kwchg-track i.up{ background:#C4564A; } .kwchg-track i.dn{ background:#3AA5C3; }
-.kwchg-v{ text-align:right; color:var(--ui-muted); font-variant-numeric:tabular-nums; white-space:nowrap; }
-.kwchg-v b{ margin-left:0.45vw; }
+.kwchg-v{ text-align:right; font-weight:800; font-size:0.82vw; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.kwchg-v.up{ color:#C4564A; } .kwchg-v.dn{ color:#2F7FB8; }
+.kwchg-row{ grid-template-columns:8.5vw 1fr 3.6vw !important; padding:0.22vw 0 !important; font-size:0.72vw !important; cursor:default; }
+.kwchg-cap{ font-size:0.6vw; color:var(--ui-muted); margin-top:0.35vw; display:flex; align-items:center; gap:0.35vw; }
+.kwchg-cap i{ display:inline-block; width:0.7vw; height:0.35vw; border-radius:0.2vw; }
+.kwchg-cap i.up{ background:#C4564A; } .kwchg-cap i.dn{ background:#3AA5C3; margin-left:0.5vw; }
+.kwchg-panel{ overflow:hidden; }
 
 /* 업로드 — 브라우저 기본 '파일 선택' 칸은 숨기고 버튼 하나로 (고른 파일 이름은 옆에 작게) */
 .upload-inline input[type=file], .nt-row input[type=file], .voc-upload input[type=file]{ display:none; }

@@ -312,13 +312,6 @@
             </table>
           </div>
 
-          <!-- [v2 추가] 전월 같은 기간 대비 많이 변한 키워드 — 직접 쓰던 '증감 사유'를 데이터로 자동 계산해 보여준다.
-               원인 해석은 이슈 모니터링의 AI 분석이 맡는다 -->
-          <div class="panel" style="flex-shrink:0;">
-            <div class="panel-title">전월 대비 많이 변한 키워드 <span class="tag" id="voc-kwchg-tag">자동 계산</span></div>
-            <div id="voc-kwchg-body" class="kwchg"><div class="home-chart-empty">데이터 탭에 엑셀을 올리면 표시됩니다</div></div>
-          </div>
-
           <!-- 민원접수 관련 메모 (직접 작성) — [v2] 위 자동 계산 칸으로 대신해 화면에서 내림.
                메모 저장 코드가 참조하므로 요소는 남겨 숨김 -->
           <div style="display:none; grid-template-columns:1fr 1fr; gap:0.7vw;">
@@ -396,6 +389,14 @@
               <tbody id="voc-top5-body"></tbody>
             </table>
           </div>
+
+          <!-- [v2 추가] 전월 같은 기간 대비 많이 변한 키워드(오른쪽 칸 맨 아래) — 직접 쓰던 '증감 사유'를 데이터로 자동 계산해 보여준다.
+               원인 해석은 이슈 모니터링의 AI 분석이 맡는다 -->
+          <div class="panel kwchg-panel" style="flex:1; min-height:0;">
+            <div class="panel-title">전월 대비 많이 변한 키워드 <span class="tag" id="voc-kwchg-tag">자동 계산</span></div>
+            <div id="voc-kwchg-body" class="kwchg"><div class="home-chart-empty">데이터 탭에 엑셀을 올리면 표시됩니다</div></div>
+          </div>
+
 
         </div>
 

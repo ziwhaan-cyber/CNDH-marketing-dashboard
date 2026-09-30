@@ -430,12 +430,16 @@
         .sort(function(a,b){ return Math.abs(b.d)-Math.abs(a.d) || b.c-a.c; }).slice(0,5);
       var mx = ch.reduce(function(s,o){ return Math.max(s,Math.abs(o.d)); },1);
       document.getElementById('voc-kwchg-tag').textContent = cut ? '1~'+cut+'일 · 전월 같은 기간 대비' : '전월 대비';
+      // 끝에는 증감만 크게 보여준다(전월→당월 숫자는 마우스를 올리면 보임)
       kcBox.innerHTML = ch.length ? ch.map(function(o){
         var up = o.d>0, w = Math.max(4, Math.round(Math.abs(o.d)/mx*100));
-        return '<div class="kwchg-row"><span class="kwchg-k">'+o.k+'</span>'
+        return '<div class="kwchg-row" title="전월 같은 기간 '+numFmt(o.p)+'건 → 당월 '+numFmt(o.c)+'건"><span class="kwchg-k">'+o.k+'</span>'
           +'<span class="kwchg-track"><i class="'+(up?'up':'dn')+'" style="width:'+w+'%"></i></span>'
-          +'<span class="kwchg-v">'+numFmt(o.p)+' → '+numFmt(o.c)+'<b class="'+(up?'diff-bad':'diff-good')+'">'+(up?'+':'')+numFmt(o.d)+'</b></span></div>';
-      }).join('') : '<div class="home-chart-empty">전월 같은 기간과 달라진 키워드가 없습니다</div>';
+          +'<span class="kwchg-v '+(up?'up':'dn')+'">'+(up?'+':'−')+numFmt(Math.abs(o.d))+'건</span></div>';
+      }).join('') + '<div class="kwchg-cap"><i class="up"></i>늘어남 <i class="dn"></i>줄어듦 · 막대 길이 = 증감 건수</div>'
+        : '<div class="home-chart-empty">전월 같은 기간과 달라진 키워드가 없습니다</div>';
+      KWCHG_FULL = kcBox.innerHTML;
+      fitKwChg();
     }
 
     // ---- 2-a. 민원분류: 유형별 (당월/전월/누적) ----
@@ -540,7 +544,7 @@
     var acc = (cs.getPropertyValue('--ui-accent')||'#236B7A').trim();
     var line = (cs.getPropertyValue('--ui-line')||'#DDE2E8').trim();
     var muted = (cs.getPropertyValue('--ui-muted')||'#6B7787').trim();
-    var fs = Math.max(11, Math.round(W/80));          // 칸 너비에 맞춘 글자 크기
+    var fs = Math.max(12, Math.round(W/66));          // 칸 너비에 맞춘 글자 크기
     var pts = vocTrendChartData, n = pts.length;
     var L = fs*3, R = fs*1.2, T = fs*1.8, B = fs*2;
     var all = pts.map(function(p){return p.v;}).concat(pts.map(function(p){return p.ly;}));
@@ -584,6 +588,23 @@
     document.addEventListener('DOMContentLoaded', function(){
       var el = document.getElementById('voc-trend-chart');
       if (el) new ResizeObserver(function(){ drawVocTrendChart(); }).observe(el);
+    });
+  }
+
+  // [v2] '전월 대비 많이 변한 키워드'는 칸 높이에 들어가는 만큼만 남긴다(창 크기에 따라 3~5줄).
+  // 전체 목록을 기억해 두고, 칸 크기가 바뀔 때마다 전체에서 다시 줄인다.
+  var KWCHG_FULL = '';
+  function fitKwChg(){
+    var box=document.getElementById('voc-kwchg-body'); if(!box||!KWCHG_FULL) return;
+    var panel=box.closest('.panel'); if(!panel||!panel.clientHeight) return;   // 숨겨진 탭 — 보일 때 다시
+    box.innerHTML=KWCHG_FULL;
+    var rows=[].slice.call(box.querySelectorAll('.kwchg-row'));
+    for(var i=rows.length-1; i>0 && panel.scrollHeight>panel.clientHeight+1; i--) rows[i].remove();
+  }
+  if (window.ResizeObserver){
+    document.addEventListener('DOMContentLoaded', function(){
+      var p=document.querySelector('.kwchg-panel');
+      if (p) new ResizeObserver(function(){ fitKwChg(); }).observe(p);
     });
   }
 

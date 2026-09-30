@@ -4,6 +4,18 @@
   var DEMO = /[?&]demo=1(&|$)/.test(location.search);
   var DEMO_PFX = DEMO ? 'demo_' : '';
 
+  // [v2] 16:9 화면 맞춤 — 글자·칸 크기가 모두 창 너비(vw) 기준인데, 창이 16:9보다 넓으면(주소창·작업표시줄 때문에 보통 그렇다)
+  // 화면 틀만 좁아지고 글자는 그대로라 칸이 넘쳐 아래가 잘렸다(추이 그래프가 눌리고 AI 인사이트 글자가 잘림).
+  // 틀을 항상 창 너비로 그린 뒤 통째로 줄여서(zoom) 글자와 칸이 같은 비율로 작아지게 한다.
+  function fitSlide(){
+    var s=document.querySelector('.slide'); if(!s) return;
+    var W=window.innerWidth, H=window.innerHeight;
+    var target=Math.min(W, 1920, (H-2)*16/9);           // 원래 규칙과 같은 크기: 창 너비·1920px·창 높이×16/9 중 작은 값
+    s.style.zoom=(target/W).toFixed(4);
+  }
+  document.addEventListener('DOMContentLoaded', fitSlide);
+  window.addEventListener('resize', fitSlide);
+
   // [v2] '엑셀 업로드' 버튼 옆에 브라우저 기본 '파일 선택 · 선택된 파일 없음' 칸이 또 보여 중복이었다.
   // 기본 칸은 CSS로 숨기고(버튼이 그 칸을 연다), 고른 파일 이름만 버튼 옆에 작게 보여준다.
   document.addEventListener('DOMContentLoaded', function(){
