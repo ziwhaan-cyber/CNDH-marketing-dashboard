@@ -37,7 +37,9 @@
     }
     if(tab==='arr-tab-overdue'){
       // 미납관리 화면이 저장하는 요약(count·amount·longTerm)만 읽는다
-      var m=homeRead('minap_summary'); if(!m) return '<span class="hl-it muted">엑셀을 올리면 미납 현황이 채워집니다</span>';
+      // 미납관리 화면은 시연 모드를 모르고 항상 원래 이름(minap_summary)에 저장하므로, 이 탭에서는 옆 화면과 같은 값을 읽는다
+      var m=homeRead('minap_summary'); try{ if(!m) m=JSON.parse(localStorage.getItem('minap_summary')||'null'); }catch(e){}
+      if(!m) return '<span class="hl-it muted">엑셀을 올리면 미납 현황이 채워집니다</span>';
       return '<span class="hl-it">미납 금액 <b>'+eok(m.amount)+'</b></span>'
         +(m.longTerm?'<span class="hl-it">3개월 이상 <b>'+n(m.longTerm)+'개소</b></span>':'');
     }
