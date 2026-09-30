@@ -746,16 +746,18 @@
     document.getElementById('voc-kw-wire-body').innerHTML = kwRowsHtml(wireByKw);
     document.getElementById('voc-kw-bot-body').innerHTML = kwRowsHtml(botByKw);
 
-    // ---- 챗봇 · 유선 채널 현황: 두 채널만 순수 비교 (현장/메일/팩스 등 제외) ----
-    var routes = ['챗봇','유선'];
+    // ---- 유선 · 챗봇 채널 현황: 두 채널만 순수 비교 (현장/메일/팩스 등 제외) ----
+    // [v2] 채널은 어디서나 유선 → 챗봇 순서로(건수 순으로 정렬하면 달마다 순서가 바뀌었다). 많은 쪽은 굵게
+    var routes = ['유선','챗봇'];
     function chanBoxHtml(yy,mm){
       var counts = routes.map(function(rt){ return {rt:rt, n:monthRouteCount(yy,mm,null,rt)}; });
       var tot = counts.reduce(function(s,o){ return s+o.n; }, 0);
-      counts = counts.filter(function(o){ return o.n>0; }).sort(function(a,b){ return b.n-a.n; });
+      var mx = Math.max.apply(null, counts.map(function(o){ return o.n; }));
+      counts = counts.filter(function(o){ return o.n>0; });
       if (!counts.length) return '<div class="cb-row"><span>데이터 없음</span></div>';
-      return counts.map(function(o,i){
-        var pct = tot? (o.n/tot*100).toFixed(1) : '0.0';
-        return '<div class="cb-row"><span>'+o.rt+'</span>'+(i===0?'<b>':'')+numFmt(o.n)+'건 ('+pct+'%)'+(i===0?'</b>':'')+'</div>';
+      return counts.map(function(o){
+        var pct = tot? (o.n/tot*100).toFixed(1) : '0.0', big = (o.n===mx);
+        return '<div class="cb-row"><span>'+o.rt+'</span>'+(big?'<b>':'')+numFmt(o.n)+'건 ('+pct+'%)'+(big?'</b>':'')+'</div>';
       }).join('');
     }
     document.getElementById('voc-ch-cur-title').textContent = y+'년 '+(mi+1)+'월 (당월)';

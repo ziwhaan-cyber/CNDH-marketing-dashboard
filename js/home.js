@@ -170,11 +170,12 @@ function renderHome(){
   var vai=v&&v.ai, mai=(m&&!mStale)?m.ai:null;
   var aiMeta=function(ai){ return (ai.sample?'샘플 예시 · 실제 AI 호출 아님':('Gemini'+(ai.at?' · '+new Date(ai.at).toLocaleDateString('ko-KR'):'')))
       +(ai.conf?' · 신뢰도 '+esc(ai.conf):''); };
-  var aiRow=function(lbl,o){ return o&&o.point ? '<div class="home-ai-it"><span class="home-ai-lbl">'+lbl+'</span><b>'+esc(o.point)+'</b>'
-      +(o.evidence?'<p>'+esc(o.evidence)+'</p>':'')+'</div>' : ''; };
+  // [v2] 글을 줄인다 — 원인·리스크는 한 문장씩만, 근거 숫자는 마우스를 올리면(전체는 이슈 모니터링의 AI 분석에서)
+  var aiRow=function(lbl,o){ return o&&o.point ? '<div class="home-ai-it"'+(o.evidence?' title="근거: '+esc(o.evidence)+'"':'')+'>'
+      +'<span class="home-ai-lbl">'+lbl+'</span><b>'+esc(o.point)+'</b></div>' : ''; };
   var aiCol=function(tag,cls,has,ai,head,where,go){
-    var h='<div class="home-ai-col"><div class="home-ai-dom"><span class="tag '+cls+'">'+tag+'</span>'
-      +(ai?'<span class="home-ai-meta">'+aiMeta(ai)+'</span>':'')+'</div>';
+    // 칸마다 붙던 '샘플 예시 · 실제 AI 호출 아님 · 신뢰도' 줄은 카드 제목 오른쪽에 한 번만
+    var h='<div class="home-ai-col"><div class="home-ai-dom"><span class="tag '+cls+'">'+tag+'</span></div>';
     if(!has) return h+'<div class="home-ai-empty">데이터를 올리면 표시됩니다.</div></div>';
     if(!ai) return h+'<div class="home-ai-empty">'+where+'에서 <b>AI 분석 실행</b>을 누르면 원인·리스크가 여기에 모입니다. '
       +'<span class="home-link" onclick="goHome('+go+')">열기 →</span></div></div>';
@@ -184,15 +185,15 @@ function renderHome(){
   else{
     aiEl.hidden=false;
     aiEl.innerHTML='<div class="home-ai-h"><span class="home-ai-ic">✦</span>AI 인사이트'
-      +'<span class="home-ai-meta">규칙이 계산 · AI가 해석 · 할 일은 데일리 체크에</span></div>'
+      +'<span class="home-ai-meta">'+(vai||mai?aiMeta(mai||vai):'')+'</span></div>'
       // 미납 칸은 미납관리 화면이 AI 요약(ai)을 넘겨줄 때만 보인다 — 지금 미납관리 화면에는 AI 분석이 없으므로 민원만 한 칸으로
       // 순서는 화면 왼쪽 카드와 같게 미납 → 민원
       +'<div class="home-ai-cols'+(mai?'':' one')+'">'
       + (mai ? aiCol('미납','t-minap',!!(m&&!mStale),mai, esc(mai.headline),
           '미납관리',"'page-arrears','arr','arr-tab-overdue'") : '')
       + aiCol('민원','t-voc',!!v,vai,
-          vai?('규칙이 찾은 이슈 '+(v.issues||0)+'건 중 <b>'+(vai.confirmed||0)+'건</b>을 실제 사안으로 확인'
-            +(vai.unrelated?' · '+vai.unrelated+'건은 무관한 문의 겹침':'')):'',
+          vai?('이슈 '+(v.issues||0)+'건 중 <b>'+(vai.confirmed||0)+'건</b> 실제 사안'
+            +(vai.unrelated?' · '+vai.unrelated+'건 무관':'')):'',
           '이슈 모니터링',"'page-voc','voc','voc-monitor'")
       +'</div>';
   }
