@@ -302,16 +302,15 @@
             </div>
           </div>
 
-          <!-- 1. 민원접수 현황 (접수방법 기준) -->
+          <!-- [v2 추가] 전월 대비 많이 변한 키워드 — 직접 쓰던 '증감 사유' 대신 데이터로 자동 계산(민원접수 현황과 같은 표 형식).
+               원인 해석은 이슈 모니터링의 AI 분석이 맡는다 -->
           <div class="panel" style="flex-shrink:0;">
-            <div class="panel-title">민원접수 현황 <span class="tag" id="voc-sum-period-tag">-</span></div>
+            <div class="panel-title">전월 대비 많이 변한 키워드 <span class="tag" id="voc-kwchg-tag">자동 계산</span></div>
             <table class="voc-sum-table" style="width:100%;">
-              <!-- [v2] 누적(데이터 시작 이후 합계)·누적 비중은 기준이 드러나지 않아, 당월과 같은 기간의 전월·증감·당월 중 비중으로 바꿈 -->
-              <thead><tr><th>접수방법</th><th>당월</th><th id="voc-sum-prev-h">전월</th><th>증감</th><th>당월 중 비중</th></tr></thead>
-              <tbody id="voc-sum-channel-body"></tbody>
+              <thead><tr><th>키워드</th><th>당월</th><th id="voc-kwchg-prev-h">전월</th><th>증감</th><th>증감률</th></tr></thead>
+              <tbody id="voc-kwchg-body"><tr><td colspan="5" style="color:var(--text-soft);">데이터 탭에 엑셀을 올리면 표시됩니다</td></tr></tbody>
             </table>
           </div>
-
           <!-- 민원접수 관련 메모 (직접 작성) — [v2] 위 자동 계산 칸으로 대신해 화면에서 내림.
                메모 저장 코드가 참조하므로 요소는 남겨 숨김 -->
           <div style="display:none; grid-template-columns:1fr 1fr; gap:0.7vw;">
@@ -353,6 +352,16 @@
         <!-- [수정] 지역별·고객유형별·민원분류는 화면에서 내림. 집계 코드가 참조하므로 요소는 남겨 숨김 -->
         <div class="col" style="gap:0.7vw;">
 
+          <!-- 1. 민원접수 현황 (접수방법 기준) — [v2] 오른쪽 칸 맨 위로 옮김 -->
+          <div class="panel" style="flex-shrink:0;">
+            <div class="panel-title">민원접수 현황 <span class="tag" id="voc-sum-period-tag">-</span></div>
+            <table class="voc-sum-table" style="width:100%;">
+              <!-- [v2] 누적(데이터 시작 이후 합계)·누적 비중은 기준이 드러나지 않아, 당월과 같은 기간의 전월·증감·당월 중 비중으로 바꿈 -->
+              <thead><tr><th>접수방법</th><th>당월</th><th id="voc-sum-prev-h">전월</th><th>증감</th><th>당월 중 비중</th></tr></thead>
+              <tbody id="voc-sum-channel-body"></tbody>
+            </table>
+          </div>
+
           <div class="panel" style="flex-shrink:0;">
             <div class="panel-title">챗봇 · 유선 채널 현황 <span class="tag">유선 vs 챗봇만 비교</span></div>
             <div class="channel-compare">
@@ -389,14 +398,6 @@
               <tbody id="voc-top5-body"></tbody>
             </table>
           </div>
-
-          <!-- [v2 추가] 전월 같은 기간 대비 많이 변한 키워드(오른쪽 칸 맨 아래) — 직접 쓰던 '증감 사유'를 데이터로 자동 계산해 보여준다.
-               원인 해석은 이슈 모니터링의 AI 분석이 맡는다 -->
-          <div class="panel kwchg-panel" style="flex:1; min-height:0;">
-            <div class="panel-title">전월 대비 많이 변한 키워드 <span class="tag" id="voc-kwchg-tag">자동 계산</span></div>
-            <div id="voc-kwchg-body" class="kwchg"><div class="home-chart-empty">데이터 탭에 엑셀을 올리면 표시됩니다</div></div>
-          </div>
-
 
         </div>
 

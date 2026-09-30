@@ -291,7 +291,10 @@
       try{
         var d=f.contentDocument; if(!d||!d.documentElement)return;
         var z=Math.min(1.45,Math.max(0.85,f.clientWidth/1600));
-        d.documentElement.style.zoom=z;        // 공통 테마를 끼워 넣은 화면에도 적용한다(그쪽 파일은 수정하지 않는다)
+        d.documentElement.style.zoom=z;
+        // [v2] 끼워 넣은 화면 표시 — theme.css가 이 표시가 있을 때만 제목줄·글자 크기를 대시보드에 맞춘다.
+        // (미납관리·이슈 모니터링 파일 자체는 고치지 않는다. 따로 열면 원래 모습 그대로)
+        d.documentElement.classList.add('in-dash');        // 공통 테마를 끼워 넣은 화면에도 적용한다(그쪽 파일은 수정하지 않는다)
         if(d.head&&!d.getElementById('sharedTheme')){
           var l=d.createElement('link');
           l.id='sharedTheme'; l.rel='stylesheet';
@@ -428,18 +431,14 @@
       var ch = Object.keys(ks).map(function(k){ var c=curK[k]||0, p=prevK[k]||0; return {k:k,c:c,p:p,d:c-p}; })
         .filter(function(o){ return o.d!==0; })
         .sort(function(a,b){ return Math.abs(b.d)-Math.abs(a.d) || b.c-a.c; }).slice(0,5);
-      var mx = ch.reduce(function(s,o){ return Math.max(s,Math.abs(o.d)); },1);
       document.getElementById('voc-kwchg-tag').textContent = cut ? '1~'+cut+'일 · 전월 같은 기간 대비' : '전월 대비';
-      // 끝에는 증감만 크게 보여준다(전월→당월 숫자는 마우스를 올리면 보임)
+      var kwPrevH = document.getElementById('voc-kwchg-prev-h'); if (kwPrevH) kwPrevH.textContent = cut ? '전월 같은 기간' : '전월';
+      // 민원접수 현황과 같은 표 형식: 키워드 | 당월 | 전월(같은 기간) | 증감 | 증감률
       kcBox.innerHTML = ch.length ? ch.map(function(o){
-        var up = o.d>0, w = Math.max(4, Math.round(Math.abs(o.d)/mx*100));
-        return '<div class="kwchg-row" title="전월 같은 기간 '+numFmt(o.p)+'건 → 당월 '+numFmt(o.c)+'건"><span class="kwchg-k">'+o.k+'</span>'
-          +'<span class="kwchg-track"><i class="'+(up?'up':'dn')+'" style="width:'+w+'%"></i></span>'
-          +'<span class="kwchg-v '+(up?'up':'dn')+'">'+(up?'+':'−')+numFmt(Math.abs(o.d))+'건</span></div>';
-      }).join('') + '<div class="kwchg-cap"><i class="up"></i>늘어남 <i class="dn"></i>줄어듦 · 막대 길이 = 증감 건수</div>'
-        : '<div class="home-chart-empty">전월 같은 기간과 달라진 키워드가 없습니다</div>';
-      KWCHG_FULL = kcBox.innerHTML;
-      fitKwChg();
+        var rate = o.p ? ((o.d>0?'+':'')+Math.round(o.d/o.p*100)+'%') : '신규';
+        return '<tr><td>'+o.k+'</td><td class="num">'+numFmt(o.c)+'</td><td class="num">'+numFmt(o.p)+'</td>'
+          +dCell(o.c,o.p)+'<td class="num'+(o.d>0?' diff-bad':' diff-good')+'">'+rate+'</td></tr>';
+      }).join('') : '<tr><td colspan="5" style="color:var(--text-soft);">전월 같은 기간과 달라진 키워드가 없습니다</td></tr>';
     }
 
     // ---- 2-a. 민원분류: 유형별 (당월/전월/누적) ----
@@ -588,23 +587,6 @@
     document.addEventListener('DOMContentLoaded', function(){
       var el = document.getElementById('voc-trend-chart');
       if (el) new ResizeObserver(function(){ drawVocTrendChart(); }).observe(el);
-    });
-  }
-
-  // [v2] '전월 대비 많이 변한 키워드'는 칸 높이에 들어가는 만큼만 남긴다(창 크기에 따라 3~5줄).
-  // 전체 목록을 기억해 두고, 칸 크기가 바뀔 때마다 전체에서 다시 줄인다.
-  var KWCHG_FULL = '';
-  function fitKwChg(){
-    var box=document.getElementById('voc-kwchg-body'); if(!box||!KWCHG_FULL) return;
-    var panel=box.closest('.panel'); if(!panel||!panel.clientHeight) return;   // 숨겨진 탭 — 보일 때 다시
-    box.innerHTML=KWCHG_FULL;
-    var rows=[].slice.call(box.querySelectorAll('.kwchg-row'));
-    for(var i=rows.length-1; i>0 && panel.scrollHeight>panel.clientHeight+1; i--) rows[i].remove();
-  }
-  if (window.ResizeObserver){
-    document.addEventListener('DOMContentLoaded', function(){
-      var p=document.querySelector('.kwchg-panel');
-      if (p) new ResizeObserver(function(){ fitKwChg(); }).observe(p);
     });
   }
 
